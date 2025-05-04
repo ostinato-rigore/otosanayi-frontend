@@ -1,25 +1,47 @@
-// Uygulamanın ana ekranı.
-import { Link } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
-import COLORS from "../constants/colors";
+// Uygulamanın ana ekranı (app/index.jsx)
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { Text, TouchableOpacity, View } from "react-native";
+import styles from "../constants/styles/splash-styles";
 
 export default function Index() {
+  const router = useRouter();
+
+  const handleCustomer = () => {
+    router.push({ pathname: "/(auth)", params: { userType: "Customer" } });
+  };
+
+  const handleMechanic = () => {
+    router.push({ pathname: "/(auth)", params: { userType: "Mechanic" } });
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Main</Text>
-      <Link href="/(auth)/register">Register</Link>
-      <Link href="/(auth)">Login</Link>
+      <Image
+        source={require("../assets/images/logo.png")}
+        style={styles.logo}
+        contentFit="contain"
+      />
+
+      <Text style={styles.title}>Welcome to Otosanayi</Text>
+
+      <Text style={styles.subtitle}>
+        Find the best auto repair shops or join as one!
+      </Text>
+
+      <TouchableOpacity
+        style={[styles.button, styles.customerButton]}
+        onPress={handleCustomer}
+      >
+        <Text style={styles.buttonText}>Continue as Customer</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, styles.mechanicButton]}
+        onPress={handleMechanic}
+      >
+        <Text style={styles.buttonText}>Continue as Auto Mechanic</Text>
+      </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, // Tüm ekranı kaplar
-    justifyContent: "center", // İçeriği dikeyde ortalar
-    alignItems: "center", // İçeriği yatayda ortalar
-  },
-  text: {
-    color: COLORS.textSecondary, // Metin rengi
-  },
-});
