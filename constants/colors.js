@@ -12,7 +12,8 @@ const COLORS = {
   white: "#FFFFFF", // Beyaz: Genel kullanım
   black: "#000000", // Siyah: Genel kullanım
   accentCustomer: "#0D437C", // Müşteri: koyu mavi
-  accentMechanic: "#FB8F1B", // Sanayici: turuncu
+  accentMechanic: "#FB8F1B",
+  error: "#AE2011", // Sanayici: turuncu
 };
 
 export default COLORS;

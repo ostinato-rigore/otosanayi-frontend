@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -11,20 +12,23 @@ import {
 } from "react-native";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/register-styles";
+import useAuthStore from "../../store/useAuthStore";
+import useUiStore from "../../store/useUiStore";
+import { validateRegisterForm } from "../../validations/auth-validations";
 
 export default function Register() {
   const { userType } = useLocalSearchParams();
   const router = useRouter();
+  const { isLoading, register } = useAuthStore();
+  const { error, setError, clearError } = useUiStore();
 
-  // Tek bir state objesinde tüm form verileri
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    fullname: "",
+    name: "",
     phone: "",
   });
 
-  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const registerTitle = `Register as ${
@@ -34,7 +38,6 @@ export default function Register() {
   const caretColor =
     userType === "Mechanic" ? COLORS.accentMechanic : COLORS.primary;
 
-  // Input değişikliklerini yöneten tek fonksiyon
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -42,29 +45,23 @@ export default function Register() {
     }));
   };
 
-  const validateForm = () => {
-    const { email, password, fullname } = formData;
+  const handleRegister = async () => {
+    clearError();
+    if (!validateRegisterForm(formData, setError)) return;
 
-    if (!email || !password || !fullname) {
-      setError("Please fill all required fields");
-      return false;
+    try {
+      const response = await register(userType, formData);
+      if (response.success) {
+        router.replace({
+          pathname: "/(auth)",
+          params: { userType },
+        });
+      } else {
+        setError(response.error.message || "Registration failed");
+      }
+    } catch (err) {
+      setError(err.message || "An unexpected error occurred");
     }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setError("Please enter a valid email address");
-      return false;
-    }
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return false;
-    }
-    return true;
-  };
-
-  const handleRegister = () => {
-    if (!validateForm()) return;
-    setError("");
-    console.log("Form Data:", formData); // API gönderiminden önce kontrol
-    router.push("/(auth)");
   };
 
   return (
@@ -79,8 +76,8 @@ export default function Register() {
         style={styles.input}
         placeholder="Full Name"
         placeholderTextColor={COLORS.placeholderText}
-        value={formData.fullname}
-        onChangeText={(text) => handleInputChange("fullname", text)}
+        value={formData.name}
+        onChangeText={(text) => handleInputChange("name", text)}
         autoCapitalize="words"
         selectionColor={caretColor}
         accessible
@@ -129,7 +126,7 @@ export default function Register() {
 
       <TextInput
         style={styles.input}
-        placeholder="Phone (Optional)"
+        placeholder="Phone"
         placeholderTextColor={COLORS.placeholderText}
         value={formData.phone}
         onChangeText={(text) => handleInputChange("phone", text)}
@@ -161,11 +158,16 @@ export default function Register() {
           },
         ]}
         onPress={handleRegister}
+        disabled={isLoading}
         accessible
         accessibilityLabel="Register button"
         accessibilityRole="button"
       >
-        <Text style={styles.buttonText}>Register</Text>
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Register</Text>
+        )}
       </TouchableOpacity>
 
       <Text style={styles.loginText}>
