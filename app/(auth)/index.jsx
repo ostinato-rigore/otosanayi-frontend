@@ -21,6 +21,10 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  const loginTitle = `Login as ${
+    userType === "Mechanic" ? "Auto Mechanic" : "Customer"
+  }`;
+
   const caretColor =
     userType === "Mechanic" ? COLORS.accentMechanic : COLORS.accentCustomer; // Caret rengi
 
@@ -47,7 +51,7 @@ export default function Login() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <Text style={styles.title}>Login as {userType || "User"}</Text>
+      <Text style={styles.title}> {loginTitle} </Text>
       <Text style={styles.subtitle}>Sign in to continue</Text>
 
       <TextInput
