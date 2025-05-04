@@ -15,3 +15,15 @@ export const validateRegisterForm = (formData, setError) => {
   }
   return true;
 };
+
+export const validateLoginForm = (email, password, setError) => {
+  if (!email || !password) {
+    setError("Please fill all fields");
+    return false;
+  }
+  if (!/\S+@\S+\.\S+/.test(email)) {
+    setError("Please enter a valid email address");
+    return false;
+  }
+  return true;
+};

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -11,39 +12,43 @@ import {
 } from "react-native";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/login-styles";
+import useAuthStore from "../../store/useAuthStore";
+import useUiStore from "../../store/useUiStore";
+import { validateLoginForm } from "../../validations/auth-validations";
 
 export default function Login() {
-  const { userType } = useLocalSearchParams(); // Önceki sayfadan userType al
-  const router = useRouter(); // Yönlendirme için
+  const { userType } = useLocalSearchParams();
+  const router = useRouter();
+  const { isLoading, login } = useAuthStore();
+  const { error, setError, clearError } = useUiStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
 
   const loginTitle = `Login as ${
     userType === "Mechanic" ? "Auto Mechanic" : "Customer"
   }`;
 
   const caretColor =
-    userType === "Mechanic" ? COLORS.accentMechanic : COLORS.accentCustomer; // Caret rengi
+    userType === "Mechanic" ? COLORS.accentMechanic : COLORS.accentCustomer;
 
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
-
-  const handleLogin = () => {
-    if (!email || !password) {
-      setError("Please fill all fields");
-      return;
+  const handleLogin = async () => {
+    clearError();
+    if (!validateLoginForm(email, password)) return;
+    const formData = { email, password };
+    try {
+      const response = await login(userType, formData);
+      console.log("Login response:", response);
+      if (response.success) {
+        router.replace("/(tabs)");
+      } else {
+        setError(response.error?.message || response.error || "Login failed");
+      }
+    } catch (err) {
+      console.log("Login error:", err);
+      setError(err.message || "An unexpected error occurred");
     }
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email");
-      return;
-    }
-    setError("");
-    router.push("/(tabs)");
   };
 
   return (
@@ -51,7 +56,7 @@ export default function Login() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <Text style={styles.title}> {loginTitle} </Text>
+      <Text style={styles.title}>{loginTitle}</Text>
       <Text style={styles.subtitle}>Sign in to continue</Text>
 
       <TextInput
@@ -111,11 +116,16 @@ export default function Login() {
           },
         ]}
         onPress={handleLogin}
+        disabled={isLoading}
         accessible
         accessibilityLabel="Login button"
         accessibilityRole="button"
       >
-        <Text style={styles.buttonText}>Login</Text>
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Login</Text>
+        )}
       </TouchableOpacity>
 
       <Text style={styles.registerText}>
