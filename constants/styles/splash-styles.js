@@ -1,4 +1,3 @@
-// constants/styles/splash-styles.js
 import { StyleSheet } from "react-native";
 import COLORS from "../colors";
 

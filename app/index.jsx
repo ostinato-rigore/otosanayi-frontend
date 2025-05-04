@@ -12,7 +12,10 @@ export default function Index() {
   };
 
   const handleMechanic = () => {
-    router.push({ pathname: "/(auth)", params: { userType: "Mechanic" } });
+    router.push({
+      pathname: "/(auth)/register",
+      params: { userType: "Mechanic" },
+    });
   };
 
   return (
@@ -40,7 +43,7 @@ export default function Index() {
         style={[styles.button, styles.mechanicButton]}
         onPress={handleMechanic}
       >
-        <Text style={styles.buttonText}>Continue as Auto Mechanic</Text>
+        <Text style={styles.buttonText}>Register as Auto Mechanic</Text>
       </TouchableOpacity>
     </View>
   );
