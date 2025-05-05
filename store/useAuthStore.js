@@ -35,6 +35,7 @@ const useAuthStore = create((set, get) => ({
           userType,
           isAuthenticated: true,
         });
+        console.log("UserType set to:", userType, "isAuthenticated:", true);
       } else {
         set({
           user: null,

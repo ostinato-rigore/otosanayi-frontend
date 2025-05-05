@@ -1,23 +1,54 @@
-// app/_layout.jsx: Uygulamanın root navigasyon yapısını tanımlar.
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import SafeScreen from "../components/layout/SafeScreen"; // SafeScreen bileşeni, ekranın güvenli alanını ayarlar ve arka plan rengini belirler
+import SafeScreen from "../components/layout/SafeScreen";
+import useAuthStore from "../store/useAuthStore";
 
 export default function RootLayout() {
+  const router = useRouter();
+  const { isAuthenticated, userType, fetchUser, isLoading } = useAuthStore();
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure the component is mounted before attempting navigation
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Fetch user data on mount
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  // Handle navigation after user data is fetched and component is mounted
+  useEffect(() => {
+    if (!isMounted || isLoading) return;
+
+    console.log(
+      "Navigating - isAuthenticated:",
+      isAuthenticated,
+      "userType:",
+      userType
+    );
+
+    if (isAuthenticated) {
+      if (userType === "Customer") {
+        router.replace("/(usertype)/customer");
+      } else if (userType === "Mechanic") {
+        router.replace("/(usertype)/mechanic");
+      }
+    } else {
+      router.replace("/");
+    }
+  }, [isAuthenticated, userType, isLoading, isMounted, router]);
+
   return (
-    // SafeAreaProvider iPhone çentiklerine göre güvenli alan sağlar.
     <SafeAreaProvider>
-      {/* SafeScreen bileşeni, ekranın güvenli alanını ayarlar ve arka plan rengini belirler */}
       <SafeScreen>
-        {/* Stack bileşeni, uygulamanın navigasyon yapısını tanımlar */}
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
+        <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(usertype)" />
         </Stack>
       </SafeScreen>
       <StatusBar style="dark" />

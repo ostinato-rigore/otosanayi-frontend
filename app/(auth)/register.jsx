@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -68,15 +67,7 @@ export default function Register() {
   const handleRegister = async (data) => {
     try {
       const response = await register(userType, data);
-      if (response.success) {
-        Alert.alert("Başarılı", "Kayıt işlemi tamamlandı!", [
-          {
-            text: "Tamam",
-            onPress: () =>
-              router.replace({ pathname: "/(auth)", params: { userType } }),
-          },
-        ]);
-      }
+      console.log("Register response:", response);
     } catch (err) {
       console.log("Kayıt Hatası:", err);
       // Sunucu hataları api.js interceptor tarafından yönetiliyor

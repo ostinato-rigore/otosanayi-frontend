@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -60,11 +59,6 @@ export default function Login() {
     try {
       const response = await login(userType, data);
       console.log("Login response:", response);
-      if (response.success) {
-        Alert.alert("Success", "Login successful!", [
-          { text: "OK", onPress: () => router.replace("/(tabs)") },
-        ]);
-      }
     } catch (err) {
       console.log("Login error:", err);
       // Server errors are handled by api.js interceptor
