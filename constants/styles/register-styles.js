@@ -57,7 +57,9 @@ const styles = StyleSheet.create({
     color: COLORS.error,
     fontSize: 14,
     marginBottom: 15,
-    textAlign: "center",
+    textAlign: "left",
+    alignSelf: "flex-start",
+    marginLeft: 20,
   },
   registerButton: {
     width: "90%",

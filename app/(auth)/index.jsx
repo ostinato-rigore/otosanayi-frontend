@@ -1,8 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -10,21 +13,41 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { z } from "zod";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/login-styles";
 import useAuthStore from "../../store/useAuthStore";
-import useUiStore from "../../store/useUiStore";
-import { validateLoginForm } from "../../validations/auth-validations";
+
+// Validation schema
+const loginSchema = z.object({
+  email: z
+    .string()
+    .email({ message: "Enter a valid email address" })
+    .nonempty("Email is required"),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" })
+    .nonempty("Password is required"),
+});
 
 export default function Login() {
   const { userType } = useLocalSearchParams();
   const router = useRouter();
   const { isLoading, login } = useAuthStore();
-  const { error, setError, clearError } = useUiStore();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   const loginTitle = `Login as ${
     userType === "Mechanic" ? "Auto Mechanic" : "Customer"
@@ -33,21 +56,18 @@ export default function Login() {
   const caretColor =
     userType === "Mechanic" ? COLORS.accentMechanic : COLORS.accentCustomer;
 
-  const handleLogin = async () => {
-    clearError();
-    if (!validateLoginForm(email, password)) return;
-    const formData = { email, password };
+  const handleLogin = async (data) => {
     try {
-      const response = await login(userType, formData);
+      const response = await login(userType, data);
       console.log("Login response:", response);
       if (response.success) {
-        router.replace("/(tabs)");
-      } else {
-        setError(response.error?.message || response.error || "Login failed");
+        Alert.alert("Success", "Login successful!", [
+          { text: "OK", onPress: () => router.replace("/(tabs)") },
+        ]);
       }
     } catch (err) {
       console.log("Login error:", err);
-      setError(err.message || "An unexpected error occurred");
+      // Server errors are handled by api.js interceptor
     }
   };
 
@@ -59,51 +79,74 @@ export default function Login() {
       <Text style={styles.title}>{loginTitle}</Text>
       <Text style={styles.subtitle}>Sign in to continue</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor={COLORS.placeholderText}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        selectionColor={caretColor}
-        accessible
-        accessibilityLabel="Email input"
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor={COLORS.placeholderText}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              selectionColor={caretColor}
+              accessible
+              accessibilityLabel="Email input"
+            />
+            {errors.email && (
+              <Text style={styles.error}>{errors.email.message}</Text>
+            )}
+          </>
+        )}
       />
-      <View style={styles.passwordContainer}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Password"
-          placeholderTextColor={COLORS.placeholderText}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          selectionColor={caretColor}
-          accessible
-          accessibilityLabel="Password input"
-          autoComplete="password"
-          textContentType="password"
-        />
-        <TouchableOpacity
-          onPress={() => setShowPassword(!showPassword)}
-          style={styles.iconContainer}
-          accessible
-          accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-          accessibilityRole="button"
-        >
-          <Ionicons
-            name={showPassword ? "eye-outline" : "eye-off-outline"}
-            size={24}
-            color={COLORS.placeholderText}
-          />
-        </TouchableOpacity>
-      </View>
-      {error ? (
-        <Text style={styles.error} accessible accessibilityLabel={error}>
-          {error}
-        </Text>
-      ) : null}
+
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Password"
+                placeholderTextColor={COLORS.placeholderText}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry={!showPassword}
+                selectionColor={caretColor}
+                accessible
+                accessibilityLabel="Password input"
+                autoComplete="password"
+                textContentType="password"
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.iconContainer}
+                accessible
+                accessibilityLabel={
+                  showPassword ? "Hide password" : "Show password"
+                }
+                accessibilityRole="button"
+              >
+                <Ionicons
+                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                  size={24}
+                  color={COLORS.placeholderText}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {errors.password && (
+              <Text style={styles.error}>{errors.password.message}</Text>
+            )}
+          </>
+        )}
+      />
 
       <TouchableOpacity
         style={[
@@ -115,7 +158,7 @@ export default function Login() {
                 : COLORS.accentCustomer,
           },
         ]}
-        onPress={handleLogin}
+        onPress={handleSubmit(handleLogin)}
         disabled={isLoading}
         accessible
         accessibilityLabel="Login button"
@@ -133,10 +176,7 @@ export default function Login() {
         <Text
           style={styles.registerLink}
           onPress={() =>
-            router.push({
-              pathname: "/(auth)/register",
-              params: { userType },
-            })
+            router.push({ pathname: "/(auth)/register", params: { userType } })
           }
           accessible
           accessibilityRole="link"

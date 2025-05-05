@@ -1,8 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -10,26 +13,50 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { z } from "zod";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/register-styles";
 import useAuthStore from "../../store/useAuthStore";
-import useUiStore from "../../store/useUiStore";
-import { validateRegisterForm } from "../../validations/auth-validations";
+
+const registerSchema = z.object({
+  name: z
+    .string()
+    .min(2, { message: "Name must be at least 2 characters" })
+    .nonempty("Name is required"),
+  email: z
+    .string()
+    .email({ message: "Enter a valid email address" })
+    .nonempty("Email is required"),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" })
+    .nonempty("Password is required"),
+  phone: z
+    .string()
+    .regex(/^\+?\d{10,15}$/, { message: "Enter a valid phone number" })
+    .nonempty("Phone is required"),
+});
 
 export default function Register() {
   const { userType } = useLocalSearchParams();
   const router = useRouter();
   const { isLoading, register } = useAuthStore();
-  const { error, setError, clearError } = useUiStore();
-
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    phone: "",
-  });
 
   const [showPassword, setShowPassword] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      phone: "",
+    },
+  });
 
   const registerTitle = `Register as ${
     userType === "Mechanic" ? "Auto Mechanic" : "Customer"
@@ -38,29 +65,21 @@ export default function Register() {
   const caretColor =
     userType === "Mechanic" ? COLORS.accentMechanic : COLORS.primary;
 
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleRegister = async () => {
-    clearError();
-    if (!validateRegisterForm(formData, setError)) return;
-
+  const handleRegister = async (data) => {
     try {
-      const response = await register(userType, formData);
+      const response = await register(userType, data);
       if (response.success) {
-        router.replace({
-          pathname: "/(auth)",
-          params: { userType },
-        });
-      } else {
-        setError(response.error.message || "Registration failed");
+        Alert.alert("Başarılı", "Kayıt işlemi tamamlandı!", [
+          {
+            text: "Tamam",
+            onPress: () =>
+              router.replace({ pathname: "/(auth)", params: { userType } }),
+          },
+        ]);
       }
     } catch (err) {
-      setError(err.message || "An unexpected error occurred");
+      console.log("Kayıt Hatası:", err);
+      // Sunucu hataları api.js interceptor tarafından yönetiliyor
     }
   };
 
@@ -72,80 +91,119 @@ export default function Register() {
       <Text style={styles.title}>{registerTitle}</Text>
       <Text style={styles.subtitle}>Create your account</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        placeholderTextColor={COLORS.placeholderText}
-        value={formData.name}
-        onChangeText={(text) => handleInputChange("name", text)}
-        autoCapitalize="words"
-        selectionColor={caretColor}
-        accessible
-        accessibilityLabel="Full name input"
+      <Controller
+        control={control}
+        name="name"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              placeholderTextColor={COLORS.placeholderText}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              autoCapitalize="words"
+              selectionColor={caretColor}
+              accessible
+              accessibilityLabel="Full name input"
+            />
+            {errors.name && (
+              <Text style={styles.error}>{errors.name.message}</Text>
+            )}
+          </>
+        )}
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor={COLORS.placeholderText}
-        value={formData.email}
-        onChangeText={(text) => handleInputChange("email", text)}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        selectionColor={caretColor}
-        accessible
-        accessibilityLabel="Email input"
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor={COLORS.placeholderText}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              selectionColor={caretColor}
+              accessible
+              accessibilityLabel="Email input"
+            />
+            {errors.email && (
+              <Text style={styles.error}>{errors.email.message}</Text>
+            )}
+          </>
+        )}
       />
 
-      <View style={styles.passwordContainer}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Password"
-          placeholderTextColor={COLORS.placeholderText}
-          value={formData.password}
-          onChangeText={(text) => handleInputChange("password", text)}
-          secureTextEntry={!showPassword}
-          selectionColor={caretColor}
-          accessible
-          accessibilityLabel="Password input"
-        />
-        <TouchableOpacity
-          onPress={() => setShowPassword(!showPassword)}
-          style={styles.iconContainer}
-          accessible
-          accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-          accessibilityRole="button"
-        >
-          <Ionicons
-            name={showPassword ? "eye-outline" : "eye-off-outline"}
-            size={24}
-            color={COLORS.placeholderText}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Phone"
-        placeholderTextColor={COLORS.placeholderText}
-        value={formData.phone}
-        onChangeText={(text) => handleInputChange("phone", text)}
-        keyboardType="phone-pad"
-        selectionColor={caretColor}
-        accessible
-        accessibilityLabel="Phone input"
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Password"
+                placeholderTextColor={COLORS.placeholderText}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry={!showPassword}
+                selectionColor={caretColor}
+                accessible
+                accessibilityLabel="Password input"
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.iconContainer}
+                accessible
+                accessibilityLabel={
+                  showPassword ? "Hide password" : "Show password"
+                }
+                accessibilityRole="button"
+              >
+                <Ionicons
+                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                  size={24}
+                  color={COLORS.placeholderText}
+                />
+              </TouchableOpacity>
+            </View>
+            {errors.password && (
+              <Text style={styles.error}>{errors.password.message}</Text>
+            )}
+          </>
+        )}
       />
 
-      {error ? (
-        <Text
-          style={styles.error}
-          accessible
-          accessibilityLabel={error}
-          accessibilityLiveRegion="polite"
-        >
-          {error}
-        </Text>
-      ) : null}
+      <Controller
+        control={control}
+        name="phone"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Phone"
+              placeholderTextColor={COLORS.placeholderText}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              keyboardType="phone-pad"
+              selectionColor={caretColor}
+              accessible
+              accessibilityLabel="Phone input"
+            />
+            {errors.phone && (
+              <Text style={styles.error}>{errors.phone.message}</Text>
+            )}
+          </>
+        )}
+      />
 
       <TouchableOpacity
         style={[
@@ -157,7 +215,7 @@ export default function Register() {
                 : COLORS.accentCustomer,
           },
         ]}
-        onPress={handleRegister}
+        onPress={handleSubmit(handleRegister)}
         disabled={isLoading}
         accessible
         accessibilityLabel="Register button"
