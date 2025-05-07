@@ -25,7 +25,7 @@ export default function RootLayout() {
     if (!isMounted || isLoading) return;
 
     if (isAuthenticated) {
-      router.replace("/(usertype)");
+      router.replace(`/(usertype)/${userType.toLowerCase()}/home`);
     } else {
       router.replace("/(auth)");
     }

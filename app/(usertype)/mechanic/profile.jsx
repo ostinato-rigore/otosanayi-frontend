@@ -1,9 +1,9 @@
 import React from "react";
 import { Text, View } from "react-native";
 
-export default function Profile() {
+export default function MechanicProfile() {
   return (
-    <View>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Text>Mechanic Profile</Text>
     </View>
   );
