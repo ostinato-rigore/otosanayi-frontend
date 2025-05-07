@@ -97,7 +97,7 @@ const useAuthStore = create((set, get) => ({
         set({
           user: res.data.user,
           userType: type,
-          isAuthenticated: true,
+          isAuthenticated: false,
         });
       }
 

@@ -24,21 +24,10 @@ export default function RootLayout() {
   useEffect(() => {
     if (!isMounted || isLoading) return;
 
-    console.log(
-      "Navigating - isAuthenticated:",
-      isAuthenticated,
-      "userType:",
-      userType
-    );
-
     if (isAuthenticated) {
-      if (userType === "Customer") {
-        router.replace("/(usertype)/customer");
-      } else if (userType === "Mechanic") {
-        router.replace("/(usertype)/mechanic");
-      }
+      router.replace("/(usertype)");
     } else {
-      router.replace("/");
+      router.replace("/(auth)");
     }
   }, [isAuthenticated, userType, isLoading, isMounted, router]);
 
@@ -46,7 +35,6 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <SafeScreen>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(usertype)" />
         </Stack>

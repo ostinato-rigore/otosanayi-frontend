@@ -15,14 +15,11 @@ import {
 } from "react-native";
 import { z } from "zod";
 import COLORS from "../../constants/colors";
-import styles from "../../constants/styles/register-styles";
+import styles from "../../constants/styles/login-styles";
 import useAuthStore from "../../store/useAuthStore";
 
-const registerSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Name must be at least 2 characters" })
-    .nonempty("Name is required"),
+// Validation schema
+const loginSchema = z.object({
   email: z
     .string()
     .email({ message: "Enter a valid email address" })
@@ -31,16 +28,13 @@ const registerSchema = z.object({
     .string()
     .min(6, { message: "Password must be at least 6 characters" })
     .nonempty("Password is required"),
-  phone: z
-    .string()
-    .regex(/^\+?\d{10,15}$/, { message: "Enter a valid phone number" })
-    .nonempty("Phone is required"),
 });
 
-export default function Register() {
+export default function Login() {
   const { userType } = useLocalSearchParams();
   const router = useRouter();
-  const { isLoading, register } = useAuthStore();
+  const { isLoading, login } = useAuthStore();
+  console.log("userType:", userType);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -49,78 +43,49 @@ export default function Register() {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(loginSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
-      phone: "",
     },
   });
 
-  const registerTitle =
-    userType === "Mechanic" ? "Auto Mechanic Register" : "Customer Register";
+  const loginTitle =
+    userType === "Mechanic" ? "Auto Mechanic Login" : "Customer Login";
 
   const caretColor =
-    userType === "Mechanic" ? COLORS.accentMechanic : COLORS.primary;
+    userType === "Mechanic" ? COLORS.accentMechanic : COLORS.accentCustomer;
 
-  const handleNavigateToLogin = () => {
-    Keyboard.dismiss();
-    setTimeout(() => {
-      router.push({
-        pathname: "/(auth)/login",
-        params: { userType },
-      });
-    }, 100);
+  const handleLogin = async (data) => {
+    try {
+      const response = await login(userType, data);
+      console.log("Login response:", response);
+    } catch (err) {
+      console.log("Login error:", err);
+    }
   };
 
-  const handleRegister = async (data) => {
+  const handleNavigateToRegister = () => {
     Keyboard.dismiss();
-    try {
-      const response = await register(userType, data);
-      console.log("Register response:", response);
+
+    // Küçük bir gecikme ver
+    setTimeout(() => {
       router.push({
-        pathname: "/(auth)/login",
+        pathname: "/(auth)/register",
         params: { userType },
       });
-    } catch (err) {
-      console.log("Kayıt Hatası:", err);
-    }
+    }, 100); // 100ms genellikle yeterli
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1, backgroundColor: COLORS.background }}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // iOS için offset ekliyoruz
     >
       <View style={styles.container}>
-        <Text style={styles.title}>{registerTitle}</Text>
-        <Text style={styles.subtitle}>Create your account</Text>
-
-        <Controller
-          control={control}
-          name="name"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                placeholderTextColor={COLORS.placeholderText}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                autoCapitalize="words"
-                selectionColor={caretColor}
-                accessible
-                accessibilityLabel="Full name input"
-              />
-              {errors.name && (
-                <Text style={styles.error}>{errors.name.message}</Text>
-              )}
-            </>
-          )}
-        />
+        <Text style={styles.title}>{loginTitle}</Text>
+        <Text style={styles.subtitle}>Sign in to continue</Text>
 
         <Controller
           control={control}
@@ -164,6 +129,8 @@ export default function Register() {
                   selectionColor={caretColor}
                   accessible
                   accessibilityLabel="Password input"
+                  autoComplete="password"
+                  textContentType="password"
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
@@ -181,6 +148,7 @@ export default function Register() {
                   />
                 </TouchableOpacity>
               </View>
+
               {errors.password && (
                 <Text style={styles.error}>{errors.password.message}</Text>
               )}
@@ -188,33 +156,9 @@ export default function Register() {
           )}
         />
 
-        <Controller
-          control={control}
-          name="phone"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                style={styles.input}
-                placeholder="Phone"
-                placeholderTextColor={COLORS.placeholderText}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                keyboardType="phone-pad"
-                selectionColor={caretColor}
-                accessible
-                accessibilityLabel="Phone input"
-              />
-              {errors.phone && (
-                <Text style={styles.error}>{errors.phone.message}</Text>
-              )}
-            </>
-          )}
-        />
-
         <TouchableOpacity
           style={[
-            styles.registerButton,
+            styles.loginButton,
             {
               backgroundColor:
                 userType === "Mechanic"
@@ -222,28 +166,28 @@ export default function Register() {
                   : COLORS.accentCustomer,
             },
           ]}
-          onPress={handleSubmit(handleRegister)}
+          onPress={handleSubmit(handleLogin)}
           disabled={isLoading}
           accessible
-          accessibilityLabel="Register button"
+          accessibilityLabel="Login button"
           accessibilityRole="button"
         >
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Register</Text>
+            <Text style={styles.buttonText}>Login</Text>
           )}
         </TouchableOpacity>
 
-        <Text style={styles.loginText}>
-          Already have an account?{" "}
+        <Text style={styles.registerText}>
+          Don’t have an account?{" "}
           <Text
-            style={styles.loginLink}
-            onPress={handleNavigateToLogin}
+            style={styles.registerLink}
+            onPress={handleNavigateToRegister}
             accessible
             accessibilityRole="link"
           >
-            Login
+            Register
           </Text>
         </Text>
       </View>
