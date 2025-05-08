@@ -10,22 +10,23 @@ export default function RootLayout() {
   const { isAuthenticated, userType, fetchUser, isLoading } = useAuthStore();
   const [isMounted, setIsMounted] = useState(false);
 
-  // Ensure the component is mounted before attempting navigation
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Fetch user data on mount
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
 
-  // Handle navigation after user data is fetched and component is mounted
   useEffect(() => {
     if (!isMounted || isLoading) return;
 
     if (isAuthenticated) {
-      router.replace(`/(usertype)/${userType.toLowerCase()}/home`);
+      if (userType?.toLowerCase() === "customer") {
+        router.replace("/(customer)/home");
+      } else if (userType?.toLowerCase() === "mechanic") {
+        router.replace("/(mechanic)/home");
+      }
     } else {
       router.replace("/(auth)");
     }
@@ -36,7 +37,8 @@ export default function RootLayout() {
       <SafeScreen>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(usertype)" />
+          <Stack.Screen name="(customer)" />
+          <Stack.Screen name="(mechanic)" />
         </Stack>
       </SafeScreen>
       <StatusBar style="dark" />
