@@ -159,7 +159,9 @@ export default function CustomerProfile() {
       await fetchUser(); // Kullanıcı verilerini güncelle
       Alert.alert("Success", "Profile updated successfully.");
       setIsEditable(false);
-      router.replace("/(customer)/profile");
+      setTimeout(() => {
+        router.replace("/(customer)/profile");
+      }, 0);
     } catch (error) {
       Alert.alert("Error", error.message || "Update failed");
     } finally {
