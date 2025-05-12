@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { z } from "zod";
 import {
   deleteMechanicAccount,
   updateMechanicProfile,
@@ -23,12 +24,114 @@ import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/mechanic-profile-styles";
 import useAuthStore from "../../store/useAuthStore";
 
+// Validation schema
+const profileSchema = z.object({
+  name: z
+    .string()
+    .min(2, { message: "Full name must be at least 2 characters" })
+    .nonempty("Full name is required"),
+  phone: z
+    .string()
+    .regex(/^\+?\d{10,15}$/, { message: "Enter a valid phone number" })
+    .nonempty("Phone number is required"),
+  mechanicName: z
+    .string()
+    .min(2, { message: "Garage name must be at least 2 characters" })
+    .nonempty("Garage name is required"),
+  mechanicAddress: z.object({
+    fullAddress: z
+      .string()
+      .min(5, { message: "Full address must be at least 5 characters" })
+      .nonempty("Full address is required"),
+    city: z
+      .string()
+      .min(2, { message: "City must be at least 2 characters" })
+      .nonempty("City is required"),
+    district: z
+      .string()
+      .min(2, { message: "District must be at least 2 characters" })
+      .nonempty("District is required"),
+  }),
+  workingHours: z.object({
+    weekdays: z.object({
+      open: z
+        .string()
+        .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, {
+          message: "Weekdays open time must be in HH:MM format (e.g., 09:00)",
+        })
+        .nonempty("Weekdays open time is required"),
+      close: z
+        .string()
+        .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, {
+          message: "Weekdays close time must be in HH:MM format (e.g., 17:00)",
+        })
+        .nonempty("Weekdays close time is required"),
+    }),
+    weekend: z.object({
+      open: z
+        .string()
+        .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, {
+          message: "Weekend open time must be in HH:MM format (e.g., 10:00)",
+        })
+        .nonempty("Weekend open time is required"),
+      close: z
+        .string()
+        .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, {
+          message: "Weekend close time must be in HH:MM format (e.g., 16:00)",
+        })
+        .nonempty("Weekend close time is required"),
+    }),
+  }),
+  website: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/.test(val),
+      { message: "Enter a valid URL (e.g., https://example.com)" }
+    ),
+  socialMedia: z.object({
+    facebook: z
+      .string()
+      .optional()
+      .refine(
+        (val) =>
+          !val || /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/.test(val),
+        { message: "Enter a valid Facebook URL" }
+      ),
+    instagram: z
+      .string()
+      .optional()
+      .refine(
+        (val) =>
+          !val || /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/.test(val),
+        { message: "Enter a valid Instagram URL" }
+      ),
+    twitter: z
+      .string()
+      .optional()
+      .refine(
+        (val) =>
+          !val || /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/.test(val),
+        { message: "Enter a valid Twitter URL" }
+      ),
+  }),
+  expertiseAreas: z
+    .string()
+    .min(2, { message: "Expertise areas must be at least 2 characters" })
+    .nonempty("Expertise areas are required"),
+  vehicleBrands: z
+    .string()
+    .min(2, { message: "Vehicle brands must be at least 2 characters" })
+    .nonempty("Vehicle brands are required"),
+});
+
 export default function MechanicProfile() {
   const router = useRouter();
   const { user, isLoading, fetchUser, logout } = useAuthStore();
 
   const [isEditable, setIsEditable] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState(
     user
@@ -103,7 +206,24 @@ export default function MechanicProfile() {
 
   const handleSave = async () => {
     setIsSaving(true);
+    setErrors({}); // Önceki hataları temizle
+
     try {
+      // Form verilerini şemaya göre doğrula
+      const validationResult = profileSchema.safeParse(formData);
+
+      if (!validationResult.success) {
+        const errorMessages = {};
+        validationResult.error.errors.forEach((error) => {
+          const path = error.path.join(".");
+          errorMessages[path] = error.message;
+        });
+        setErrors(errorMessages);
+        setIsSaving(false);
+        Alert.alert("Validation Error", "Please fix the errors in the form.");
+        return;
+      }
+
       let mechanicLogoUrl = formData.mechanicLogo;
 
       if (mechanicLogoUrl && mechanicLogoUrl.startsWith("file://")) {
@@ -129,6 +249,7 @@ export default function MechanicProfile() {
       await fetchUser();
       Alert.alert("Success", "Profile updated successfully.");
       setIsEditable(false);
+      router.replace("/(mechanic)/profile");
     } catch (error) {
       if (error.message.includes("Failed to upload logo")) {
         Alert.alert("Error", "Failed to upload logo. Please try again.");
@@ -295,6 +416,7 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Email</Text>
@@ -344,6 +466,7 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Garage Name</Text>
@@ -372,6 +495,9 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors.mechanicName && (
+            <Text style={styles.errorText}>{errors.mechanicName}</Text>
+          )}
         </View>
 
         <Text style={styles.sectionTitle}>Address</Text>
@@ -412,6 +538,11 @@ export default function MechanicProfile() {
               numberOfLines={3}
             />
           </View>
+          {errors["mechanicAddress.fullAddress"] && (
+            <Text style={styles.errorText}>
+              {errors["mechanicAddress.fullAddress"]}
+            </Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>City</Text>
@@ -443,6 +574,11 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors["mechanicAddress.city"] && (
+            <Text style={styles.errorText}>
+              {errors["mechanicAddress.city"]}
+            </Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>District</Text>
@@ -474,6 +610,11 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors["mechanicAddress.district"] && (
+            <Text style={styles.errorText}>
+              {errors["mechanicAddress.district"]}
+            </Text>
+          )}
         </View>
 
         <Text style={styles.sectionTitle}>Working Hours</Text>
@@ -495,7 +636,7 @@ export default function MechanicProfile() {
                     : COLORS.inputBackground,
                 },
               ]}
-              placeholder="Weekdays Open"
+              placeholder="Weekdays Open (e.g., 09:00)"
               placeholderTextColor={COLORS.placeholderText}
               value={formData.workingHours.weekdays.open}
               onChangeText={(val) =>
@@ -510,6 +651,11 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors["workingHours.weekdays.open"] && (
+            <Text style={styles.errorText}>
+              {errors["workingHours.weekdays.open"]}
+            </Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Weekdays Close</Text>
@@ -529,7 +675,7 @@ export default function MechanicProfile() {
                     : COLORS.inputBackground,
                 },
               ]}
-              placeholder="Weekdays Close"
+              placeholder="Weekdays Close (e.g., 17:00)"
               placeholderTextColor={COLORS.placeholderText}
               value={formData.workingHours.weekdays.close}
               onChangeText={(val) =>
@@ -544,6 +690,11 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors["workingHours.weekdays.close"] && (
+            <Text style={styles.errorText}>
+              {errors["workingHours.weekdays.close"]}
+            </Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Weekend Open</Text>
@@ -563,7 +714,7 @@ export default function MechanicProfile() {
                     : COLORS.inputBackground,
                 },
               ]}
-              placeholder="Weekend Open"
+              placeholder="Weekend Open (e.g., 10:00)"
               placeholderTextColor={COLORS.placeholderText}
               value={formData.workingHours.weekend.open}
               onChangeText={(val) =>
@@ -578,6 +729,11 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors["workingHours.weekend.open"] && (
+            <Text style={styles.errorText}>
+              {errors["workingHours.weekend.open"]}
+            </Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Weekend Close</Text>
@@ -597,7 +753,7 @@ export default function MechanicProfile() {
                     : COLORS.inputBackground,
                 },
               ]}
-              placeholder="Weekend Close"
+              placeholder="Weekend Close (e.g., 16:00)"
               placeholderTextColor={COLORS.placeholderText}
               value={formData.workingHours.weekend.close}
               onChangeText={(val) =>
@@ -612,6 +768,11 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors["workingHours.weekend.close"] && (
+            <Text style={styles.errorText}>
+              {errors["workingHours.weekend.close"]}
+            </Text>
+          )}
         </View>
 
         <Text style={styles.sectionTitle}>Social Media & Website</Text>
@@ -633,7 +794,7 @@ export default function MechanicProfile() {
                     : COLORS.inputBackground,
                 },
               ]}
-              placeholder="Website"
+              placeholder="Website (e.g., https://example.com)"
               placeholderTextColor={COLORS.placeholderText}
               value={formData.website}
               onChangeText={(val) =>
@@ -642,6 +803,9 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors.website && (
+            <Text style={styles.errorText}>{errors.website}</Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Facebook</Text>
@@ -661,7 +825,7 @@ export default function MechanicProfile() {
                     : COLORS.inputBackground,
                 },
               ]}
-              placeholder="Facebook"
+              placeholder="Facebook URL"
               placeholderTextColor={COLORS.placeholderText}
               value={formData.socialMedia.facebook}
               onChangeText={(val) =>
@@ -673,6 +837,11 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors["socialMedia.facebook"] && (
+            <Text style={styles.errorText}>
+              {errors["socialMedia.facebook"]}
+            </Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Instagram</Text>
@@ -692,7 +861,7 @@ export default function MechanicProfile() {
                     : COLORS.inputBackground,
                 },
               ]}
-              placeholder="Instagram"
+              placeholder="Instagram URL"
               placeholderTextColor={COLORS.placeholderText}
               value={formData.socialMedia.instagram}
               onChangeText={(val) =>
@@ -704,6 +873,11 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors["socialMedia.instagram"] && (
+            <Text style={styles.errorText}>
+              {errors["socialMedia.instagram"]}
+            </Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Twitter</Text>
@@ -723,7 +897,7 @@ export default function MechanicProfile() {
                     : COLORS.inputBackground,
                 },
               ]}
-              placeholder="Twitter"
+              placeholder="Twitter URL"
               placeholderTextColor={COLORS.placeholderText}
               value={formData.socialMedia.twitter}
               onChangeText={(val) =>
@@ -735,6 +909,11 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors["socialMedia.twitter"] && (
+            <Text style={styles.errorText}>
+              {errors["socialMedia.twitter"]}
+            </Text>
+          )}
         </View>
 
         <Text style={styles.sectionTitle}>Expertise & Brands</Text>
@@ -742,7 +921,7 @@ export default function MechanicProfile() {
           <Text style={styles.label}>Expertise Areas (comma separated)</Text>
           <View style={styles.inputWrapper}>
             <Ionicons
-              name="wrench"
+              name="checkmark-circle-outline"
               size={20}
               color={COLORS.placeholderText}
               style={styles.inputIcon}
@@ -765,6 +944,9 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors.expertiseAreas && (
+            <Text style={styles.errorText}>{errors.expertiseAreas}</Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Vehicle Brands (comma separated)</Text>
@@ -793,6 +975,9 @@ export default function MechanicProfile() {
               editable={isEditable}
             />
           </View>
+          {errors.vehicleBrands && (
+            <Text style={styles.errorText}>{errors.vehicleBrands}</Text>
+          )}
         </View>
 
         <View style={styles.buttonContainer}>

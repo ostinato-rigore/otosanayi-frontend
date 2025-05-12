@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: COLORS.border,
-    position: "relative", // İkonun doğru konumlanması için
+    position: "relative",
   },
   uploadText: {
     color: COLORS.accentMechanic,
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 5,
     right: 5,
-    backgroundColor: COLORS.white, // İkonun daha belirgin olması için arka plan
+    backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 2,
   },
@@ -99,11 +99,17 @@ const styles = StyleSheet.create({
   },
   inputIcon: { marginRight: 10 },
   input: { flex: 1, fontSize: 16, paddingVertical: 12 },
+  errorText: {
+    color: COLORS.error,
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 15,
+  },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
-    flexWrap: "wrap", // Üç buton için esneklik
+    flexWrap: "wrap",
   },
   button: {
     flex: 1,
@@ -111,7 +117,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     marginHorizontal: 5,
-    marginBottom: 10, // Butonlar arasında boşluk
+    marginBottom: 10,
   },
   buttonText: { color: COLORS.white, fontWeight: "600", fontSize: 16 },
 });
