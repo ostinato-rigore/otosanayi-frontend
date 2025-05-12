@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -13,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { updateMechanicProfile } from "../../api/apiClient";
+import { updateMechanicProfile, uploadMechanicLogo } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/mechanic-profile-styles";
 import useAuthStore from "../../store/useAuthStore";
@@ -23,49 +24,95 @@ export default function MechanicProfile() {
   const { user, isLoading, fetchUser, logout } = useAuthStore();
 
   const [isEditable, setIsEditable] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: user.name || "",
-    email: user.email || "",
-    phone: user.phone || "",
-    mechanicName: user.mechanicName || "",
-    mechanicLogo: user.mechanicLogo || "",
-    mechanicAddress: {
-      fullAddress: user.mechanicAddress?.fullAddress || "",
-      city: user.mechanicAddress?.city || "",
-      district: user.mechanicAddress?.district || "",
-    },
-    workingHours: {
-      weekdays: {
-        open: user.workingHours?.weekdays?.open || "",
-        close: user.workingHours?.weekdays?.close || "",
-      },
-      weekend: {
-        open: user.workingHours?.weekend?.open || "",
-        close: user.workingHours?.weekend?.close || "",
-      },
-    },
-    website: user.website || "",
-    socialMedia: {
-      facebook: user.socialMedia?.facebook || "",
-      instagram: user.socialMedia?.instagram || "",
-      twitter: user.socialMedia?.twitter || "",
-    },
-    expertiseAreas: Array.isArray(user.expertiseAreas)
-      ? user.expertiseAreas.join(", ")
-      : user.expertiseAreas || "",
-    vehicleBrands: Array.isArray(user.vehicleBrands)
-      ? user.vehicleBrands.join(", ")
-      : user.vehicleBrands || "",
-    reviews: user.reviews || [],
-    averageRating: user.averageRating || 0,
-    isVerified: user.isVerified || false,
-  });
+  const [formData, setFormData] = useState(
+    user
+      ? {
+          name: user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+          mechanicName: user.mechanicName || "",
+          mechanicLogo: user.mechanicLogo || "",
+          mechanicAddress: {
+            fullAddress: user.mechanicAddress?.fullAddress || "",
+            city: user.mechanicAddress?.city || "",
+            district: user.mechanicAddress?.district || "",
+          },
+          workingHours: {
+            weekdays: {
+              open: user.workingHours?.weekdays?.open || "",
+              close: user.workingHours?.weekdays?.close || "",
+            },
+            weekend: {
+              open: user.workingHours?.weekend?.open || "",
+              close: user.workingHours?.weekend?.close || "",
+            },
+          },
+          website: user.website || "",
+          socialMedia: {
+            facebook: user.socialMedia?.facebook || "",
+            instagram: user.socialMedia?.instagram || "",
+            twitter: user.socialMedia?.twitter || "",
+          },
+          expertiseAreas: Array.isArray(user.expertiseAreas)
+            ? user.expertiseAreas.join(", ")
+            : user.expertiseAreas || "",
+          vehicleBrands: Array.isArray(user.vehicleBrands)
+            ? user.vehicleBrands.join(", ")
+            : user.vehicleBrands || "",
+          reviews: user.reviews || [],
+          averageRating: user.averageRating || 0,
+          isVerified: user.isVerified || false,
+        }
+      : null
+  );
+
+  const pickImage = async () => {
+    try {
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert("Permission required", "Gallery access is required.");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: "images",
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        setFormData((prev) => ({
+          ...prev,
+          mechanicLogo: imageUri, // Yerel URI'yi mechanicLogo'ya kaydediyoruz
+        }));
+        Alert.alert("Info", "Photo selected. Save your profile to upload.");
+      }
+    } catch (error) {
+      Alert.alert("Error", error.message || "Failed to select photo.");
+    }
+  };
 
   const handleSave = async () => {
+    setIsSaving(true);
     try {
+      let mechanicLogoUrl = formData.mechanicLogo;
+
+      if (mechanicLogoUrl && mechanicLogoUrl.startsWith("file://")) {
+        const response = await uploadMechanicLogo(mechanicLogoUrl);
+        if (!response.mechanicLogo) {
+          throw new Error("Failed to get logo URL from server");
+        }
+        mechanicLogoUrl = response.mechanicLogo;
+      }
+
       const payload = {
         ...formData,
+        mechanicLogo: mechanicLogoUrl,
         expertiseAreas: formData.expertiseAreas
           ? formData.expertiseAreas.split(",").map((item) => item.trim())
           : [],
@@ -73,12 +120,19 @@ export default function MechanicProfile() {
           ? formData.vehicleBrands.split(",").map((item) => item.trim())
           : [],
       };
+
       await updateMechanicProfile(payload);
       await fetchUser();
       Alert.alert("Success", "Profile updated successfully.");
       setIsEditable(false);
     } catch (error) {
-      Alert.alert("Error", error.message || "Update failed");
+      if (error.message.includes("Failed to upload logo")) {
+        Alert.alert("Error", "Failed to upload logo. Please try again.");
+      } else {
+        Alert.alert("Error", error.message || "Update failed");
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -107,15 +161,37 @@ export default function MechanicProfile() {
         contentContainerStyle={styles.content}
       >
         <View style={styles.header}>
-          <TouchableOpacity style={styles.logoContainer}>
+          <TouchableOpacity
+            style={styles.logoContainer}
+            onPress={isEditable ? pickImage : null}
+            disabled={!isEditable}
+          >
             {formData.mechanicLogo ? (
-              <Image
-                source={{ uri: formData.mechanicLogo }}
-                style={styles.logo}
-              />
+              <View style={styles.logoWrapper}>
+                <Image
+                  source={{ uri: formData.mechanicLogo }}
+                  style={styles.logo}
+                />
+                {isEditable && (
+                  <Ionicons
+                    name="camera"
+                    size={24}
+                    color={COLORS.accentMechanic}
+                    style={styles.editIcon}
+                  />
+                )}
+              </View>
             ) : (
               <View style={styles.logoPlaceholder}>
                 <Text style={styles.uploadText}>Upload Logo</Text>
+                {isEditable && (
+                  <Ionicons
+                    name="camera"
+                    size={24}
+                    color={COLORS.accentMechanic}
+                    style={styles.editIcon}
+                  />
+                )}
               </View>
             )}
           </TouchableOpacity>
@@ -699,10 +775,15 @@ export default function MechanicProfile() {
               },
             ]}
             onPress={() => (isEditable ? handleSave() : setIsEditable(true))}
+            disabled={isSaving}
           >
-            <Text style={styles.buttonText}>
-              {isEditable ? "Save" : "Edit Profile"}
-            </Text>
+            {isSaving ? (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            ) : (
+              <Text style={styles.buttonText}>
+                {isEditable ? "Save" : "Edit Profile"}
+              </Text>
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: COLORS.error }]}

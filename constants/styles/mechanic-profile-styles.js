@@ -23,6 +23,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: COLORS.border,
+    position: "relative",
+  },
+  editIcon: {
+    position: "absolute",
+    bottom: 5,
+    right: 5,
+    backgroundColor: COLORS.white, // İkonun daha belirgin olması için arka plan
+    borderRadius: 12,
+    padding: 2,
   },
   uploadText: {
     color: COLORS.accentMechanic,
