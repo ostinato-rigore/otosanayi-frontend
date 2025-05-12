@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { z } from "zod";
+import { updateCustomerProfile, uploadProfilePhoto } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/customer-profile-styles";
 import useAuthStore from "../../store/useAuthStore";
@@ -68,6 +69,7 @@ export default function CustomerProfile() {
   const [isEditable, setIsEditable] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
+
   const [formData, setFormData] = useState(
     user
       ? {
@@ -134,11 +136,26 @@ export default function CustomerProfile() {
         return;
       }
 
-      // Burada API çağrısı ile profil güncellemesi yapılabilir
-      // Örnek: await updateCustomerProfile(formData);
+      let profilePhotoUrl = formData.profilePhoto;
+
+      if (profilePhotoUrl && profilePhotoUrl.startsWith("file://")) {
+        const response = await uploadProfilePhoto(profilePhotoUrl);
+        if (!response.profilePhoto) {
+          throw new Error("Failed to get logo URL from server");
+        }
+        profilePhotoUrl = response.profilePhoto;
+      }
+
+      const payload = {
+        ...formData,
+        profilePhoto: profilePhotoUrl,
+      };
+
+      await updateCustomerProfile(payload);
       await fetchUser(); // Kullanıcı verilerini güncelle
       Alert.alert("Success", "Profile updated successfully.");
       setIsEditable(false);
+      router.replace("/(customer)/profile");
     } catch (error) {
       Alert.alert("Error", error.message || "Update failed");
     } finally {

@@ -34,7 +34,7 @@ export const uploadProfilePhoto = async (imageUri) => {
 
 export const deleteCustomerAccount = async () => {
   try {
-    const response = await api.delete("customer/profile");
+    const response = await api.delete("customers/profile");
     return response.data;
   } catch (error) {
     throw new Error(
