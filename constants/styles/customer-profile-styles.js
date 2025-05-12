@@ -1,0 +1,112 @@
+import { StyleSheet } from "react-native";
+import COLORS from "../colors";
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.background },
+  content: { padding: 20, paddingBottom: 40 },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+  },
+  loadingText: { marginTop: 10, color: COLORS.textPrimary, fontSize: 16 },
+  header: { alignItems: "center", marginBottom: 20 },
+  logoContainer: { alignItems: "center" },
+  logoWrapper: {
+    position: "relative",
+    width: 120,
+    height: 120,
+  },
+  logo: { width: 120, height: 120, borderRadius: 60 },
+  logoPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: COLORS.cardBackground,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    position: "relative",
+  },
+  uploadText: {
+    color: COLORS.accentCustomer,
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  editIcon: {
+    position: "absolute",
+    bottom: 5,
+    right: 5,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: COLORS.textPrimary,
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  inputContainer: { marginBottom: 15 },
+  label: {
+    marginBottom: 5,
+    color: COLORS.textSecondary,
+    fontWeight: "500",
+    fontSize: 14,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  inputIcon: { marginRight: 10 },
+  input: { flex: 1, fontSize: 16, paddingVertical: 12 },
+  errorText: {
+    color: COLORS.error,
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 15,
+  },
+  reviewsContainer: {
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+  },
+  reviewItem: {
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  reviewText: { color: COLORS.textPrimary, fontSize: 14 },
+  noReviewsText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    textAlign: "center",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+    flexWrap: "wrap",
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginHorizontal: 5,
+    marginBottom: 10,
+  },
+  buttonText: { color: COLORS.white, fontWeight: "600", fontSize: 16 },
+});
+
+export default styles;
