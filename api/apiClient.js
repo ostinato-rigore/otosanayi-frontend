@@ -45,7 +45,7 @@ export const deleteCustomerAccount = async () => {
 
 export const updateMechanicProfile = async (mechanicData) => {
   try {
-    const response = await api.put("/mechanic/profile", mechanicData);
+    const response = await api.put("/mechanics/profile", mechanicData);
     return response.data;
   } catch (error) {
     throw new Error(
@@ -63,7 +63,7 @@ export const uploadMechanicLogo = async (imageUri) => {
       name: "shop_logo.jpg", // Backend'de filename olarak kullanılacak
     });
 
-    const response = await api.patch("/mechanic/profile-logo", formData, {
+    const response = await api.patch("/mechanics/profile-logo", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -77,7 +77,7 @@ export const uploadMechanicLogo = async (imageUri) => {
 
 export const deleteMechanicAccount = async () => {
   try {
-    const response = await api.delete("/mechanic/profile");
+    const response = await api.delete("/mechanics/profile");
     return response.data;
   } catch (error) {
     throw new Error(
