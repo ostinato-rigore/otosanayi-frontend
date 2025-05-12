@@ -14,7 +14,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { updateMechanicProfile, uploadMechanicLogo } from "../../api/apiClient";
+import {
+  deleteMechanicAccount,
+  updateMechanicProfile,
+  uploadMechanicLogo,
+} from "../../api/apiClient";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/mechanic-profile-styles";
 import useAuthStore from "../../store/useAuthStore";
@@ -88,7 +92,7 @@ export default function MechanicProfile() {
         const imageUri = result.assets[0].uri;
         setFormData((prev) => ({
           ...prev,
-          mechanicLogo: imageUri, // Yerel URI'yi mechanicLogo'ya kaydediyoruz
+          mechanicLogo: imageUri,
         }));
         Alert.alert("Info", "Photo selected. Save your profile to upload.");
       }
@@ -134,6 +138,33 @@ export default function MechanicProfile() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteMechanicAccount();
+              await logout();
+              router.replace("/(auth)");
+              Alert.alert("Success", "Account deleted successfully.");
+            } catch (error) {
+              Alert.alert("Error", error.message || "Failed to delete account");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleLogout = async () => {
@@ -711,7 +742,7 @@ export default function MechanicProfile() {
           <Text style={styles.label}>Expertise Areas (comma separated)</Text>
           <View style={styles.inputWrapper}>
             <Ionicons
-              name="checkmark-circle-outline"
+              name="wrench"
               size={20}
               color={COLORS.placeholderText}
               style={styles.inputIcon}
@@ -790,6 +821,12 @@ export default function MechanicProfile() {
             onPress={handleLogout}
           >
             <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: COLORS.error }]}
+            onPress={handleDeleteAccount}
+          >
+            <Text style={styles.buttonText}>Delete Account</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

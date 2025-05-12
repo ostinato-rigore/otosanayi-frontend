@@ -13,6 +13,11 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 10, color: COLORS.textPrimary, fontSize: 16 },
   header: { alignItems: "center", marginBottom: 20 },
   logoContainer: { alignItems: "center" },
+  logoWrapper: {
+    position: "relative",
+    width: 120,
+    height: 120,
+  },
   logo: { width: 120, height: 120, borderRadius: 60 },
   logoPlaceholder: {
     width: 120,
@@ -23,7 +28,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: COLORS.border,
-    position: "relative",
+    position: "relative", // İkonun doğru konumlanması için
+  },
+  uploadText: {
+    color: COLORS.accentMechanic,
+    fontSize: 16,
+    fontWeight: "500",
   },
   editIcon: {
     position: "absolute",
@@ -32,11 +42,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white, // İkonun daha belirgin olması için arka plan
     borderRadius: 12,
     padding: 2,
-  },
-  uploadText: {
-    color: COLORS.accentMechanic,
-    fontSize: 16,
-    fontWeight: "500",
   },
   statusRow: {
     flexDirection: "row",
@@ -98,6 +103,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
+    flexWrap: "wrap", // Üç buton için esneklik
   },
   button: {
     flex: 1,
@@ -105,6 +111,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     marginHorizontal: 5,
+    marginBottom: 10, // Butonlar arasında boşluk
   },
   buttonText: { color: COLORS.white, fontWeight: "600", fontSize: 16 },
 });
