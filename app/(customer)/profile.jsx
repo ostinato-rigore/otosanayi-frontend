@@ -15,7 +15,11 @@ import {
   View,
 } from "react-native";
 import { z } from "zod";
-import { updateCustomerProfile, uploadProfilePhoto } from "../../api/apiClient";
+import {
+  deleteCustomerAccount,
+  updateCustomerProfile,
+  uploadProfilePhoto,
+} from "../../api/apiClient";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/customer-profile-styles";
 import useAuthStore from "../../store/useAuthStore";
@@ -166,6 +170,33 @@ export default function CustomerProfile() {
   const handleLogout = async () => {
     await logout();
     router.replace("/(auth)");
+  };
+
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteCustomerAccount();
+              await logout();
+              router.replace("/(auth)");
+              Alert.alert("Success", "Account deleted successfully.");
+            } catch (error) {
+              Alert.alert("Error", error.message || "Failed to delete account");
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (!formData || isLoading) {
@@ -489,6 +520,12 @@ export default function CustomerProfile() {
             onPress={handleLogout}
           >
             <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: COLORS.error }]}
+            onPress={handleDeleteAccount}
+          >
+            <Text style={styles.buttonText}>Delete Account</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
