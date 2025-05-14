@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -33,8 +34,7 @@ const loginSchema = z.object({
 export default function Login() {
   const { userType } = useLocalSearchParams();
   const router = useRouter();
-  const { isLoading, login } = useAuthStore();
-  console.log("userType:", userType);
+  const { isLoading, login, fetchUser } = useAuthStore();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -59,29 +59,36 @@ export default function Login() {
   const handleLogin = async (data) => {
     try {
       const response = await login(userType, data);
-      console.log("Login response:", response);
+      if (response.success) {
+        await fetchUser();
+        console.log("Login successful:", response);
+      } else {
+        // Hata durumunda kullanıcıya mesaj göster
+        const errorMessage =
+          response.error?.message || "Invalid email or password";
+        Alert.alert("Login Failed", errorMessage);
+      }
     } catch (err) {
-      console.log("Login error:", err);
+      console.error("Login error:", err);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
     }
   };
 
   const handleNavigateToRegister = () => {
     Keyboard.dismiss();
-
-    // Küçük bir gecikme ver
     setTimeout(() => {
       router.push({
         pathname: "/(auth)/register",
         params: { userType },
       });
-    }, 100); // 100ms genellikle yeterli
+    }, 100);
   };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1, backgroundColor: COLORS.background }}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // iOS için offset ekliyoruz
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
     >
       <View style={styles.container}>
         <Text style={styles.title}>{loginTitle}</Text>

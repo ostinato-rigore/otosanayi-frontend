@@ -67,14 +67,20 @@ const useAuthStore = create((set, get) => ({
           userType: type,
           isAuthenticated: true,
         });
-      }
 
-      return { success: true };
-    } catch (err) {
-      console.error("Login failed:", err);
+        return { success: true };
+      }
       return {
         success: false,
-        error: err?.response?.data || err.message,
+        error: { message: "Invalid email or password" },
+      };
+    } catch (err) {
+      console.error("Login failed:", err);
+      const errorMessage =
+        err?.response?.data?.message || "Invalid email or password";
+      return {
+        success: false,
+        error: { message: errorMessage },
       };
     } finally {
       set({ isLoading: false });

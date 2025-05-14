@@ -249,7 +249,10 @@ export default function MechanicProfile() {
       await fetchUser();
       Alert.alert("Success", "Profile updated successfully.");
       setIsEditable(false);
-      router.replace("/(mechanic)/profile");
+
+      setTimeout(() => {
+        router.replace("/(mechanic)/profile");
+      }, 0);
     } catch (error) {
       if (error.message.includes("Failed to upload logo")) {
         Alert.alert("Error", "Failed to upload logo. Please try again.");

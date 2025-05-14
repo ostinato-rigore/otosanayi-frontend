@@ -27,8 +27,6 @@ export default function RootLayout() {
       } else if (userType?.toLowerCase() === "mechanic") {
         router.replace("/(mechanic)/home");
       }
-    } else {
-      router.replace("/(auth)");
     }
   }, [isAuthenticated, userType, isLoading, isMounted, router]);
 
