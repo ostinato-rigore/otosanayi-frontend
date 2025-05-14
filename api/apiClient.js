@@ -85,3 +85,41 @@ export const deleteMechanicAccount = async () => {
     );
   }
 };
+
+export const fetchMechanics = async (filters = {}) => {
+  try {
+    const {
+      city,
+      district,
+      expertiseAreas,
+      vehicleBrands,
+      minRating,
+      page = 1,
+      limit = 10,
+    } = filters;
+
+    const params = {
+      city,
+      district,
+      expertiseAreas: expertiseAreas ? expertiseAreas.join(",") : undefined,
+      vehicleBrands: vehicleBrands ? vehicleBrands.join(",") : undefined,
+      minRating,
+      page,
+      limit,
+    };
+
+    const response = await api.get("/mechanics/search", { params });
+
+    return {
+      success: response.data.success,
+      data: response.data.data,
+      totalPages: response.data.totalPages,
+      currentPage: response.data.currentPage,
+      totalMechanics: response.data.totalMechanics,
+    };
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch mechanics"
+    );
+  }
+};

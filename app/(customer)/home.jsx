@@ -1,29 +1,28 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
+import { Picker } from "@react-native-picker/picker"; // Correct import for Picker
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   FlatList,
   Image,
   Modal,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { fetchMechanics } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/customer-home-styles";
 
-/* --- Sabit Filtre Seçenekleri ve Örnek Veri --- */
-const cities = ["İstanbul", "Ankara", "İzmir"];
-
+// Örnek filtre seçenekleri
+const cities = ["İstanbul", "Ankara", "İzmir", "Bursa"];
 const districts = {
   İstanbul: ["Kadıköy", "Beşiktaş", "Şişli"],
   Ankara: ["Çankaya", "Kızılay", "Yenimahalle"],
   İzmir: ["Bornova", "Karşıyaka", "Konak"],
 };
-
 const expertiseAreasOptions = [
   "Motor Tamiri",
   "Elektrik",
@@ -32,7 +31,6 @@ const expertiseAreasOptions = [
   "Fren Sistemleri",
   "Lastik",
 ];
-
 const vehicleBrandsOptions = [
   "BMW",
   "Mercedes",
@@ -41,45 +39,21 @@ const vehicleBrandsOptions = [
   "Ford",
   "Volkswagen",
 ];
-
 const ratingOptions = [0, 1, 2, 3, 4, 5];
 
-const mockMechanics = [
-  {
-    id: "1",
-    name: "Ahmet Usta",
-    city: "İstanbul",
-    district: "Kadıköy",
-    expertiseAreas: ["Motor Tamiri", "Elektrik"],
-    vehicleBrands: ["BMW", "Mercedes"],
-    rating: 4.8,
-    avatarUrl: "https://randomuser.me/api/portraits/men/1.jpg",
-  },
-  {
-    id: "2",
-    name: "Mehmet Usta",
-    city: "Ankara",
-    district: "Çankaya",
-    expertiseAreas: ["Kaporta", "Boya"],
-    vehicleBrands: ["Toyota", "Honda"],
-    rating: 4.2,
-    avatarUrl: null,
-  },
-  {
-    id: "3",
-    name: "Ayşe Usta",
-    city: "İzmir",
-    district: "Bornova",
-    expertiseAreas: ["Fren Sistemleri", "Lastik"],
-    vehicleBrands: ["Ford", "Volkswagen"],
-    rating: 4.5,
-    avatarUrl: "https://randomuser.me/api/portraits/women/3.jpg",
-  },
-];
+// Filter item types
+const FILTER_TYPES = {
+  CITY: "city",
+  DISTRICT: "district",
+  EXPERTISE_AREAS: "expertiseAreas",
+  VEHICLE_BRANDS: "vehicleBrands",
+  MIN_RATING: "minRating",
+};
 
 /* --- Ana Bileşen --- */
 export default function CustomerHome() {
   const router = useRouter();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filters, setFilters] = useState({
@@ -89,46 +63,82 @@ export default function CustomerHome() {
     vehicleBrands: [],
     minRating: 0,
   });
+  const [appliedFilters, setAppliedFilters] = useState({
+    city: "",
+    district: "",
+    expertiseAreas: [],
+    vehicleBrands: [],
+    minRating: 0,
+  });
+  const [mechanics, setMechanics] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  /* --- Filtreleme Fonksiyonu (optimize edilmiş useMemo ile) --- */
+  // fetchMechanicsData’yı useCallback ile sarmala
+  const fetchMechanicsData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await fetchMechanics({
+        city: appliedFilters.city,
+        district: appliedFilters.district,
+        expertiseAreas: appliedFilters.expertiseAreas,
+        vehicleBrands: appliedFilters.vehicleBrands,
+        minRating: appliedFilters.minRating,
+        page: currentPage,
+        limit: 10,
+      });
+
+      const formattedMechanics = result.data.map((mechanic) => ({
+        id: mechanic._id,
+        name: mechanic.name || "Bilinmeyen Sanayici",
+        mechanicName: mechanic.mechanicName || "Bilinmeyen Sanayici",
+        city: mechanic.mechanicAddress?.city || "",
+        district: mechanic.mechanicAddress?.district || "",
+        expertiseAreas: mechanic.expertiseAreas || [],
+        vehicleBrands: mechanic.vehicleBrands || [],
+        rating: mechanic.averageRating || 0,
+        avatarUrl: mechanic.avatarUrl || null,
+      }));
+
+      setMechanics(formattedMechanics);
+      setTotalPages(result.totalPages || 1);
+    } catch (error) {
+      Alert.alert("Hata", error.message || "Sanayiciler yüklenemedi");
+      console.error("Fetch Mechanics Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [appliedFilters, currentPage]);
+
+  // Verileri endpoint’ten çek
+  useEffect(() => {
+    fetchMechanicsData();
+  }, [appliedFilters, currentPage, fetchMechanicsData]);
+
+  // Arama filtresi için useMemo ile performans optimizasyonu
   const filteredMechanics = useMemo(() => {
-    return mockMechanics.filter((m) => {
-      const matchesSearch = m.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const matchesCity = !filters.city || m.city === filters.city;
-      const matchesDistrict =
-        !filters.district || m.district === filters.district;
-      const matchesExpertise =
-        filters.expertiseAreas.length === 0 ||
-        filters.expertiseAreas.every((area) => m.expertiseAreas.includes(area));
-      const matchesBrands =
-        filters.vehicleBrands.length === 0 ||
-        filters.vehicleBrands.every((brand) => m.vehicleBrands.includes(brand));
-      const matchesRating = m.rating >= filters.minRating;
-
-      return (
-        matchesSearch &&
-        matchesCity &&
-        matchesDistrict &&
-        matchesExpertise &&
-        matchesBrands &&
-        matchesRating
-      );
-    });
-  }, [filters, searchQuery]);
+    return mechanics.filter((mechanic) =>
+      mechanic.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [mechanics, searchQuery]);
 
   /* --- Seçim Toggle Fonksiyonları --- */
   const toggleSelection = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: prev[key].includes(value)
+    setFilters((prev) => {
+      const updatedValues = prev[key].includes(value)
         ? prev[key].filter((v) => v !== value)
-        : [...prev[key], value],
-    }));
+        : [...prev[key], value];
+      return { ...prev, [key]: updatedValues };
+    });
   };
 
-  const resetFilters = () =>
+  const applyFilters = () => {
+    setAppliedFilters({ ...filters });
+    setFilterModalVisible(false);
+  };
+
+  const resetFilters = () => {
     setFilters({
       city: "",
       district: "",
@@ -136,12 +146,28 @@ export default function CustomerHome() {
       vehicleBrands: [],
       minRating: 0,
     });
+    setAppliedFilters({
+      city: "",
+      district: "",
+      expertiseAreas: [],
+      vehicleBrands: [],
+      minRating: 0,
+    });
+  };
+
+  /* --- Sayfalama Fonksiyonu --- */
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
   /* --- Kart Bileşeni --- */
   const MechanicCard = ({ mechanic }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => router.push(`/customer/mechanic/${mechanic.id}`)}
+      accessibilityLabel={`Mekanik detayları: ${mechanic.name}`}
     >
       <View style={styles.cardHeader}>
         <View style={styles.avatarContainer}>
@@ -149,6 +175,9 @@ export default function CustomerHome() {
             <Image
               source={{ uri: mechanic.avatarUrl }}
               style={styles.avatarImage}
+              onError={() =>
+                console.log("Avatar yüklenemedi:", mechanic.avatarUrl)
+              }
             />
           ) : (
             <Ionicons
@@ -158,7 +187,7 @@ export default function CustomerHome() {
             />
           )}
         </View>
-        <Text style={styles.cardTitle}>{mechanic.name}</Text>
+        <Text style={styles.cardTitle}>{mechanic.mechanicName}</Text>
         <View style={styles.ratingContainer}>
           <Ionicons name="star" size={16} color={COLORS.accentCustomer} />
           <Text style={styles.ratingText}>{mechanic.rating}/5</Text>
@@ -176,19 +205,145 @@ export default function CustomerHome() {
       <TouchableOpacity
         style={styles.detailsButton}
         onPress={() => router.push(`/customer/mechanic/${mechanic.id}`)}
+        accessibilityLabel="Detayları gör"
       >
         <Text style={styles.detailsButtonText}>Detayları Gör</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
 
+  /* --- Filter Item Renderer --- */
+  const renderFilterItem = ({ item }) => {
+    switch (item.type) {
+      case FILTER_TYPES.CITY:
+        return (
+          <FilterPicker
+            label="Şehir"
+            selectedValue={filters.city}
+            onValueChange={(value) =>
+              setFilters((prev) => ({
+                ...prev,
+                city: value,
+                district: "",
+              }))
+            }
+            options={cities}
+          />
+        );
+      case FILTER_TYPES.DISTRICT:
+        return filters.city ? (
+          <FilterPicker
+            label="İlçe"
+            selectedValue={filters.district}
+            onValueChange={(value) =>
+              setFilters((prev) => ({ ...prev, district: value }))
+            }
+            options={districts[filters.city] || []}
+          />
+        ) : null;
+      case FILTER_TYPES.EXPERTISE_AREAS:
+        return (
+          <View style={styles.filterSection}>
+            <Text style={styles.filterLabel}>Uzmanlık Alanları</Text>
+            <FlatList
+              data={expertiseAreasOptions}
+              renderItem={({ item: option }) => (
+                <TouchableOpacity
+                  style={styles.checkboxContainer}
+                  onPress={() => toggleSelection("expertiseAreas", option)}
+                  accessibilityLabel={`${option} seçeneği ${
+                    filters.expertiseAreas.includes(option)
+                      ? "seçildi"
+                      : "seçilmedi"
+                  }`}
+                >
+                  <View
+                    style={[
+                      styles.checkbox,
+                      filters.expertiseAreas.includes(option) &&
+                        styles.checkboxSelected,
+                    ]}
+                  >
+                    {filters.expertiseAreas.includes(option) && (
+                      <Ionicons
+                        name="checkmark"
+                        size={16}
+                        color={COLORS.white}
+                      />
+                    )}
+                  </View>
+                  <Text style={styles.checkboxLabel}>{option}</Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item}
+              style={styles.checkboxList}
+            />
+          </View>
+        );
+      case FILTER_TYPES.VEHICLE_BRANDS:
+        return (
+          <View style={styles.filterSection}>
+            <Text style={styles.filterLabel}>Araç Markaları</Text>
+            <FlatList
+              data={vehicleBrandsOptions}
+              renderItem={({ item: option }) => (
+                <TouchableOpacity
+                  style={styles.checkboxContainer}
+                  onPress={() => toggleSelection("vehicleBrands", option)}
+                  accessibilityLabel={`${option} seçeneği ${
+                    filters.vehicleBrands.includes(option)
+                      ? "seçildi"
+                      : "seçilmedi"
+                  }`}
+                >
+                  <View
+                    style={[
+                      styles.checkbox,
+                      filters.vehicleBrands.includes(option) &&
+                        styles.checkboxSelected,
+                    ]}
+                  >
+                    {filters.vehicleBrands.includes(option) && (
+                      <Ionicons
+                        name="checkmark"
+                        size={16}
+                        color={COLORS.white}
+                      />
+                    )}
+                  </View>
+                  <Text style={styles.checkboxLabel}>{option}</Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item}
+              style={styles.checkboxList}
+            />
+          </View>
+        );
+      case FILTER_TYPES.MIN_RATING:
+        return (
+          <FilterPicker
+            label="Minimum Puan"
+            selectedValue={filters.minRating}
+            onValueChange={(value) =>
+              setFilters((prev) => ({ ...prev, minRating: value }))
+            }
+            options={ratingOptions}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   /* --- JSX --- */
   return (
     <View style={styles.container}>
       {/* Başlık ve Arama */}
       <View style={styles.header}>
-        <Text style={styles.title}>Sanayiciler</Text>
-        <View style={styles.searchContainer}>
+        <Text style={styles.title} accessibilityRole="header">
+          Sanayiciler
+        </Text>
+        <View style={styles.searchContainer} accessibilityRole="search">
           <Ionicons
             name="search"
             size={20}
@@ -201,10 +356,12 @@ export default function CustomerHome() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={styles.searchInput}
+            accessibilityLabel="Sanayici arama çubuğu"
           />
           <TouchableOpacity
             onPress={() => setFilterModalVisible(true)}
             style={styles.filterButton}
+            accessibilityLabel="Filtreleme menüsünü aç"
           >
             <Ionicons name="filter" size={24} color={COLORS.accentCustomer} />
           </TouchableOpacity>
@@ -218,7 +375,42 @@ export default function CustomerHome() {
         contentContainerStyle={styles.listContainer}
         renderItem={({ item }) => <MechanicCard mechanic={item} />}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>Sanayici bulunamadı.</Text>
+          <Text style={styles.emptyText} accessibilityRole="alert">
+            Sanayici bulunamadı.
+          </Text>
+        }
+        refreshing={loading}
+        onRefresh={fetchMechanicsData}
+        ListFooterComponent={
+          totalPages > 1 && (
+            <View style={styles.pagination}>
+              <TouchableOpacity
+                onPress={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                style={[
+                  styles.paginationButton,
+                  currentPage === 1 && styles.disabledButton,
+                ]}
+                accessibilityLabel="Önceki sayfa"
+              >
+                <Text style={styles.paginationText}>Önceki</Text>
+              </TouchableOpacity>
+              <Text style={styles.paginationText}>
+                Sayfa {currentPage} / {totalPages}
+              </Text>
+              <TouchableOpacity
+                onPress={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                style={[
+                  styles.paginationButton,
+                  currentPage === totalPages && styles.disabledButton,
+                ]}
+                accessibilityLabel="Sonraki sayfa"
+              >
+                <Text style={styles.paginationText}>Sonraki</Text>
+              </TouchableOpacity>
+            </View>
+          )
         }
       />
 
@@ -228,74 +420,44 @@ export default function CustomerHome() {
         animationType="slide"
         transparent
         onRequestClose={() => setFilterModalVisible(false)}
+        accessibilityViewIsModal={true}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Filtreleme Seçenekleri</Text>
-            <ScrollView style={styles.modalContent}>
-              <FilterPicker
-                label="Şehir"
-                selectedValue={filters.city}
-                onValueChange={(value) => {
-                  setFilters((prev) => ({
-                    ...prev,
-                    city: value,
-                    district: "",
-                  }));
-                }}
-                options={cities}
-              />
-
-              {filters.city && (
-                <FilterPicker
-                  label="İlçe"
-                  selectedValue={filters.district}
-                  onValueChange={(value) =>
-                    setFilters((prev) => ({ ...prev, district: value }))
-                  }
-                  options={districts[filters.city] || []}
-                />
-              )}
-
-              <FilterPicker
-                label="Uzmanlık Alanları"
-                selectedValue=""
-                onValueChange={(val) => toggleSelection("expertiseAreas", val)}
-                options={expertiseAreasOptions}
-              />
-
-              <FilterPicker
-                label="Araç Markaları"
-                selectedValue=""
-                onValueChange={(val) => toggleSelection("vehicleBrands", val)}
-                options={vehicleBrandsOptions}
-              />
-
-              <FilterPicker
-                label="Minimum Puan"
-                selectedValue={filters.minRating}
-                onValueChange={(val) =>
-                  setFilters((prev) => ({ ...prev, minRating: val }))
-                }
-                options={ratingOptions}
-              />
-            </ScrollView>
-
+            <Text style={styles.modalTitle} accessibilityRole="header">
+              Filtreleme Seçenekleri
+            </Text>
+            <FlatList
+              data={[
+                { type: FILTER_TYPES.CITY },
+                { type: FILTER_TYPES.DISTRICT },
+                { type: FILTER_TYPES.EXPERTISE_AREAS },
+                { type: FILTER_TYPES.VEHICLE_BRANDS },
+                { type: FILTER_TYPES.MIN_RATING },
+              ]}
+              renderItem={renderFilterItem}
+              keyExtractor={(item, index) => index.toString()}
+              style={styles.modalContent}
+              contentContainerStyle={{ paddingBottom: 16 }}
+            />
             <View style={styles.modalButtons}>
               <ModalButton
                 title="İptal"
                 onPress={() => setFilterModalVisible(false)}
                 style={styles.modalButtonCancel}
+                accessibilityLabel="Filtreleme iptal"
               />
               <ModalButton
                 title="Sıfırla"
                 onPress={resetFilters}
                 style={styles.modalButtonReset}
+                accessibilityLabel="Filtreleri sıfırla"
               />
               <ModalButton
                 title="Uygula"
-                onPress={() => setFilterModalVisible(false)}
+                onPress={applyFilters}
                 style={styles.modalButtonApply}
+                accessibilityLabel="Filtreleri uygula"
               />
             </View>
           </View>
@@ -307,26 +469,31 @@ export default function CustomerHome() {
 
 /* --- Reusable Picker --- */
 const FilterPicker = ({ label, selectedValue, onValueChange, options }) => (
-  <>
+  <View style={styles.filterSection}>
     <Text style={styles.filterLabel}>{label}</Text>
     <View style={styles.pickerContainer}>
       <Picker
         selectedValue={selectedValue}
         onValueChange={onValueChange}
         style={styles.picker}
+        accessibilityLabel={`${label} seçimi`}
       >
         <Picker.Item label="Seçiniz" value="" />
         {options.map((item) => (
-          <Picker.Item key={item} label={item} value={item} />
+          <Picker.Item key={item} label={`${item}`} value={item} />
         ))}
       </Picker>
     </View>
-  </>
+  </View>
 );
 
 /* --- Reusable Modal Button --- */
-const ModalButton = ({ title, onPress, style }) => (
-  <TouchableOpacity onPress={onPress} style={[styles.modalButton, style]}>
+const ModalButton = ({ title, onPress, style, accessibilityLabel }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[styles.modalButton, style]}
+    accessibilityLabel={accessibilityLabel}
+  >
     <Text style={styles.modalButtonText}>{title}</Text>
   </TouchableOpacity>
 );
