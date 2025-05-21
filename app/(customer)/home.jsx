@@ -173,7 +173,10 @@ export default function CustomerHome() {
   const MechanicCard = ({ mechanic }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => router.push(`/customer/mechanic/${mechanic.id}`)}
+      onPress={() => {
+        console.log("Navigating to:", `/(customer)/mechanics/${mechanic.id}`);
+        router.push(`/(customer)/mechanics/${mechanic.id}`);
+      }}
       accessibilityLabel={`Mekanik detayları: ${mechanic.name}`}
     >
       <View style={styles.cardHeader}>
@@ -211,7 +214,10 @@ export default function CustomerHome() {
       </Text>
       <TouchableOpacity
         style={styles.detailsButton}
-        onPress={() => router.push(`/customer/mechanic/${mechanic.id}`)}
+        onPress={() => {
+          console.log("Navigating to:", `/mechanics/${mechanic.id}`);
+          router.push(`/(customer)/mechanics/${mechanic.id}`);
+        }}
         accessibilityLabel="Detayları gör"
       >
         <Text style={styles.detailsButtonText}>Detayları Gör</Text>

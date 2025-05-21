@@ -39,6 +39,12 @@ export default function CustomerLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="mechanics/[id]"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
