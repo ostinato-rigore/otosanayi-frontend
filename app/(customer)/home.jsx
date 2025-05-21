@@ -1,12 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker"; // Correct import for Picker
+import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
   Modal,
+  RefreshControl,
   Text,
   TextInput,
   TouchableOpacity,
@@ -72,58 +74,69 @@ export default function CustomerHome() {
   });
   const [mechanics, setMechanics] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [totalPages, setTotalPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  // fetchMechanicsData’yı useCallback ile sarmala
-  const fetchMechanicsData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await fetchMechanics({
-        city: appliedFilters.city,
-        district: appliedFilters.district,
-        expertiseAreas: appliedFilters.expertiseAreas,
-        vehicleBrands: appliedFilters.vehicleBrands,
-        minRating: appliedFilters.minRating,
-        page: currentPage,
-        limit: 10,
-      });
+  const fetchMechanicsData = useCallback(
+    async (pageNum = 1, refresh = false) => {
+      setLoading(true);
+      try {
+        const result = await fetchMechanics({
+          city: appliedFilters.city,
+          district: appliedFilters.district,
+          expertiseAreas: appliedFilters.expertiseAreas,
+          vehicleBrands: appliedFilters.vehicleBrands,
+          minRating: appliedFilters.minRating,
+          page: pageNum,
+          limit: 10,
+        });
 
-      const formattedMechanics = result.data.map((mechanic) => ({
-        id: mechanic._id,
-        name: mechanic.name || "Bilinmeyen Sanayici",
-        mechanicName: mechanic.mechanicName || "Bilinmeyen Sanayici",
-        city: mechanic.mechanicAddress?.city || "",
-        district: mechanic.mechanicAddress?.district || "",
-        expertiseAreas: mechanic.expertiseAreas || [],
-        vehicleBrands: mechanic.vehicleBrands || [],
-        rating: mechanic.averageRating || 0,
-        avatarUrl: mechanic.avatarUrl || null,
-      }));
+        const formattedMechanics = result.data.map((mechanic) => ({
+          id: mechanic._id,
+          name: mechanic.name || "Bilinmeyen Sanayici",
+          mechanicName: mechanic.mechanicName || "Bilinmeyen Sanayici",
+          city: mechanic.mechanicAddress?.city || "",
+          district: mechanic.mechanicAddress?.district || "",
+          expertiseAreas: mechanic.expertiseAreas || [],
+          vehicleBrands: mechanic.vehicleBrands || [],
+          rating: mechanic.averageRating || 0,
+          avatarUrl: mechanic.avatarUrl || null,
+        }));
 
-      setMechanics(formattedMechanics);
-      setTotalPages(result.totalPages || 1);
-    } catch (error) {
-      Alert.alert("Hata", error.message || "Sanayiciler yüklenemedi");
-      console.error("Fetch Mechanics Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [appliedFilters, currentPage]);
+        setMechanics((prev) => {
+          const uniqueMechanics =
+            refresh || pageNum === 1
+              ? formattedMechanics
+              : [...prev, ...formattedMechanics];
+          return uniqueMechanics;
+        });
 
-  // Verileri endpoint’ten çek
+        setHasMore(pageNum < result.totalPages);
+        setPage(pageNum);
+      } catch (error) {
+        Alert.alert("Hata", error.message || "Sanayiciler yüklenemedi");
+        console.error("Fetch Mechanics Error:", error);
+      } finally {
+        setLoading(false);
+        if (refresh) {
+          setRefreshing(false);
+        }
+      }
+    },
+    [appliedFilters]
+  );
+
   useEffect(() => {
     fetchMechanicsData();
-  }, [appliedFilters, currentPage, fetchMechanicsData]);
+  }, [fetchMechanicsData]);
 
-  // Arama filtresi için useMemo ile performans optimizasyonu
   const filteredMechanics = useMemo(() => {
     return mechanics.filter((mechanic) =>
       mechanic.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [mechanics, searchQuery]);
 
-  /* --- Seçim Toggle Fonksiyonları --- */
   const toggleSelection = (key, value) => {
     setFilters((prev) => {
       const updatedValues = prev[key].includes(value)
@@ -136,6 +149,7 @@ export default function CustomerHome() {
   const applyFilters = () => {
     setAppliedFilters({ ...filters });
     setFilterModalVisible(false);
+    fetchMechanicsData(1, true); // Filtreler değiştiğinde 1. sayfadan başla
   };
 
   const resetFilters = () => {
@@ -153,16 +167,9 @@ export default function CustomerHome() {
       vehicleBrands: [],
       minRating: 0,
     });
+    fetchMechanicsData(1, true); // Sıfırlama sonrası 1. sayfadan başla
   };
 
-  /* --- Sayfalama Fonksiyonu --- */
-  const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
-
-  /* --- Kart Bileşeni --- */
   const MechanicCard = ({ mechanic }) => (
     <TouchableOpacity
       style={styles.card}
@@ -212,7 +219,6 @@ export default function CustomerHome() {
     </TouchableOpacity>
   );
 
-  /* --- Filter Item Renderer --- */
   const renderFilterItem = ({ item }) => {
     switch (item.type) {
       case FILTER_TYPES.CITY:
@@ -335,7 +341,6 @@ export default function CustomerHome() {
     }
   };
 
-  /* --- JSX --- */
   return (
     <View style={styles.container}>
       {/* Başlık ve Arama */}
@@ -380,37 +385,36 @@ export default function CustomerHome() {
           </Text>
         }
         refreshing={loading}
-        onRefresh={fetchMechanicsData}
+        onRefresh={() => {
+          setRefreshing(true);
+          fetchMechanicsData(1, true);
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              fetchMechanicsData(1, true);
+            }}
+            colors={[COLORS.accentCustomer]}
+            tintColor={COLORS.accentCustomer}
+          />
+        }
+        onEndReached={async () => {
+          if (hasMore && !loading) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            fetchMechanicsData(page + 1);
+          }
+        }}
+        onEndReachedThreshold={0.1}
         ListFooterComponent={
-          totalPages > 1 && (
-            <View style={styles.pagination}>
-              <TouchableOpacity
-                onPress={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                style={[
-                  styles.paginationButton,
-                  currentPage === 1 && styles.disabledButton,
-                ]}
-                accessibilityLabel="Önceki sayfa"
-              >
-                <Text style={styles.paginationText}>Önceki</Text>
-              </TouchableOpacity>
-              <Text style={styles.paginationText}>
-                Sayfa {currentPage} / {totalPages}
-              </Text>
-              <TouchableOpacity
-                onPress={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                style={[
-                  styles.paginationButton,
-                  currentPage === totalPages && styles.disabledButton,
-                ]}
-                accessibilityLabel="Sonraki sayfa"
-              >
-                <Text style={styles.paginationText}>Sonraki</Text>
-              </TouchableOpacity>
-            </View>
-          )
+          loading && mechanics.length > 0 ? (
+            <ActivityIndicator
+              size="small"
+              color={COLORS.accentCustomer}
+              style={styles.loader}
+            />
+          ) : null
         }
       />
 
@@ -487,7 +491,6 @@ const FilterPicker = ({ label, selectedValue, onValueChange, options }) => (
   </View>
 );
 
-/* --- Reusable Modal Button --- */
 const ModalButton = ({ title, onPress, style, accessibilityLabel }) => (
   <TouchableOpacity
     onPress={onPress}

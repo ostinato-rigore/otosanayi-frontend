@@ -231,6 +231,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
+  loader: {
+    marginVertical: 10,
+  },
 });
 
 export default styles;
