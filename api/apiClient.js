@@ -134,3 +134,15 @@ export const fetchMechanicById = async (id) => {
     );
   }
 };
+
+export const postReview = async (mechanicId, reviewData) => {
+  try {
+    const response = await api.post("/customers/reviews", {
+      mechanic: mechanicId,
+      ...reviewData, // rating ve comment
+    });
+    return response.data.data; // Backend'den dönen savedReview
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Yorum gönderilemedi");
+  }
+};
