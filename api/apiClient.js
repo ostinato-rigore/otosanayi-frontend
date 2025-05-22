@@ -146,3 +146,12 @@ export const postReview = async (mechanicId, reviewData) => {
     throw new Error(error.response?.data?.message || "Yorum gönderilemedi");
   }
 };
+
+export const fetchCustomerReviews = async () => {
+  try {
+    const response = await api.get("/customers/reviews");
+    return response.data.data; // Yorumlar dizisini döndür
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to fetch reviews");
+  }
+};

@@ -70,7 +70,6 @@ const customerSchema = z.object({
 export default function CustomerProfile() {
   const router = useRouter();
   const { user, isLoading, fetchUser, logout } = useAuthStore();
-  const userId = user?._id; // Kullanıcı ID'sini al
 
   const [isEditable, setIsEditable] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -485,7 +484,7 @@ export default function CustomerProfile() {
 
         <TouchableOpacity
           style={[styles.button, { backgroundColor: COLORS.accentCustomer }]}
-          onPress={() => router.push(`/(customer)/reviews?userId=${userId}`)}
+          onPress={() => router.push(`/(customer)/reviews`)}
         >
           <Text style={styles.buttonText}>View My Reviews</Text>
         </TouchableOpacity>

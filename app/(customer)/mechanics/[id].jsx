@@ -56,7 +56,7 @@ export default function MechanicDetail() {
         const data = await fetchMechanicById(id);
         setMechanic(data);
         setReviews(data.reviews || []);
-        console.log("Fetched mechanic data:", data.reviews[0]);
+        // console.log("Fetched mechanic data:", data.reviews[0]);
       } catch (error) {
         Alert.alert("Hata", "Sanayici detayları yüklenemedi");
         console.log(error);
