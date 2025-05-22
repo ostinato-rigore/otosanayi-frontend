@@ -1,7 +1,8 @@
+// (customer)/profile.jsx
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -69,6 +70,7 @@ const customerSchema = z.object({
 export default function CustomerProfile() {
   const router = useRouter();
   const { user, isLoading, fetchUser, logout } = useAuthStore();
+  const userId = user?._id; // Kullanıcı ID'sini al
 
   const [isEditable, setIsEditable] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -156,7 +158,7 @@ export default function CustomerProfile() {
       };
 
       await updateCustomerProfile(payload);
-      await fetchUser(); // Kullanıcı verilerini güncelle
+      await fetchUser();
       Alert.alert("Success", "Profile updated successfully.");
       setIsEditable(false);
       setTimeout(() => {
@@ -304,7 +306,7 @@ export default function CustomerProfile() {
               placeholder="Email"
               placeholderTextColor={COLORS.placeholderText}
               value={formData.email}
-              editable={false} // E-posta düzenlenemez, sadece gösterilir
+              editable={false}
             />
           </View>
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
@@ -481,20 +483,12 @@ export default function CustomerProfile() {
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>Reviews</Text>
-        <View style={styles.reviewsContainer}>
-          {formData.reviews.length > 0 ? (
-            formData.reviews.map((reviewId, index) => (
-              <View key={index} style={styles.reviewItem}>
-                <Text style={styles.reviewText}>
-                  Review ID: {reviewId.toString()}
-                </Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.noReviewsText}>No reviews yet.</Text>
-          )}
-        </View>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: COLORS.accentCustomer }]}
+          onPress={() => router.push(`/(customer)/reviews?userId=${userId}`)}
+        >
+          <Text style={styles.buttonText}>View My Reviews</Text>
+        </TouchableOpacity>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity

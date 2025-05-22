@@ -45,6 +45,12 @@ export default function CustomerLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="reviews"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
