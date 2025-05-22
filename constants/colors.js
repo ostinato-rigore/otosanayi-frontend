@@ -1,19 +1,18 @@
 // colors.js: Projenin renk paleti (Müşteri ve Sanayici için)
 const COLORS = {
-  primary: "#11273C",
-  textPrimary: "#424242", // Sanayici: Ana renk (Koyu Gri - Ciddiyet)
-  textSecondary: "#2196F3", // Müşteri: Alternatif mavi ton (Güven)
-  textDark: "#000000", // Genel: Koyu metin rengi
-  placeholderText: "#B0BEC5", // Açık Gri: Placeholder (Ferahlık)
-  background: "#F5F5F5", // Hafif Gri: Arka plan (Göz yormaz)
-  cardBackground: "#FFFFFF", // Beyaz: Kartlar (Temizlik)
-  inputBackground: "#E0E0E0", // Açık Gri: Input arka planı (Ferahlık)
-  border: "#B0BEC5", // Açık Gri: Çerçeveler (Ferahlık)
-  white: "#FFFFFF", // Beyaz: Genel kullanım
-  black: "#000000", // Siyah: Genel kullanım
-  accentCustomer: "#0D437C", // Müşteri: koyu mavi
-  accentMechanic: "#FB8F1B",
-  error: "#AE2011", // Sanayici: turuncu
+  primary: "#1F2A37", // Lacivert – Derin ana renk, kurumsal ve karizmatik
+  textPrimary: "#2D3748", // Koyu çelik gri – yüksek okunabilirlik
+  textSecondary: "#4A5568", // Nötr gri – yardımcı metinler
+  background: "#F7FAFC", // Çok açık gri – ferah ama resmi
+  cardBackground: "#FFFFFF", // Beyaz – kartlar ve içerik kutuları
+  inputBackground: "#EDF2F7", // Hafif gri – inputlar
+  border: "#CBD5E0", // Açık gri – sade çerçeveler
+  placeholderText: "#A0AEC0", // Soft gri – yönlendirme yazıları
+  accentCustomer: "#2B6CB0", // Soğuk doygun mavi – müşteri tarafı
+  accentMechanic: "#2D3748", // Aynı koyu gri – sanayici tarafı
+  error: "#C53030", // Mat kırmızı – hata durumları
+  white: "#FFFFFF",
+  black: "#000000",
 };
 
 export default COLORS;
