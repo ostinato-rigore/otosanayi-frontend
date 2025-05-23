@@ -10,8 +10,8 @@ export default StyleSheet.create({
     paddingHorizontal: 20, // Yanlardan boşluk ekledik
   },
   logo: {
-    width: 300, // Daha makul bir boyut
-    height: 300,
+    width: 400, // Daha makul bir boyut
+    height: 400,
     marginBottom: 30,
     resizeMode: "contain",
   },
