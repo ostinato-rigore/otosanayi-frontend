@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next"; // Çeviri hook'u
 import {
   ActivityIndicator,
   Alert,
@@ -19,31 +20,36 @@ import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/login-styles";
 import useAuthStore from "../../store/useAuthStore";
 
-// Validation schema
-const loginSchema = z.object({
-  email: z
-    .string()
-    .email({ message: "Enter a valid email address" })
-    .nonempty("Email is required"),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" })
-    .nonempty("Password is required"),
-});
+// Validation schema factory
+const createLoginSchema = (t) =>
+  z.object({
+    email: z
+      .string()
+      .email({ message: t("invalidEmail") }) // Doğrudan string
+      .nonempty({ message: t("emailRequired") }),
+    password: z
+      .string()
+      .min(6, { message: t("passwordMinLength") })
+      .nonempty({ message: t("passwordRequired") }),
+  });
 
 export default function Login() {
   const { userType } = useLocalSearchParams();
   const router = useRouter();
   const { isLoading, login, fetchUser } = useAuthStore();
+  const { t } = useTranslation(); // Çeviri fonksiyonunu al
 
   const [showPassword, setShowPassword] = useState(false);
+
+  // Schema’yı useMemo ile sabitleyelim, böylece her render’da yeniden oluşturulmaz
+  const loginSchema = useMemo(() => createLoginSchema(t), [t]);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema), // Sabitlenmiş schema’yı kullan
     defaultValues: {
       email: "",
       password: "",
@@ -51,7 +57,7 @@ export default function Login() {
   });
 
   const loginTitle =
-    userType === "Mechanic" ? "Auto Mechanic Login" : "Customer Login";
+    userType === "Mechanic" ? t("mechanicLogin") : t("customerLogin");
 
   const caretColor =
     userType === "Mechanic" ? COLORS.accentMechanic : COLORS.accentCustomer;
@@ -63,14 +69,12 @@ export default function Login() {
         await fetchUser();
         console.log("Login successful:", response);
       } else {
-        // Hata durumunda kullanıcıya mesaj göster
-        const errorMessage =
-          response.error?.message || "Invalid email or password";
-        Alert.alert("Login Failed", errorMessage);
+        const errorMessage = response.error?.message || t("invalidCredentials");
+        Alert.alert(t("loginFailed"), errorMessage);
       }
     } catch (err) {
       console.error("Login error:", err);
-      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+      Alert.alert(t("error"), t("unexpectedError"));
     }
   };
 
@@ -92,7 +96,7 @@ export default function Login() {
     >
       <View style={styles.container}>
         <Text style={styles.title}>{loginTitle}</Text>
-        <Text style={styles.subtitle}>Sign in to continue</Text>
+        <Text style={styles.subtitle}>{t("signInToContinue")}</Text>
 
         <Controller
           control={control}
@@ -101,7 +105,7 @@ export default function Login() {
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder={t("emailLabel")}
                 placeholderTextColor={COLORS.placeholderText}
                 value={value}
                 onChangeText={onChange}
@@ -110,7 +114,7 @@ export default function Login() {
                 autoCapitalize="none"
                 selectionColor={caretColor}
                 accessible
-                accessibilityLabel="Email input"
+                accessibilityLabel={t("emailLabel")}
               />
               {errors.email && (
                 <Text style={styles.error}>{errors.email.message}</Text>
@@ -127,7 +131,7 @@ export default function Login() {
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={styles.passwordInput}
-                  placeholder="Password"
+                  placeholder={t("passwordLabel")}
                   placeholderTextColor={COLORS.placeholderText}
                   value={value}
                   onChangeText={onChange}
@@ -135,7 +139,7 @@ export default function Login() {
                   secureTextEntry={!showPassword}
                   selectionColor={caretColor}
                   accessible
-                  accessibilityLabel="Password input"
+                  accessibilityLabel={t("passwordLabel")}
                   autoComplete="password"
                   textContentType="password"
                 />
@@ -144,7 +148,7 @@ export default function Login() {
                   style={styles.iconContainer}
                   accessible
                   accessibilityLabel={
-                    showPassword ? "Hide password" : "Show password"
+                    showPassword ? t("hidePassword") : t("showPassword")
                   }
                   accessibilityRole="button"
                 >
@@ -176,25 +180,25 @@ export default function Login() {
           onPress={handleSubmit(handleLogin)}
           disabled={isLoading}
           accessible
-          accessibilityLabel="Login button"
+          accessibilityLabel={t("loginButton")}
           accessibilityRole="button"
         >
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={styles.buttonText}>{t("loginButton")}</Text>
           )}
         </TouchableOpacity>
 
         <Text style={styles.registerText}>
-          Don’t have an account?{" "}
+          {t("dontHaveAccount")}{" "}
           <Text
             style={styles.registerLink}
             onPress={handleNavigateToRegister}
             accessible
             accessibilityRole="link"
           >
-            Register
+            {t("register")}
           </Text>
         </Text>
       </View>

@@ -6,5 +6,20 @@
   "loginTitle": "Giriş Yap",
   "emailLabel": "E-posta",
   "passwordLabel": "Şifre",
-  "loginButton": "Giriş Yap"
+  "loginButton": "Giriş Yap",
+  "customerLogin": "Müşteri Girişi",
+  "mechanicLogin": "Oto Tamirci Girişi",
+  "signInToContinue": "Devam etmek için giriş yap",
+  "dontHaveAccount": "Hesabın yok mu?",
+  "register": "Kayıt Ol",
+  "invalidEmail": "Geçerli bir e-posta adresi girin",
+  "emailRequired": "E-posta gereklidir",
+  "passwordMinLength": "Şifre en az 6 karakter olmalı",
+  "passwordRequired": "Şifre gereklidir",
+  "loginFailed": "Giriş başarısız",
+  "invalidCredentials": "Geçersiz e-posta veya şifre",
+  "unexpectedError": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+  "showPassword": "Şifreyi Göster",
+  "hidePassword": "Şifreyi Gizle",
+  "error": "Hata"
 }
