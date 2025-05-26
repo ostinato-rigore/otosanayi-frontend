@@ -1,10 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next"; // Çeviri hook'u
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -18,31 +20,37 @@ import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/register-styles";
 import useAuthStore from "../../store/useAuthStore";
 
-const registerSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Name must be at least 2 characters" })
-    .nonempty("Name is required"),
-  email: z
-    .string()
-    .email({ message: "Enter a valid email address" })
-    .nonempty("Email is required"),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" })
-    .nonempty("Password is required"),
-  phone: z
-    .string()
-    .regex(/^\+?\d{10,15}$/, { message: "Enter a valid phone number" })
-    .nonempty("Phone is required"),
-});
+// Validation schema factory
+const createRegisterSchema = (t) =>
+  z.object({
+    name: z
+      .string()
+      .min(2, { message: t("nameMinLength") })
+      .nonempty({ message: t("nameRequired") }),
+    email: z
+      .string()
+      .email({ message: t("invalidEmail") })
+      .nonempty({ message: t("emailRequired") }),
+    password: z
+      .string()
+      .min(6, { message: t("passwordMinLength") })
+      .nonempty({ message: t("passwordRequired") }),
+    phone: z
+      .string()
+      .regex(/^\+?\d{10,15}$/, { message: t("invalidPhone") })
+      .nonempty({ message: t("phoneRequired") }),
+  });
 
 export default function Register() {
   const { userType } = useLocalSearchParams();
   const router = useRouter();
   const { isLoading, register } = useAuthStore();
+  const { t } = useTranslation(); // Çeviri fonksiyonunu al
 
   const [showPassword, setShowPassword] = useState(false);
+
+  // Schema’yı useMemo ile sabitleyelim
+  const registerSchema = useMemo(() => createRegisterSchema(t), [t]);
 
   const {
     control,
@@ -59,7 +67,7 @@ export default function Register() {
   });
 
   const registerTitle =
-    userType === "Mechanic" ? "Auto Mechanic Register" : "Customer Register";
+    userType === "Mechanic" ? t("mechanicRegister") : t("customerRegister");
 
   const caretColor =
     userType === "Mechanic" ? COLORS.accentMechanic : COLORS.primary;
@@ -78,13 +86,19 @@ export default function Register() {
     Keyboard.dismiss();
     try {
       const response = await register(userType, data);
-      console.log("Register response:", response);
-      router.push({
-        pathname: "/(auth)/login",
-        params: { userType },
-      });
+      if (response.success) {
+        console.log("Register successful:", response);
+        router.push({
+          pathname: "/(auth)/login",
+          params: { userType },
+        });
+      } else {
+        const errorMessage = response.error?.message || t("unexpectedError");
+        Alert.alert(t("error"), errorMessage);
+      }
     } catch (err) {
-      console.log("Kayıt Hatası:", err);
+      console.error("Registration error:", err);
+      Alert.alert(t("error"), t("unexpectedError"));
     }
   };
 
@@ -96,7 +110,7 @@ export default function Register() {
     >
       <View style={styles.container}>
         <Text style={styles.title}>{registerTitle}</Text>
-        <Text style={styles.subtitle}>Create your account</Text>
+        <Text style={styles.subtitle}>{t("createYourAccount")}</Text>
 
         <Controller
           control={control}
@@ -105,7 +119,7 @@ export default function Register() {
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Full Name"
+                placeholder={t("nameLabel")}
                 placeholderTextColor={COLORS.placeholderText}
                 value={value}
                 onChangeText={onChange}
@@ -113,7 +127,7 @@ export default function Register() {
                 autoCapitalize="words"
                 selectionColor={caretColor}
                 accessible
-                accessibilityLabel="Full name input"
+                accessibilityLabel={t("nameLabel")}
               />
               {errors.name && (
                 <Text style={styles.error}>{errors.name.message}</Text>
@@ -129,7 +143,7 @@ export default function Register() {
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder={t("emailLabel")}
                 placeholderTextColor={COLORS.placeholderText}
                 value={value}
                 onChangeText={onChange}
@@ -138,7 +152,7 @@ export default function Register() {
                 autoCapitalize="none"
                 selectionColor={caretColor}
                 accessible
-                accessibilityLabel="Email input"
+                accessibilityLabel={t("emailLabel")}
               />
               {errors.email && (
                 <Text style={styles.error}>{errors.email.message}</Text>
@@ -155,7 +169,7 @@ export default function Register() {
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={styles.passwordInput}
-                  placeholder="Password"
+                  placeholder={t("passwordLabel")}
                   placeholderTextColor={COLORS.placeholderText}
                   value={value}
                   onChangeText={onChange}
@@ -163,14 +177,16 @@ export default function Register() {
                   secureTextEntry={!showPassword}
                   selectionColor={caretColor}
                   accessible
-                  accessibilityLabel="Password input"
+                  accessibilityLabel={t("passwordLabel")}
+                  autoComplete="password"
+                  textContentType="password"
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.iconContainer}
                   accessible
                   accessibilityLabel={
-                    showPassword ? "Hide password" : "Show password"
+                    showPassword ? t("hidePassword") : t("showPassword")
                   }
                   accessibilityRole="button"
                 >
@@ -195,7 +211,7 @@ export default function Register() {
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Phone"
+                placeholder={t("phoneLabel")}
                 placeholderTextColor={COLORS.placeholderText}
                 value={value}
                 onChangeText={onChange}
@@ -203,7 +219,7 @@ export default function Register() {
                 keyboardType="phone-pad"
                 selectionColor={caretColor}
                 accessible
-                accessibilityLabel="Phone input"
+                accessibilityLabel={t("phoneLabel")}
               />
               {errors.phone && (
                 <Text style={styles.error}>{errors.phone.message}</Text>
@@ -225,25 +241,25 @@ export default function Register() {
           onPress={handleSubmit(handleRegister)}
           disabled={isLoading}
           accessible
-          accessibilityLabel="Register button"
+          accessibilityLabel={t("registerButton")}
           accessibilityRole="button"
         >
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Register</Text>
+            <Text style={styles.buttonText}>{t("registerButton")}</Text>
           )}
         </TouchableOpacity>
 
         <Text style={styles.loginText}>
-          Already have an account?{" "}
+          {t("alreadyHaveAccount")}{" "}
           <Text
             style={styles.loginLink}
             onPress={handleNavigateToLogin}
             accessible
             accessibilityRole="link"
           >
-            Login
+            {t("login")}
           </Text>
         </Text>
       </View>
