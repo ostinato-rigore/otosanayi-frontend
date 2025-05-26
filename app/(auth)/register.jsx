@@ -22,24 +22,32 @@ import useAuthStore from "../../store/useAuthStore";
 
 // Validation schema factory
 const createRegisterSchema = (t) =>
-  z.object({
-    name: z
-      .string()
-      .min(2, { message: t("nameMinLength") })
-      .nonempty({ message: t("nameRequired") }),
-    email: z
-      .string()
-      .email({ message: t("invalidEmail") })
-      .nonempty({ message: t("emailRequired") }),
-    password: z
-      .string()
-      .min(6, { message: t("passwordMinLength") })
-      .nonempty({ message: t("passwordRequired") }),
-    phone: z
-      .string()
-      .regex(/^\+?\d{10,15}$/, { message: t("invalidPhone") })
-      .nonempty({ message: t("phoneRequired") }),
-  });
+  z
+    .object({
+      name: z
+        .string()
+        .min(2, { message: t("nameMinLength") })
+        .nonempty({ message: t("nameRequired") }),
+      email: z
+        .string()
+        .email({ message: t("invalidEmail") })
+        .nonempty({ message: t("emailRequired") }),
+      password: z
+        .string()
+        .min(6, { message: t("passwordMinLength") })
+        .nonempty({ message: t("passwordRequired") }),
+      confirmPassword: z
+        .string()
+        .nonempty({ message: t("confirmPasswordRequired") }),
+      phone: z
+        .string()
+        .regex(/^\+?\d{10,15}$/, { message: t("invalidPhone") })
+        .nonempty({ message: t("phoneRequired") }),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("passwordsDoNotMatch"),
+      path: ["confirmPassword"], // Hata mesajını confirmPassword alanına bağla
+    });
 
 export default function Register() {
   const { userType } = useLocalSearchParams();
@@ -48,6 +56,7 @@ export default function Register() {
   const { t } = useTranslation(); // Çeviri fonksiyonunu al
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Schema’yı useMemo ile sabitleyelim
   const registerSchema = useMemo(() => createRegisterSchema(t), [t]);
@@ -62,6 +71,7 @@ export default function Register() {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
       phone: "",
     },
   });
@@ -85,7 +95,9 @@ export default function Register() {
   const handleRegister = async (data) => {
     Keyboard.dismiss();
     try {
-      const response = await register(userType, data);
+      // confirmPassword alanını çıkararak yalnızca gerekli verileri backend’e gönder
+      const { confirmPassword, ...registerData } = data;
+      const response = await register(userType, registerData);
       if (response.success) {
         console.log("Register successful:", response);
         router.push({
@@ -94,11 +106,11 @@ export default function Register() {
         });
       } else {
         const errorMessage = response.error?.message || t("unexpectedError");
-        Alert.alert(t("error"), errorMessage);
+        Alert.alert(errorMessage);
       }
     } catch (err) {
       console.error("Registration error:", err);
-      Alert.alert(t("error"), t("unexpectedError"));
+      // Alert.alert(t("error"), t("unexpectedError"));
     }
   };
 
@@ -199,6 +211,53 @@ export default function Register() {
               </View>
               {errors.password && (
                 <Text style={styles.error}>{errors.password.message}</Text>
+              )}
+            </>
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="confirmPassword"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder={t("confirmPasswordLabel")}
+                  placeholderTextColor={COLORS.placeholderText}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  secureTextEntry={!showConfirmPassword}
+                  selectionColor={caretColor}
+                  accessible
+                  accessibilityLabel={t("confirmPasswordLabel")}
+                  autoComplete="password"
+                  textContentType="password"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={styles.iconContainer}
+                  accessible
+                  accessibilityLabel={
+                    showConfirmPassword ? t("hidePassword") : t("showPassword")
+                  }
+                  accessibilityRole="button"
+                >
+                  <Ionicons
+                    name={
+                      showConfirmPassword ? "eye-outline" : "eye-off-outline"
+                    }
+                    size={24}
+                    color={COLORS.placeholderText}
+                  />
+                </TouchableOpacity>
+              </View>
+              {errors.confirmPassword && (
+                <Text style={styles.error}>
+                  {errors.confirmPassword.message}
+                </Text>
               )}
             </>
           )}
