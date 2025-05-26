@@ -31,7 +31,7 @@ export default StyleSheet.create({
     paddingHorizontal: 20, // Metin yan boşlukları
   },
   button: {
-    width: "100%", // Tam genişlik
+    width: "90%", // Tam genişlik
     paddingVertical: 15,
     borderRadius: 8,
     marginBottom: 15,

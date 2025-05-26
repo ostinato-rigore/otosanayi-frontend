@@ -1,11 +1,12 @@
-// Uygulamanın ana ekranı (app/index.jsx)
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 import styles from "../../constants/styles/splash-styles";
 
 export default function Index() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleCustomer = () => {
     router.push({
@@ -28,25 +29,22 @@ export default function Index() {
         style={styles.logo}
         contentFit="contain"
       />
+      <Text style={styles.title}>{t("welcomeTitle")}</Text>
 
-      <Text style={styles.title}>Welcome to Otosanayi</Text>
-
-      <Text style={styles.subtitle}>
-        Find the best auto repair shops or join as one!
-      </Text>
+      <Text style={styles.subtitle}>{t("subtitle")}</Text>
 
       <TouchableOpacity
         style={[styles.button, styles.customerButton]}
         onPress={handleCustomer}
       >
-        <Text style={styles.buttonText}>Continue as Customer</Text>
+        <Text style={styles.buttonText}>{t("continueAsCustomer")}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={[styles.button, styles.mechanicButton]}
         onPress={handleMechanic}
       >
-        <Text style={styles.buttonText}>Register as Auto Mechanic</Text>
+        <Text style={styles.buttonText}>{t("registerAsMechanic")}</Text>
       </TouchableOpacity>
     </View>
   );

@@ -5,6 +5,10 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import SafeScreen from "../components/layout/SafeScreen";
 import useAuthStore from "../store/useAuthStore";
 
+// i18n setup
+import { I18nextProvider } from "react-i18next";
+import i18n from "../config/i18n";
+
 export default function RootLayout() {
   const router = useRouter();
   const { isAuthenticated, userType, fetchUser, isLoading } = useAuthStore();
@@ -31,15 +35,17 @@ export default function RootLayout() {
   }, [isAuthenticated, userType, isLoading, isMounted, router]);
 
   return (
-    <SafeAreaProvider>
-      <SafeScreen>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(customer)" />
-          <Stack.Screen name="(mechanic)" />
-        </Stack>
-      </SafeScreen>
-      <StatusBar style="dark" />
-    </SafeAreaProvider>
+    <I18nextProvider i18n={i18n}>
+      <SafeAreaProvider>
+        <SafeScreen>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(customer)" />
+            <Stack.Screen name="(mechanic)" />
+          </Stack>
+        </SafeScreen>
+        <StatusBar style="dark" />
+      </SafeAreaProvider>
+    </I18nextProvider>
   );
 }
