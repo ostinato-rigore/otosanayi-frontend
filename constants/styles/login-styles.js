@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
   registerText: {
     fontSize: 14,
     color: COLORS.textPrimary,
+    marginTop: 5,
   },
   registerLink: {
     color: COLORS.primary,

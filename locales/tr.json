@@ -36,5 +36,6 @@
   "phoneRequired": "Telefon numarası gereklidir",
   "confirmPasswordLabel": "Şifreyi Tekrar Girin",
   "confirmPasswordRequired": "Lütfen şifrenizi tekrar girin",
-  "passwordsDoNotMatch": "Şifreler eşleşmiyor"
+  "passwordsDoNotMatch": "Şifreler eşleşmiyor",
+  "forgotPassword": "Şifremi Unuttum?"
 }

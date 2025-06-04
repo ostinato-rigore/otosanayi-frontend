@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next"; // Çeviri hook'u
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -25,7 +25,7 @@ const createLoginSchema = (t) =>
   z.object({
     email: z
       .string()
-      .email({ message: t("invalidEmail") }) // Doğrudan string
+      .email({ message: t("invalidEmail") })
       .nonempty({ message: t("emailRequired") }),
     password: z
       .string()
@@ -37,11 +37,10 @@ export default function Login() {
   const { userType } = useLocalSearchParams();
   const router = useRouter();
   const { isLoading, login, fetchUser } = useAuthStore();
-  const { t } = useTranslation(); // Çeviri fonksiyonunu al
+  const { t } = useTranslation();
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // Schema’yı useMemo ile sabitleyelim, böylece her render’da yeniden oluşturulmaz
   const loginSchema = useMemo(() => createLoginSchema(t), [t]);
 
   const {
@@ -49,7 +48,7 @@ export default function Login() {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(loginSchema), // Sabitlenmiş schema’yı kullan
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -83,6 +82,16 @@ export default function Login() {
     setTimeout(() => {
       router.push({
         pathname: "/(auth)/register",
+        params: { userType },
+      });
+    }, 100);
+  };
+
+  const handleNavigateToForgotPassword = () => {
+    Keyboard.dismiss();
+    setTimeout(() => {
+      router.push({
+        pathname: "/(auth)/forgot-password",
         params: { userType },
       });
     }, 100);
@@ -189,6 +198,17 @@ export default function Login() {
             <Text style={styles.buttonText}>{t("loginButton")}</Text>
           )}
         </TouchableOpacity>
+
+        <Text style={styles.registerText}>
+          <Text
+            style={styles.registerLink}
+            onPress={handleNavigateToForgotPassword}
+            accessible
+            accessibilityRole="link"
+          >
+            {t("forgotPassword")}
+          </Text>
+        </Text>
 
         <Text style={styles.registerText}>
           {t("dontHaveAccount")}{" "}

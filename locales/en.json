@@ -36,5 +36,6 @@
   "phoneRequired": "Phone number is required",
   "confirmPasswordLabel": "Confirm Password",
   "confirmPasswordRequired": "Please confirm your password",
-  "passwordsDoNotMatch": "Passwords do not match"
+  "passwordsDoNotMatch": "Passwords do not match",
+  "forgotPassword": "Forgot Password?"
 }
