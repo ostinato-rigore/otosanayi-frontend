@@ -47,11 +47,12 @@ export default function VerifyCode() {
           params: { userType, email },
         });
       } else {
-        Alert.alert(t("error"), response.error.message || t("invalidCode"));
+        Alert.alert(t("error"), t("invalidCode")); // Kendi hata mesajı
+        console.log("Backend error:", response.error.message); // Hata loglanabilir
       }
     } catch (error) {
-      Alert.alert(t("error"), t("invalidCode"));
-      console.log(error);
+      Alert.alert(t("error"), t("unexpectedError")); // Kendi hata mesajı
+      console.log("Unexpected error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -67,14 +68,12 @@ export default function VerifyCode() {
         setCode(["", "", "", "", "", ""]);
         inputRefs.current[0].focus();
       } else {
-        Alert.alert(
-          t("error"),
-          response.error?.message || t("unexpectedError")
-        );
+        Alert.alert(t("error"), t("unexpectedError")); // Kendi hata mesajı
+        console.log("Backend error:", response.error?.message); // Hata loglanabilir
       }
     } catch (error) {
-      Alert.alert(t("error"), t("unexpectedError"));
-      console.log(error);
+      Alert.alert(t("error"), t("unexpectedError")); // Kendi hata mesajı
+      console.log("Unexpected error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -94,9 +93,10 @@ export default function VerifyCode() {
       inputRefs.current[index + 1].focus();
     }
 
-    if (newCode.every((char) => char !== "") && index === 5) {
-      onSubmit();
-    }
+    // Otomatik submit'i kaldır
+    // if (newCode.every((char) => char !== "") && index === 5) {
+    //   onSubmit();
+    // }
   };
 
   const handleKeyPress = (index, { nativeEvent }) => {
@@ -131,7 +131,7 @@ export default function VerifyCode() {
               value={digit}
               onChangeText={(value) => handleChange(index, value)}
               onKeyPress={handleKeyPress.bind(null, index)}
-              keyboardType="numeric" // Sadece rakam klavyesi
+              keyboardType="numeric"
               maxLength={1}
               autoFocus={index === 0}
               accessible

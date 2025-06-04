@@ -31,7 +31,7 @@ export default function ForgotPassword() {
   const router = useRouter();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
-  const { forgotPassword } = useAuthStore(); // Yeni metod eklenecek
+  const { forgotPassword } = useAuthStore();
 
   const {
     control,

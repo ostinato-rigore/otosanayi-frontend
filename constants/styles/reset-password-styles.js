@@ -1,57 +1,80 @@
 import { StyleSheet } from "react-native";
 import COLORS from "../colors";
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
+    backgroundColor: COLORS.background,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: COLORS.primary,
+    color: COLORS.textPrimary,
     marginBottom: 10,
-    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: COLORS.textPrimary,
+    color: COLORS.textSecondary,
     marginBottom: 30,
     textAlign: "center",
   },
   input: {
     width: "90%",
-    backgroundColor: COLORS.inputBackground,
-    borderColor: COLORS.border,
+    height: 50,
     borderWidth: 1,
+    borderColor: COLORS.border,
     borderRadius: 8,
-    padding: 12,
+    paddingHorizontal: 15,
     marginBottom: 15,
     fontSize: 16,
-    color: COLORS.textDark,
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.inputBackground,
   },
-  button: {
+  passwordContainer: {
     width: "90%",
-    paddingVertical: 14,
-    borderRadius: 8,
+    height: 50,
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 20,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    marginBottom: 15,
+    backgroundColor: COLORS.inputBackground,
   },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: COLORS.white,
+  passwordInput: {
+    flex: 1,
+    height: "100%",
+    paddingHorizontal: 15,
+    fontSize: 16,
+    color: COLORS.textPrimary,
+  },
+  iconContainer: {
+    paddingHorizontal: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100%",
   },
   error: {
     color: COLORS.error,
     fontSize: 14,
     marginBottom: 15,
-    textAlign: "left",
     alignSelf: "flex-start",
     marginLeft: 20,
   },
+  button: {
+    width: "90%",
+    height: 50,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
 });
-
-export default styles;

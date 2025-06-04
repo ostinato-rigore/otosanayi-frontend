@@ -173,6 +173,37 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
+  resetPassword: async (type, email, newPassword, confirmPassword) => {
+    set({ isLoading: true });
+
+    try {
+      const endpoint = `/auth/reset-password/${type}`;
+      const res = await api.post(endpoint, {
+        email,
+        newPassword,
+        confirmPassword,
+      });
+
+      if (res.data.success) {
+        return { success: true, message: res.data.message };
+      }
+      return {
+        success: false,
+        error: { message: res.data.message || "Failed to reset password" },
+      };
+    } catch (err) {
+      console.error("Reset Password failed:", err);
+      const errorMessage =
+        err?.response?.data?.message || "Failed to reset password";
+      return {
+        success: false,
+        error: { message: errorMessage },
+      };
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
   logout: async () => {
     set({ isLoading: true });
 

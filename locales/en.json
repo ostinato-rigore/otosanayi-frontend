@@ -55,5 +55,7 @@
   "passwordsMatch": "Passwords must match",
   "codeValidityInfo": "The verification code is valid for 15 minutes. If you don't receive it, please check your spam folder or request a new code.",
   "resendCode": "Resend Code",
-  "codeVerified": "Code verified successfully"
+  "codeVerified": "Code verified successfully",
+  "passwordReset": "Password has been reset successfully",
+  "newPasswordRequired": "New password is required"
 }
