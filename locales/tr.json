@@ -37,5 +37,19 @@
   "confirmPasswordLabel": "Şifreyi Tekrar Girin",
   "confirmPasswordRequired": "Lütfen şifrenizi tekrar girin",
   "passwordsDoNotMatch": "Şifreler eşleşmiyor",
-  "forgotPassword": "Şifremi Unuttum?"
+  "forgotPassword": "Şifremi Unuttum?",
+  "forgotPasswordTitle": "Şifremi Unuttum",
+  "forgotPasswordSubtitle": "Doğrulama kodu almak için e-posta adresinizi girin",
+  "sendCode": "Kod Gönder",
+  "codeLabel": "Doğrulama Kodu",
+  "codeSent": "Doğrulama kodu e-posta adresinize gönderildi",
+  "verifyCodeTitle": "Kodu Doğrula",
+  "verifyCodeSubtitle": "E-posta adresinize gönderilen kodu girin",
+  "verifyButton": "Doğrula",
+  "invalidCode": "Geçersiz veya süresi dolmuş kod",
+  "resetPasswordTitle": "Şifre Sıfırla",
+  "resetPasswordSubtitle": "Yeni bir şifre oluşturun",
+  "newPasswordLabel": "Yeni Şifre",
+  "resetButton": "Şifreyi Sıfırla",
+  "passwordsMatch": "Şifreler eşleşmelidir"
 }
