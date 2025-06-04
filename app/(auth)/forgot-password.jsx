@@ -16,6 +16,7 @@ import {
 import { z } from "zod";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/forgot-password-styles";
+import useAuthStore from "../../store/useAuthStore";
 
 const createForgotPasswordSchema = (t) =>
   z.object({
@@ -30,6 +31,7 @@ export default function ForgotPassword() {
   const router = useRouter();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const { forgotPassword } = useAuthStore(); // Yeni metod eklenecek
 
   const {
     control,
@@ -46,14 +48,24 @@ export default function ForgotPassword() {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      Alert.alert(t("success"), t("codeSent"));
-      router.push({
-        pathname: "/(auth)/verify-code",
-        params: { userType, email: data.email },
-      });
+      const type = userType.toLowerCase();
+      const response = await forgotPassword(type, data.email);
+
+      if (response.success) {
+        Alert.alert(t("success"), t("codeSent"));
+        router.push({
+          pathname: "/(auth)/verify-code",
+          params: { userType, email: data.email },
+        });
+      } else {
+        Alert.alert(
+          t("error"),
+          response.error?.message || t("unexpectedError")
+        );
+      }
     } catch (error) {
       Alert.alert(t("error"), t("unexpectedError"));
+      console.log(error);
     } finally {
       setIsLoading(false);
     }

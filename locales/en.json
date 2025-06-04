@@ -41,6 +41,7 @@
   "forgotPasswordSubtitle": "Enter your email to receive a verification code",
   "sendCode": "Send Code",
   "codeLabel": "Verification Code",
+  "success": "Success",
   "codeSent": "A verification code has been sent to your email",
   "verifyCodeTitle": "Verify Code",
   "verifyCodeSubtitle": "Enter the code sent to your email",

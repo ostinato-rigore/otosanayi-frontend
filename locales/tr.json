@@ -42,6 +42,7 @@
   "forgotPasswordSubtitle": "Doğrulama kodu almak için e-posta adresinizi girin",
   "sendCode": "Kod Gönder",
   "codeLabel": "Doğrulama Kodu",
+  "success": "Başarılı",
   "codeSent": "Doğrulama kodu e-posta adresinize gönderildi",
   "verifyCodeTitle": "Kodu Doğrula",
   "verifyCodeSubtitle": "E-posta adresinize gönderilen kodu girin",
