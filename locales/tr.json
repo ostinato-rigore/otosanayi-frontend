@@ -52,5 +52,8 @@
   "resetPasswordSubtitle": "Yeni bir şifre oluşturun",
   "newPasswordLabel": "Yeni Şifre",
   "resetButton": "Şifreyi Sıfırla",
-  "passwordsMatch": "Şifreler eşleşmelidir"
+  "passwordsMatch": "Şifreler eşleşmelidir",
+  "codeValidityInfo": "Doğrulama kodu 15 dakika geçerlidir. Eğer kodu almadıysanız, lütfen spam klasörünüzü kontrol edin veya yeni bir kod talep edin.",
+  "resendCode": "Kodu Yeniden Gönder",
+  "codeVerified": "Kod başarıyla doğrulandı"
 }

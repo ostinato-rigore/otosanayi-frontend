@@ -18,7 +18,13 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: COLORS.textPrimary,
-    marginBottom: 30,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  infoText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 20,
     textAlign: "center",
   },
   otpContainer: {
@@ -48,6 +54,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: COLORS.white,
+  },
+  resendText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    marginTop: 15,
+    textDecorationLine: "underline",
   },
   error: {
     color: COLORS.error,

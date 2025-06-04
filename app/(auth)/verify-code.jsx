@@ -1,7 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -13,17 +11,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { z } from "zod";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/verify-code-styles";
-
-const createVerifyCodeSchema = (t) =>
-  z.object({
-    code: z
-      .string()
-      .min(6, { message: t("invalidCode") })
-      .nonempty({ message: t("codeRequired") }),
-  });
+import useAuthStore from "../../store/useAuthStore";
 
 export default function VerifyCode() {
   const { userType, email } = useLocalSearchParams();
@@ -32,50 +22,80 @@ export default function VerifyCode() {
   const [isLoading, setIsLoading] = useState(false);
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(createVerifyCodeSchema(t)),
-    defaultValues: { code: "" },
-  });
+  const { verifyCode, forgotPassword } = useAuthStore();
 
   const buttonColor =
     userType === "Mechanic" ? COLORS.accentMechanic : COLORS.accentCustomer;
   const borderColor =
     userType === "Mechanic" ? COLORS.accentMechanic : COLORS.accentCustomer;
 
-  const onSubmit = async (data) => {
+  const onSubmit = async () => {
+    const enteredCode = code.join(""); // 6 haneli kodu birleştir
+    if (enteredCode.length !== 6) {
+      Alert.alert(t("error"), t("codeRequired"));
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      Alert.alert(t("success"), t("codeVerified"));
-      router.push({
-        pathname: "/(auth)/reset-password",
-        params: { userType, email },
-      });
+      const type = userType.toLowerCase();
+      const response = await verifyCode(type, email, enteredCode);
+      if (response.success) {
+        Alert.alert(t("success"), t("codeVerified"));
+        router.push({
+          pathname: "/(auth)/reset-password",
+          params: { userType, email },
+        });
+      } else {
+        Alert.alert(t("error"), response.error.message || t("invalidCode"));
+      }
     } catch (error) {
       Alert.alert(t("error"), t("invalidCode"));
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setIsLoading(true);
+    try {
+      const type = userType.toLowerCase();
+      const response = await forgotPassword(type, email);
+      if (response.success) {
+        Alert.alert(t("success"), t("codeSent"));
+        setCode(["", "", "", "", "", ""]);
+        inputRefs.current[0].focus();
+      } else {
+        Alert.alert(
+          t("error"),
+          response.error?.message || t("unexpectedError")
+        );
+      }
+    } catch (error) {
+      Alert.alert(t("error"), t("unexpectedError"));
+      console.log(error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleChange = (index, value) => {
+    // Sadece rakamları kabul et
+    if (value && !/^[0-9]$/.test(value)) {
+      return;
+    }
+
     const newCode = [...code];
-    newCode[index] = value.slice(0, 1); // Sadece 1 karakter al
+    newCode[index] = value.slice(0, 1);
     setCode(newCode);
 
-    // Sonraki input'a geç
     if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     }
 
-    // Tüm kutular doluysa formu submit et
     if (newCode.every((char) => char !== "") && index === 5) {
-      handleSubmit(onSubmit)();
+      onSubmit();
     }
   };
 
@@ -86,7 +106,6 @@ export default function VerifyCode() {
   };
 
   useEffect(() => {
-    // İlk input'a odaklan
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus();
     }
@@ -101,6 +120,7 @@ export default function VerifyCode() {
       <View style={styles.container}>
         <Text style={styles.title}>{t("verifyCodeTitle")}</Text>
         <Text style={styles.subtitle}>{t("verifyCodeSubtitle")}</Text>
+        <Text style={styles.infoText}>{t("codeValidityInfo")}</Text>
 
         <View style={styles.otpContainer}>
           {code.map((digit, index) => (
@@ -111,7 +131,7 @@ export default function VerifyCode() {
               value={digit}
               onChangeText={(value) => handleChange(index, value)}
               onKeyPress={handleKeyPress.bind(null, index)}
-              keyboardType="number-pad"
+              keyboardType="numeric" // Sadece rakam klavyesi
               maxLength={1}
               autoFocus={index === 0}
               accessible
@@ -119,11 +139,10 @@ export default function VerifyCode() {
             />
           ))}
         </View>
-        {errors.code && <Text style={styles.error}>{errors.code.message}</Text>}
 
         <TouchableOpacity
           style={[styles.button, { backgroundColor: buttonColor }]}
-          onPress={handleSubmit(onSubmit)}
+          onPress={onSubmit}
           disabled={isLoading}
           accessible
           accessibilityLabel={t("verifyButton")}
@@ -134,6 +153,16 @@ export default function VerifyCode() {
           ) : (
             <Text style={styles.buttonText}>{t("verifyButton")}</Text>
           )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleResendCode}
+          disabled={isLoading}
+          accessible
+          accessibilityLabel={t("resendCode")}
+          accessibilityRole="button"
+        >
+          <Text style={styles.resendText}>{t("resendCode")}</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
