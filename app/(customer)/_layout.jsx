@@ -40,6 +40,12 @@ export default function CustomerLayout() {
         }}
       />
       <Tabs.Screen
+        name="edit-profile"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="mechanics/[id]"
         options={{
           href: null,

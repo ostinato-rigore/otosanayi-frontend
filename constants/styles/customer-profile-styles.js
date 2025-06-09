@@ -2,111 +2,103 @@ import { StyleSheet } from "react-native";
 import COLORS from "../colors";
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  content: { padding: 20, paddingBottom: 40 },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  content: {
+    padding: 15,
+    alignItems: "center",
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: COLORS.background,
   },
-  loadingText: { marginTop: 10, color: COLORS.textPrimary, fontSize: 16 },
-  header: { alignItems: "center", marginBottom: 20 },
-  logoContainer: { alignItems: "center" },
-  logoWrapper: {
-    position: "relative",
-    width: 120,
-    height: 120,
+  loadingText: {
+    marginTop: 10,
+    color: COLORS.textPrimary,
+    fontSize: 14,
   },
-  logo: { width: 120, height: 120, borderRadius: 60 },
-  logoPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 30,
+    paddingTop: 20,
+    paddingHorizontal: 10,
+  },
+  profileImageContainer: {
+    marginRight: 15,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  profilePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: COLORS.cardBackground,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
     borderColor: COLORS.border,
-    position: "relative",
   },
-  uploadText: {
-    color: COLORS.accentCustomer,
-    fontSize: 16,
-    fontWeight: "500",
+  profileInfo: {
+    flex: 1,
   },
-  editIcon: {
-    position: "absolute",
-    bottom: 5,
-    right: 5,
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
+  name: {
+    fontSize: 20,
     fontWeight: "600",
     color: COLORS.textPrimary,
-    marginBottom: 10,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  inputContainer: { marginBottom: 15 },
-  label: {
     marginBottom: 5,
-    color: COLORS.textSecondary,
-    fontWeight: "500",
-    fontSize: 14,
   },
-  inputWrapper: {
+  email: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 15,
+  },
+  menuContainer: {
+    width: "100%",
+    marginBottom: 30,
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    paddingVertical: 15,
+  },
+  menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
+    paddingVertical: 15,
     paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  inputIcon: { marginRight: 10 },
-  input: { flex: 1, fontSize: 16, paddingVertical: 12 },
-  errorText: {
-    color: COLORS.error,
-    fontSize: 12,
-    marginTop: 5,
-    marginLeft: 15,
-  },
-  reviewsContainer: {
-    backgroundColor: COLORS.cardBackground,
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-  },
-  reviewItem: {
-    paddingVertical: 5,
-    borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  reviewText: { color: COLORS.textPrimary, fontSize: 14 },
-  noReviewsText: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-    textAlign: "center",
+  menuItemText: {
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    marginLeft: 15,
   },
-  buttonContainer: {
+  logoutContainer: {
+    width: "100%",
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    paddingVertical: 15,
+  },
+  logoutButton: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-    flexWrap: "wrap",
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
     alignItems: "center",
-    marginHorizontal: 5,
-    marginBottom: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 35,
+    borderBottomColor: COLORS.border,
   },
-  buttonText: { color: COLORS.white, fontWeight: "600", fontSize: 16 },
+  logoutButtonText: {
+    fontSize: 16,
+    color: COLORS.error,
+    marginLeft: 15,
+  },
 });
 
 export default styles;
