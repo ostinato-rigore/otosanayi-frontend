@@ -1,13 +1,15 @@
+// constants/styles/customer-edit-profile-styles.js
 import { StyleSheet } from "react-native";
 import COLORS from "../colors";
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
   content: {
     padding: 20,
+    paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
@@ -66,6 +68,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     paddingVertical: 12,
+    minHeight: 48,
+  },
+  disabledInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingVertical: 12,
+    minHeight: 48,
+    backgroundColor: COLORS.lightGray, // Değiştirilemez olduğunu gösterir
+    opacity: 0.7, // Hafif soluk görünüm
   },
   label: {
     fontSize: 16,
@@ -79,10 +93,26 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     paddingVertical: 0,
   },
+  disabledInputValue: {
+    flex: 1,
+    textAlign: "right",
+    fontSize: 16,
+    color: COLORS.textSecondary, // Daha soluk renk
+    paddingVertical: 0,
+  },
+  picker: {
+    flex: 1,
+    color: COLORS.textPrimary,
+    fontSize: 16,
+  },
+  disabledPicker: {
+    opacity: 0.5,
+  },
   errorText: {
     color: COLORS.error,
     fontSize: 12,
     marginBottom: 8,
+    marginLeft: 100,
   },
   actionButtons: {
     marginTop: 24,
@@ -99,5 +129,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-export default styles;
