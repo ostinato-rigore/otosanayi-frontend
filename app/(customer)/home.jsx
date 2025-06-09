@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { fetchMechanics } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
-import styles from "../../constants/styles/customer-home-styles";
+import styles from "../../constants/styles/customer/customer-home-styles";
 
 // Örnek filtre seçenekleri
 const cities = ["İstanbul", "Ankara", "İzmir", "Bursa"];

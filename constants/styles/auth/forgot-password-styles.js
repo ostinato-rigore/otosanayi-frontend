@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import COLORS from "../colors";
+import COLORS from "../../colors";
 
 const styles = StyleSheet.create({
   container: {
@@ -32,26 +32,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textDark,
   },
-  passwordContainer: {
+  button: {
     width: "90%",
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  passwordInput: {
-    flex: 1,
-    backgroundColor: COLORS.inputBackground,
-    borderColor: COLORS.border,
-    borderWidth: 1,
+    paddingVertical: 14,
     borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: COLORS.textDark,
+    alignItems: "center",
+    marginTop: 20,
   },
-  iconContainer: {
-    position: "absolute",
-    right: 12,
-    padding: 5,
+  buttonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.white,
   },
   error: {
     color: COLORS.error,
@@ -60,26 +51,6 @@ const styles = StyleSheet.create({
     textAlign: "left",
     alignSelf: "flex-start",
     marginLeft: 20,
-  },
-  registerButton: {
-    width: "90%",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: COLORS.white,
-  },
-  loginText: {
-    fontSize: 14,
-    color: COLORS.textPrimary,
-  },
-  loginLink: {
-    color: COLORS.primary,
-    fontWeight: "bold",
   },
 });
 

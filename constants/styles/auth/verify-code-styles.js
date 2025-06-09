@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import COLORS from "../colors";
+import COLORS from "../../colors";
 
 const styles = StyleSheet.create({
   container: {
@@ -18,19 +18,30 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: COLORS.textPrimary,
-    marginBottom: 30,
+    marginBottom: 10,
     textAlign: "center",
   },
-  input: {
-    width: "90%",
-    backgroundColor: COLORS.inputBackground,
-    borderColor: COLORS.border,
-    borderWidth: 1,
+  infoText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  otpContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  otpInput: {
+    width: 50,
+    height: 50,
+    borderWidth: 2,
     borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 16,
+    textAlign: "center",
+    marginHorizontal: 5,
+    fontSize: 18,
     color: COLORS.textDark,
+    backgroundColor: COLORS.inputBackground,
   },
   button: {
     width: "90%",
@@ -43,6 +54,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: COLORS.white,
+  },
+  resendText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    marginTop: 15,
+    textDecorationLine: "underline",
   },
   error: {
     color: COLORS.error,

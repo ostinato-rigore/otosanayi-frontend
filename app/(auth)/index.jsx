@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
-import styles from "../../constants/styles/splash-styles";
+import styles from "../../constants/styles/auth/splash-styles";
 
 export default function Index() {
   const router = useRouter();

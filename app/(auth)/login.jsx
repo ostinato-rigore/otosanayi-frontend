@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { z } from "zod";
 import COLORS from "../../constants/colors";
-import styles from "../../constants/styles/login-styles";
+import styles from "../../constants/styles/auth/login-styles";
 import useAuthStore from "../../store/useAuthStore";
 
 // Validation schema factory

@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import COLORS from "../../constants/colors";
-import styles from "../../constants/styles/verify-code-styles";
+import styles from "../../constants/styles/auth/verify-code-styles";
 import useAuthStore from "../../store/useAuthStore";
 
 export default function VerifyCode() {

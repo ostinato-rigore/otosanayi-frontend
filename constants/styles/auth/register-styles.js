@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import COLORS from "../colors";
+import COLORS from "../../colors";
 
 const styles = StyleSheet.create({
   container: {
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginLeft: 20,
   },
-  loginButton: {
+  registerButton: {
     width: "90%",
     paddingVertical: 14,
     borderRadius: 8,
@@ -73,12 +73,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: COLORS.white,
   },
-  registerText: {
+  loginText: {
     fontSize: 14,
     color: COLORS.textPrimary,
-    marginTop: 5,
   },
-  registerLink: {
+  loginLink: {
     color: COLORS.primary,
     fontWeight: "bold",
   },

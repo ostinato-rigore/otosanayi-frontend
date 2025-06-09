@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { z } from "zod";
 import COLORS from "../../constants/colors";
-import styles from "../../constants/styles/forgot-password-styles";
+import styles from "../../constants/styles/auth/forgot-password-styles";
 import useAuthStore from "../../store/useAuthStore";
 
 const createForgotPasswordSchema = (t) =>

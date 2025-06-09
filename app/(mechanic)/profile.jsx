@@ -21,7 +21,7 @@ import {
   uploadMechanicLogo,
 } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
-import styles from "../../constants/styles/mechanic-profile-styles";
+import styles from "../../constants/styles/mechanic/mechanic-profile-styles";
 import useAuthStore from "../../store/useAuthStore";
 
 // Validation schema

@@ -21,7 +21,7 @@ import {
 import { z } from "zod";
 import { updateCustomerProfile, uploadProfilePhoto } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
-import styles from "../../constants/styles/customer-edit-profile-styles";
+import styles from "../../constants/styles/customer/customer-edit-profile-styles";
 import {
   FUEL_TYPES,
   VEHICLE_BRANDS,

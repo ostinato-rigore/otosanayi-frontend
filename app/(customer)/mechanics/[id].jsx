@@ -16,7 +16,7 @@ import {
 import { fetchMechanicById, postReview } from "../../../api/apiClient";
 import StarRating from "../../../components/StarRating";
 import COLORS from "../../../constants/colors";
-import styles from "../../../constants/styles/mechanic-detail-styles";
+import styles from "../../../constants/styles/customer/mechanic-detail-styles";
 // InfoRow bileşeni
 const InfoRow = ({ iconName, text, iconColor = COLORS.primary, style }) => (
   <View style={[styles.infoRow, style]}>

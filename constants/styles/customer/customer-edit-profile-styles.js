@@ -1,6 +1,6 @@
 // constants/styles/customer-edit-profile-styles.js
 import { StyleSheet } from "react-native";
-import COLORS from "../colors";
+import COLORS from "../../colors";
 
 export default StyleSheet.create({
   container: {

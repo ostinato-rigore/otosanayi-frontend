@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { fetchCustomerReviews } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
-import styles from "../../constants/styles/customer-reviews-screen-styles";
+import styles from "../../constants/styles/customer/customer-reviews-screen-styles";
 
 export default function CustomerReviews() {
   const router = useRouter();

@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 import COLORS from "../../constants/colors";
-import styles from "../../constants/styles/customer-profile-styles";
+import styles from "../../constants/styles/customer/customer-profile-styles";
 import useAuthStore from "../../store/useAuthStore";
 
 export default function Profile() {
