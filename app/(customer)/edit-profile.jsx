@@ -410,7 +410,7 @@ export default function CustomerEditProfile() {
         {/* Aksiyon Butonları */}
         <View style={styles.actionButtons}>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: COLORS.primary }]}
+            style={[styles.button, { backgroundColor: COLORS.accentCustomer }]}
             onPress={isEditable ? handleSave : () => setIsEditable(true)}
             disabled={isSaving}
             accessibilityLabel={

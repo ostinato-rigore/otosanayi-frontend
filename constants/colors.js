@@ -1,15 +1,15 @@
 const COLORS = {
-  primary: "#1F2A37", // Lacivert – Derin ana renk, kurumsal ve karizmatik
-  textPrimary: "#2D3748", // Koyu çelik gri – yüksek okunabilirlik
-  textSecondary: "#4A5568", // Nötr gri – yardımcı metinler
-  background: "#F1F5F9", // Hafif mavi-gri – daha modern ve dengeli
-  cardBackground: "#FAFAFA", // Hafif beyaz – içerik kutuları için hafif fark
-  inputBackground: "#EDF2F7", // Hafif gri – inputlar
-  border: "#B0BEC5", // Modern açık gri – daha belirgin çerçeve
-  placeholderText: "#A0AEC0", // Soft gri – yönlendirme yazıları
-  accentCustomer: "#496A85", // Soğuk doygun mavi – müşteri tarafı
-  accentMechanic: "#101925", // Koyu gri-mavi – sanayici tarafı
-  error: "#C53030", // Mat kırmızı – hata durumları
+  primary: "#1C1C1C", // Neredeyse siyah - güçlü ve zamansız ana renk
+  textPrimary: "#222222", // Çok koyu gri - yüksek okunabilirlik
+  textSecondary: "#555555", // Orta gri - yardımcı metinler
+  background: "#FAFAFA", // Çok hafif gri beyaz - arka plan için ideal
+  cardBackground: "#FFFFFF", // Beyaz - içerik kutuları için net ayrışma
+  inputBackground: "#F5F5F5", // Hafif gri - inputlar için yumuşak fon
+  border: "#E0E0E0", // Çok açık gri - minimal çerçeve, rahatsız etmez
+  placeholderText: "#999999", // Açık-orta gri - yönlendirme yazıları
+  accentCustomer: "#4B647A", // Soğuk gri-mavi - müşteri için sade ve ayırt edici
+  accentMechanic: "#37424F", // Koyu gri-mavi - mekanik için ağır ve profesyonel
+  error: "#B00020", // Klasik mat kırmızı - sade hata rengi
   white: "#FFFFFF",
   black: "#000000",
 };
