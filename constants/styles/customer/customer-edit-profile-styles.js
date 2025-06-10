@@ -111,8 +111,7 @@ export default StyleSheet.create({
   errorText: {
     color: COLORS.error,
     fontSize: 12,
-    marginBottom: 8,
-    marginLeft: 100,
+    marginTop: 12,
   },
   actionButtons: {
     marginTop: 24,
