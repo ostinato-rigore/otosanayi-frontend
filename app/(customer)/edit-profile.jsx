@@ -4,8 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -30,27 +31,31 @@ import {
 } from "../../constants/vehicleData";
 import useAuthStore from "../../store/useAuthStore";
 
-// Zod Şeması
-const customerSchema = z.object({
-  name: z.string().min(2, "İsim en az 2 karakter olmalı").optional(),
-  phone: z
-    .string()
-    .regex(/^\+?\d{10,15}$/, "Geçerli bir telefon numarası girin")
-    .optional(),
-  profilePhoto: z.string().optional(),
-  vehicle: z.object({
-    brand: z.string().nonempty("Araç markası zorunlu"),
-    model: z.string().nonempty("Araç modeli zorunlu"),
-    year: z.string().nonempty("Araç yılı zorunlu"),
-    fuelType: z.string().nonempty("Yakıt türü zorunlu"),
-  }),
-});
+// Zod Şeması Fabrikası
+const createCustomerSchema = (t) =>
+  z.object({
+    name: z.string().min(2, t("nameMinLength")).optional(),
+    phone: z
+      .string()
+      .regex(/^\+?\d{10,15}$/, t("invalidPhone"))
+      .optional(),
+    profilePhoto: z.string().optional(),
+    vehicle: z.object({
+      brand: z.string().nonempty(t("editProfile.errors.brandRequired")),
+      model: z.string().nonempty(t("editProfile.errors.modelRequired")),
+      year: z.string().nonempty(t("editProfile.errors.yearRequired")),
+      fuelType: z.string().nonempty(t("editProfile.errors.fuelTypeRequired")),
+    }),
+  });
 
 export default function CustomerEditProfile() {
   const router = useRouter();
   const { user, isLoading, fetchUser } = useAuthStore();
+  const { t } = useTranslation();
   const [isEditable, setIsEditable] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const customerSchema = useMemo(() => createCustomerSchema(t), [t]);
 
   const {
     control,
@@ -78,7 +83,10 @@ export default function CustomerEditProfile() {
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
-        Alert.alert("İzin gerekli", "Galeri erişimi için izin gerekiyor.");
+        Alert.alert(
+          t("editProfile.permissionRequired"),
+          t("editProfile.galleryPermission")
+        );
         return;
       }
 
@@ -92,13 +100,13 @@ export default function CustomerEditProfile() {
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
         setValue("profilePhoto", imageUri);
-        Alert.alert(
-          "Bilgi",
-          "Fotoğraf seçildi. Profili kaydetmek için kaydedin."
-        );
+        Alert.alert(t("success"), t("editProfile.photoSelected"));
       }
     } catch (error) {
-      Alert.alert("Hata", error.message || "Fotoğraf seçilemedi.");
+      Alert.alert(
+        t("error"),
+        error.message || t("editProfile.photoSelectionFailed")
+      );
     }
   };
 
@@ -109,7 +117,7 @@ export default function CustomerEditProfile() {
       if (profilePhotoUrl && profilePhotoUrl.startsWith("file://")) {
         const response = await uploadProfilePhoto(profilePhotoUrl);
         if (!response.profilePhoto) {
-          throw new Error("Sunucudan logo URL'si alınamadı");
+          throw new Error(t("editProfile.serverError"));
         }
         profilePhotoUrl = response.profilePhoto;
       }
@@ -122,11 +130,11 @@ export default function CustomerEditProfile() {
 
       await updateCustomerProfile(payload);
       await fetchUser();
-      Alert.alert("Başarılı", "Profil başarıyla güncellendi.");
+      Alert.alert(t("success"), t("editProfile.updateSuccess"));
       setIsEditable(false);
       router.replace("/(customer)/edit-profile");
     } catch (error) {
-      Alert.alert("Hata", error.message || "Güncelleme başarısız");
+      Alert.alert(t("error"), error.message || t("editProfile.updateFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -134,11 +142,11 @@ export default function CustomerEditProfile() {
 
   const handleSave = () => {
     Alert.alert(
-      "Kaydetmeyi Onayla",
-      "Değişiklikleri kaydetmek istediğinizden emin misiniz?",
+      t("editProfile.confirmSaveTitle"),
+      t("editProfile.confirmSaveMessage"),
       [
-        { text: "İptal", style: "cancel" },
-        { text: "Evet, Kaydet", onPress: handleSubmit(onSubmit) },
+        { text: t("editProfile.cancel"), style: "cancel" },
+        { text: t("editProfile.yesSave"), onPress: handleSubmit(onSubmit) },
       ],
       { cancelable: false }
     );
@@ -148,7 +156,7 @@ export default function CustomerEditProfile() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Profil yükleniyor...</Text>
+        <Text style={styles.loadingText}>{t("profile.loadingProfile")}</Text>
       </View>
     );
   }
@@ -169,8 +177,10 @@ export default function CustomerEditProfile() {
           style={styles.profileImageContainer}
           onPress={isEditable ? pickImage : undefined}
           disabled={!isEditable}
-          accessibilityLabel="Profil fotoğrafı seç"
-          accessibilityHint={isEditable ? "Fotoğraf seçmek için dokunun" : ""}
+          accessibilityLabel={t("editProfile.selectProfilePhoto")}
+          accessibilityHint={
+            isEditable ? t("editProfile.tapToSelectPhoto") : ""
+          }
         >
           {watch("profilePhoto") ? (
             <Image
@@ -196,24 +206,24 @@ export default function CustomerEditProfile() {
           )}
         </TouchableOpacity>
         <Text style={styles.profileName}>
-          {watch("name") || "İsim Belirtilmemiş"}
+          {watch("name") || t("profile.noNameSet")}
         </Text>
 
         {/* Kişisel Bilgiler */}
-        <Text style={styles.sectionTitle}>Kişisel Bilgiler</Text>
+        <Text style={styles.sectionTitle}>{t("editProfile.personalInfo")}</Text>
         <Controller
           control={control}
           name="name"
           render={({ field: { onChange, value } }) => (
             <View style={styles.inputRow}>
-              <Text style={styles.label}>İsim</Text>
+              <Text style={styles.label}>{t("nameLabel")}</Text>
               <TextInput
                 style={styles.inputValue}
                 value={value}
                 onChangeText={onChange}
                 editable={isEditable}
-                placeholder="İsim girin"
-                accessibilityLabel="İsim"
+                placeholder={t("editProfile.enterName")}
+                accessibilityLabel={t("nameLabel")}
               />
             </View>
           )}
@@ -227,15 +237,15 @@ export default function CustomerEditProfile() {
           name="phone"
           render={({ field: { onChange, value } }) => (
             <View style={styles.inputRow}>
-              <Text style={styles.label}>Telefon</Text>
+              <Text style={styles.label}>{t("phoneLabel")}</Text>
               <TextInput
                 style={styles.inputValue}
                 value={value}
                 onChangeText={onChange}
                 editable={isEditable}
-                placeholder="Telefon girin"
+                placeholder={t("editProfile.enterPhone")}
                 keyboardType="phone-pad"
-                accessibilityLabel="Telefon numarası"
+                accessibilityLabel={t("phoneLabel")}
               />
             </View>
           )}
@@ -245,15 +255,15 @@ export default function CustomerEditProfile() {
         )}
 
         <View style={styles.disabledInputRow}>
-          <Text style={styles.label}>E-posta</Text>
+          <Text style={styles.label}>{t("emailLabel")}</Text>
           <Text style={styles.disabledInputValue}>
-            {user.email || "Belirtilmemiş"}
+            {user.email || t("profile.noEmailSet")}
           </Text>
         </View>
 
         {/* Araç Bilgileri */}
         <Text style={[styles.sectionTitle, { marginTop: 24 }]}>
-          Araç Bilgileri
+          {t("editProfile.vehicleInfo")}
         </Text>
 
         <Controller
@@ -261,7 +271,7 @@ export default function CustomerEditProfile() {
           name="vehicle.brand"
           render={({ field: { onChange, value } }) => (
             <View style={styles.inputRow}>
-              <Text style={styles.label}>Marka</Text>
+              <Text style={styles.label}>{t("editProfile.brandLabel")}</Text>
               {isEditable ? (
                 <Picker
                   selectedValue={value}
@@ -271,16 +281,16 @@ export default function CustomerEditProfile() {
                   }}
                   style={styles.picker}
                   enabled={isEditable}
-                  accessibilityLabel="Araç markası seç"
+                  accessibilityLabel={t("editProfile.selectBrand")}
                 >
-                  <Picker.Item label="Marka Seçin" value="" />
+                  <Picker.Item label={t("editProfile.selectBrand")} value="" />
                   {VEHICLE_BRANDS.map((brand) => (
                     <Picker.Item key={brand} label={brand} value={brand} />
                   ))}
                 </Picker>
               ) : (
                 <Text style={styles.inputValue}>
-                  {value || "Belirtilmemiş"}
+                  {value || t("editProfile.noValueSet")}
                 </Text>
               )}
             </View>
@@ -295,7 +305,7 @@ export default function CustomerEditProfile() {
           name="vehicle.model"
           render={({ field: { onChange, value } }) => (
             <View style={styles.inputRow}>
-              <Text style={styles.label}>Model</Text>
+              <Text style={styles.label}>{t("editProfile.modelLabel")}</Text>
               {isEditable ? (
                 <Picker
                   selectedValue={value}
@@ -305,16 +315,16 @@ export default function CustomerEditProfile() {
                     !currentBrand && styles.disabledPicker,
                   ]}
                   enabled={isEditable && !!currentBrand}
-                  accessibilityLabel="Araç modeli seç"
+                  accessibilityLabel={t("editProfile.selectModel")}
                 >
-                  <Picker.Item label="Model Seçin" value="" />
+                  <Picker.Item label={t("editProfile.selectModel")} value="" />
                   {(VEHICLE_MODELS[currentBrand] || []).map((model) => (
                     <Picker.Item key={model} label={model} value={model} />
                   ))}
                 </Picker>
               ) : (
                 <Text style={styles.inputValue}>
-                  {value || "Belirtilmemiş"}
+                  {value || t("editProfile.noValueSet")}
                 </Text>
               )}
             </View>
@@ -329,23 +339,23 @@ export default function CustomerEditProfile() {
           name="vehicle.year"
           render={({ field: { onChange, value } }) => (
             <View style={styles.inputRow}>
-              <Text style={styles.label}>Yıl</Text>
+              <Text style={styles.label}>{t("editProfile.yearLabel")}</Text>
               {isEditable ? (
                 <Picker
                   selectedValue={value}
                   onValueChange={onChange}
                   style={styles.picker}
                   enabled={isEditable}
-                  accessibilityLabel="Araç yılı seç"
+                  accessibilityLabel={t("editProfile.selectYear")}
                 >
-                  <Picker.Item label="Yıl Seçin" value="" />
+                  <Picker.Item label={t("editProfile.selectYear")} value="" />
                   {VEHICLE_YEARS.map((year) => (
                     <Picker.Item key={year} label={year} value={year} />
                   ))}
                 </Picker>
               ) : (
                 <Text style={styles.inputValue}>
-                  {value || "Belirtilmemiş"}
+                  {value || t("editProfile.noValueSet")}
                 </Text>
               )}
             </View>
@@ -360,23 +370,32 @@ export default function CustomerEditProfile() {
           name="vehicle.fuelType"
           render={({ field: { onChange, value } }) => (
             <View style={styles.inputRow}>
-              <Text style={styles.label}>Yakıt Türü</Text>
+              <Text style={styles.label}>{t("editProfile.fuelTypeLabel")}</Text>
               {isEditable ? (
                 <Picker
                   selectedValue={value}
                   onValueChange={onChange}
                   style={styles.picker}
                   enabled={isEditable}
-                  accessibilityLabel="Yakıt türü seç"
+                  accessibilityLabel={t("editProfile.selectFuelType")}
                 >
-                  <Picker.Item label="Yakıt Türü Seçin" value="" />
+                  <Picker.Item
+                    label={t("editProfile.selectFuelType")}
+                    value=""
+                  />
                   {FUEL_TYPES.map((fuel) => (
-                    <Picker.Item key={fuel} label={fuel} value={fuel} />
+                    <Picker.Item
+                      key={fuel}
+                      label={t(`editProfile.fuelTypes.${fuel}`)}
+                      value={fuel}
+                    />
                   ))}
                 </Picker>
               ) : (
                 <Text style={styles.inputValue}>
-                  {value || "Belirtilmemiş"}
+                  {value
+                    ? t(`editProfile.fuelTypes.${value}`)
+                    : t("editProfile.noValueSet")}
                 </Text>
               )}
             </View>
@@ -395,14 +414,16 @@ export default function CustomerEditProfile() {
             onPress={isEditable ? handleSave : () => setIsEditable(true)}
             disabled={isSaving}
             accessibilityLabel={
-              isEditable ? "Profili kaydet" : "Profili düzenle"
+              isEditable ? t("editProfile.save") : t("editProfile.editProfile")
             }
           >
             {isSaving ? (
               <ActivityIndicator size="small" color={COLORS.white} />
             ) : (
               <Text style={styles.buttonText}>
-                {isEditable ? "Kaydet" : "Profili Düzenle"}
+                {isEditable
+                  ? t("editProfile.save")
+                  : t("editProfile.editProfile")}
               </Text>
             )}
           </TouchableOpacity>
