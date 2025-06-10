@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Image,
@@ -16,6 +17,7 @@ import useAuthStore from "../../store/useAuthStore";
 export default function Profile() {
   const router = useRouter();
   const { user, isLoading } = useAuthStore();
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -50,7 +52,7 @@ export default function Profile() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading profile...</Text>
+        <Text style={styles.loadingText}>{t("profile.loadingProfile")}</Text>
       </View>
     );
   }
@@ -80,38 +82,57 @@ export default function Profile() {
           </TouchableOpacity>
 
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>{formData.name || "No Name Set"}</Text>
-            <Text style={styles.email}>{formData.email || "No Email Set"}</Text>
+            <Text style={styles.name}>
+              {formData.name || t("profile.noNameSet")}
+            </Text>
+            <Text style={styles.email}>
+              {formData.email || t("profile.noEmailSet")}
+            </Text>
           </View>
         </View>
 
         {/* Menü */}
         <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={handleEditProfile}
+            accessible
+            accessibilityLabel={t("profile.myProfile")}
+          >
             <Ionicons
               name="person-outline"
               size={20}
               color={COLORS.textPrimary}
             />
-            <Text style={styles.menuItemText}>My Profile</Text>
+            <Text style={styles.menuItemText}>{t("profile.myProfile")}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem} onPress={handleMyReviews}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={handleMyReviews}
+            accessible
+            accessibilityLabel={t("profile.myReviews")}
+          >
             <Ionicons
               name="star-outline"
               size={20}
               color={COLORS.textPrimary}
             />
-            <Text style={styles.menuItemText}>My Reviews</Text>
+            <Text style={styles.menuItemText}>{t("profile.myReviews")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
       {/* Logout en alta sabit */}
       <View style={styles.logoutContainer}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={handleLogout}
+          accessible
+          accessibilityLabel={t("profile.logout")}
+        >
           <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
-          <Text style={styles.logoutButtonText}>Logout</Text>
+          <Text style={styles.logoutButtonText}>{t("profile.logout")}</Text>
         </TouchableOpacity>
       </View>
     </View>

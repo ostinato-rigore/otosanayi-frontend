@@ -57,5 +57,13 @@
   "resendCode": "Resend Code",
   "codeVerified": "Code verified successfully",
   "passwordReset": "Password has been reset successfully",
-  "newPasswordRequired": "New password is required"
+  "newPasswordRequired": "New password is required",
+  "profile": {
+    "loadingProfile": "Loading profile...",
+    "noNameSet": "No Name Set",
+    "noEmailSet": "No Email Set",
+    "myProfile": "My Profile",
+    "myReviews": "My Reviews",
+    "logout": "Logout"
+  }
 }
