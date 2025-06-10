@@ -107,5 +107,9 @@
       "yearRequired": "Vehicle year is required",
       "fuelTypeRequired": "Fuel type is required"
     }
+  },
+  "tabs": {
+    "home": "Home",
+    "profile": "Profile"
   }
 }

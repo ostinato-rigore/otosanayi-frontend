@@ -1,10 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import COLORS from "../../constants/colors";
 
 export default function CustomerLayout() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -24,7 +26,7 @@ export default function CustomerLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: "Home",
+          title: t("tabs.home"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
@@ -33,7 +35,7 @@ export default function CustomerLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: t("tabs.profile"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),

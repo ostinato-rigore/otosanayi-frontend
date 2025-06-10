@@ -107,5 +107,9 @@
       "yearRequired": "Araç yılı zorunlu",
       "fuelTypeRequired": "Yakıt türü zorunlu"
     }
+  },
+  "tabs": {
+    "home": "Ana Sayfa",
+    "profile": "Profil"
   }
 }
