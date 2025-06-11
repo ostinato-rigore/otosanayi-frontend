@@ -36,7 +36,18 @@ const expertiseAreasOptions = [
   "Boya",
   "Fren Sistemleri",
   "Lastik",
+  "Şanzıman Tamiri",
+  "Süspansiyon",
+  "Egzoz Sistemleri",
+  "Klima Servisi",
+  "Yakıt Sistemi",
+  "Rot Balans",
+  "Debriyaj Tamiri",
+  "Hidrolik Sistemler",
+  "Aks ve Diferansiyel",
+  "Diğer",
 ];
+
 const vehicleBrandsOptions = [
   "BMW",
   "Mercedes",
