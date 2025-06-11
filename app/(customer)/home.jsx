@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -18,13 +19,16 @@ import { fetchMechanics } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/customer/customer-home-styles";
 
-// Örnek filtre seçenekleri
-const cities = ["İstanbul", "Ankara", "İzmir", "Bursa"];
-const districts = {
-  İstanbul: ["Kadıköy", "Beşiktaş", "Şişli"],
-  Ankara: ["Çankaya", "Kızılay", "Yenimahalle"],
-  İzmir: ["Bornova", "Karşıyaka", "Konak"],
+// Filter item types
+const FILTER_TYPES = {
+  CITY: "city",
+  DISTRICT: "district",
+  EXPERTISE_AREAS: "expertiseAreas",
+  VEHICLE_BRANDS: "vehicleBrands",
+  MIN_RATING: "minRating",
 };
+
+// Static options (to be replaced with API data for expertise and vehicle brands)
 const expertiseAreasOptions = [
   "Motor Tamiri",
   "Elektrik",
@@ -44,18 +48,8 @@ const vehicleBrandsOptions = [
   "Hyundai",
   "Nissan",
   "Renault",
-  // ... daha fazla marka eklenebilir
 ];
 const ratingOptions = [0, 1, 2, 3, 4, 5];
-
-// Filter item types
-const FILTER_TYPES = {
-  CITY: "city",
-  DISTRICT: "district",
-  EXPERTISE_AREAS: "expertiseAreas",
-  VEHICLE_BRANDS: "vehicleBrands",
-  MIN_RATING: "minRating",
-};
 
 /* --- Ana Bileşen --- */
 export default function CustomerHome() {
@@ -82,7 +76,48 @@ export default function CustomerHome() {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [dropdownVisible, setDropdownVisible] = useState(null); // Tracks which dropdown is open
+  const [dropdownVisible, setDropdownVisible] = useState(null);
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState({});
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
+
+  const fetchCityData = async () => {
+    setIsLoadingCities(true);
+    try {
+      const response = await axios.get(
+        "https://turkiyeapi.dev/api/v1/provinces"
+      );
+      if (response.status !== 200) throw new Error("API isteği başarısız oldu");
+      const result = response.data;
+      if (result.status === "OK" && Array.isArray(result.data)) {
+        const cityList = result.data.map((city) => city.name);
+        const districtMap = result.data.reduce((acc, city) => {
+          acc[city.name] = city.districts.map((dist) => dist.name);
+          return acc;
+        }, {});
+        setCities(cityList);
+        setDistricts(districtMap);
+      } else {
+        throw new Error("Geçersiz API yanıtı");
+      }
+    } catch (error) {
+      Alert.alert("Hata", "Şehir verileri yüklenemedi: " + error.message);
+      console.error("Fetch City Data Error:", error);
+      // Fallback to static data if API fails
+      setCities(["İstanbul", "Ankara", "İzmir", "Bursa"]);
+      setDistricts({
+        İstanbul: ["Kadıköy", "Beşiktaş", "Şişli"],
+        Ankara: ["Çankaya", "Kızılay", "Yenimahalle"],
+        İzmir: ["Bornova", "Karşıyaka", "Konak"],
+      });
+    } finally {
+      setIsLoadingCities(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCityData();
+  }, []);
 
   const fetchMechanicsData = useCallback(
     async (pageNum = 1, refresh = false) => {
@@ -247,21 +282,37 @@ export default function CustomerHome() {
         style={styles.dropdownButton}
         onPress={() => toggleDropdown(type)}
         accessibilityLabel={`${label} seçimi`}
+        disabled={
+          isLoadingCities &&
+          (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT)
+        }
       >
         <Text style={styles.dropdownText}>
-          {isMultiSelect
+          {isLoadingCities &&
+          (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT)
+            ? "Yükleniyor..."
+            : isMultiSelect
             ? selectedValues.length > 0
               ? `${selectedValues.length} seçenek seçildi`
               : "Seçiniz"
             : value || "Seçiniz"}
         </Text>
-        <Ionicons
-          name={dropdownVisible === type ? "chevron-up" : "chevron-down"}
-          size={20}
-          color={COLORS.textPrimary}
-        />
+        {isLoadingCities &&
+        (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT) ? (
+          <ActivityIndicator
+            size="small"
+            color={COLORS.accentCustomer}
+            style={styles.loadingIndicator}
+          />
+        ) : (
+          <Ionicons
+            name={dropdownVisible === type ? "chevron-up" : "chevron-down"}
+            size={20}
+            color={COLORS.textPrimary}
+          />
+        )}
       </TouchableOpacity>
-      {dropdownVisible === type && (
+      {dropdownVisible === type && !isLoadingCities && (
         <View style={styles.dropdownContainer}>
           <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
             {!isMultiSelect && (
@@ -452,7 +503,7 @@ export default function CustomerHome() {
       {/* Başlık ve Arama */}
       <View style={styles.header}>
         <Text style={styles.title} accessibilityRole="header">
-          Sanayiciler
+          Sanayi Ustaları
         </Text>
         <View style={styles.searchContainer} accessibilityRole="search">
           <Ionicons
@@ -462,12 +513,12 @@ export default function CustomerHome() {
             color={COLORS.placeholderText}
           />
           <TextInput
-            placeholder="Sanayici ara..."
+            placeholder="Sanayi Ustası ara..."
             placeholderTextColor={COLORS.placeholderText}
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={styles.searchInput}
-            accessibilityLabel="Sanayici arama çubuğu"
+            accessibilityLabel="Sanayi Ustası arama çubuğu"
           />
           <TouchableOpacity
             onPress={() => setFilterModalVisible(true)}
@@ -487,7 +538,7 @@ export default function CustomerHome() {
         renderItem={({ item }) => <MechanicCard mechanic={item} />}
         ListEmptyComponent={
           <Text style={styles.emptyText} accessibilityRole="alert">
-            Sanayici bulunamadı.
+            Sanayi Ustası bulunamadı.
           </Text>
         }
         refreshing={loading}

@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: COLORS.inputBackground,
-    borderRadius: 10,
+    borderRadius: 8,
     paddingHorizontal: 14,
     marginTop: 12,
   },
@@ -287,6 +287,9 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginVertical: 10,
+  },
+  loadingIndicator: {
+    marginLeft: 10,
   },
 });
 
