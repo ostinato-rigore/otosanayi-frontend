@@ -1,4 +1,3 @@
-// screens/CustomerEditProfile.js
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Picker } from "@react-native-picker/picker";
@@ -31,7 +30,6 @@ import {
 } from "../../constants/vehicleData";
 import useAuthStore from "../../store/useAuthStore";
 
-// Zod Şeması Fabrikası
 const createCustomerSchema = (t) =>
   z.object({
     name: z.string().min(2, t("nameMinLength")).optional(),

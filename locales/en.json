@@ -111,5 +111,19 @@
   "tabs": {
     "home": "Home",
     "profile": "Profile"
+  },
+  "filters": {
+    "title": "Filter Options",
+    "city": "City",
+    "district": "District",
+    "expertiseAreas": "Expertise Areas",
+    "vehicleBrands": "Vehicle Brands",
+    "minRating": "Minimum Rating",
+    "select": "Select",
+    "cancel": "Cancel",
+    "reset": "Reset",
+    "apply": "Apply",
+    "noDistricts": "No districts available",
+    "searchPlaceholder": "Search for mechanics..."
   }
 }

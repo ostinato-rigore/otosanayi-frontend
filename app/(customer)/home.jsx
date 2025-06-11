@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -9,6 +8,7 @@ import {
   Image,
   Modal,
   RefreshControl,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -40,6 +40,11 @@ const vehicleBrandsOptions = [
   "Honda",
   "Ford",
   "Volkswagen",
+  "Audi",
+  "Hyundai",
+  "Nissan",
+  "Renault",
+  // ... daha fazla marka eklenebilir
 ];
 const ratingOptions = [0, 1, 2, 3, 4, 5];
 
@@ -77,6 +82,7 @@ export default function CustomerHome() {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [dropdownVisible, setDropdownVisible] = useState(null); // Tracks which dropdown is open
 
   const fetchMechanicsData = useCallback(
     async (pageNum = 1, refresh = false) => {
@@ -149,7 +155,8 @@ export default function CustomerHome() {
   const applyFilters = () => {
     setAppliedFilters({ ...filters });
     setFilterModalVisible(false);
-    fetchMechanicsData(1, true); // Filtreler değiştiğinde 1. sayfadan başla
+    setDropdownVisible(null);
+    fetchMechanicsData(1, true);
   };
 
   const resetFilters = () => {
@@ -167,16 +174,18 @@ export default function CustomerHome() {
       vehicleBrands: [],
       minRating: 0,
     });
-    fetchMechanicsData(1, true); // Sıfırlama sonrası 1. sayfadan başla
+    setDropdownVisible(null);
+    fetchMechanicsData(1, true);
+  };
+
+  const toggleDropdown = (type) => {
+    setDropdownVisible(dropdownVisible === type ? null : type);
   };
 
   const MechanicCard = ({ mechanic }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => {
-        console.log("Navigating to:", `/(customer)/mechanics/${mechanic.id}`);
-        router.push(`/(customer)/mechanics/${mechanic.id}`);
-      }}
+      onPress={() => router.push(`/(customer)/mechanics/${mechanic.id}`)}
       accessibilityLabel={`Mekanik detayları: ${mechanic.name}`}
     >
       <View style={styles.cardHeader}>
@@ -214,10 +223,7 @@ export default function CustomerHome() {
       </Text>
       <TouchableOpacity
         style={styles.detailsButton}
-        onPress={() => {
-          console.log("Navigating to:", `/mechanics/${mechanic.id}`);
-          router.push(`/(customer)/mechanics/${mechanic.id}`);
-        }}
+        onPress={() => router.push(`/(customer)/mechanics/${mechanic.id}`)}
         accessibilityLabel="Detayları gör"
       >
         <Text style={styles.detailsButtonText}>Detayları Gör</Text>
@@ -225,121 +231,215 @@ export default function CustomerHome() {
     </TouchableOpacity>
   );
 
+  const DropdownSelect = ({
+    label,
+    value,
+    options,
+    onSelect,
+    type,
+    isMultiSelect,
+    selectedValues,
+    onToggle,
+  }) => (
+    <View style={styles.filterSection}>
+      <Text style={styles.filterLabel}>{label}</Text>
+      <TouchableOpacity
+        style={styles.dropdownButton}
+        onPress={() => toggleDropdown(type)}
+        accessibilityLabel={`${label} seçimi`}
+      >
+        <Text style={styles.dropdownText}>
+          {isMultiSelect
+            ? selectedValues.length > 0
+              ? `${selectedValues.length} seçenek seçildi`
+              : "Seçiniz"
+            : value || "Seçiniz"}
+        </Text>
+        <Ionicons
+          name={dropdownVisible === type ? "chevron-up" : "chevron-down"}
+          size={20}
+          color={COLORS.textPrimary}
+        />
+      </TouchableOpacity>
+      {dropdownVisible === type && (
+        <View style={styles.dropdownContainer}>
+          <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+            {!isMultiSelect && (
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => {
+                  onSelect("");
+                  toggleDropdown(null);
+                }}
+              >
+                <Text style={styles.dropdownItemText}>Seçiniz</Text>
+              </TouchableOpacity>
+            )}
+            {options.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  if (isMultiSelect) {
+                    onToggle(option);
+                  } else {
+                    onSelect(option);
+                    toggleDropdown(null);
+                  }
+                }}
+              >
+                {isMultiSelect && (
+                  <View
+                    style={[
+                      styles.checkbox,
+                      selectedValues.includes(option) &&
+                        styles.checkboxSelected,
+                    ]}
+                  >
+                    {selectedValues.includes(option) && (
+                      <Ionicons
+                        name="checkmark"
+                        size={16}
+                        color={COLORS.white}
+                      />
+                    )}
+                  </View>
+                )}
+                <Text style={styles.dropdownItemText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {isMultiSelect && (
+            <TouchableOpacity
+              style={styles.dropdownCloseButton}
+              onPress={() => toggleDropdown(null)}
+            >
+              <Text style={styles.dropdownCloseText}>Kapat</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </View>
+  );
+
+  const MultiSelectChips = ({ label, options, selected, onToggle }) => (
+    <View style={styles.filterSection}>
+      <Text style={styles.filterLabel}>{label}</Text>
+      <View style={styles.chipsContainer}>
+        {options.map((option) => (
+          <TouchableOpacity
+            key={option}
+            style={[
+              styles.chip,
+              selected.includes(option) && styles.chipSelected,
+            ]}
+            onPress={() => onToggle(option)}
+            accessibilityLabel={`${option} seçeneği ${
+              selected.includes(option) ? "seçildi" : "seçilmedi"
+            }`}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                selected.includes(option) && styles.chipTextSelected,
+              ]}
+            >
+              {option}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
+  const RatingSelect = ({ label, selected, onSelect }) => (
+    <View style={styles.filterSection}>
+      <Text style={styles.filterLabel}>{label}</Text>
+      <View style={styles.ratingContainer}>
+        {ratingOptions.map((rating) => (
+          <TouchableOpacity
+            key={rating}
+            style={[
+              styles.ratingButton,
+              selected === rating && styles.ratingButtonSelected,
+            ]}
+            onPress={() => onSelect(rating)}
+            accessibilityLabel={`${rating} puan seç`}
+          >
+            <Text
+              style={[
+                styles.ratingButtonText,
+                selected === rating && styles.ratingButtonTextSelected,
+              ]}
+            >
+              {rating}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
   const renderFilterItem = ({ item }) => {
     switch (item.type) {
       case FILTER_TYPES.CITY:
         return (
-          <FilterPicker
+          <DropdownSelect
             label="Şehir"
-            selectedValue={filters.city}
-            onValueChange={(value) =>
+            value={filters.city}
+            options={cities}
+            onSelect={(value) =>
               setFilters((prev) => ({
                 ...prev,
                 city: value,
                 district: "",
               }))
             }
-            options={cities}
+            type={FILTER_TYPES.CITY}
+            isMultiSelect={false}
           />
         );
       case FILTER_TYPES.DISTRICT:
         return filters.city ? (
-          <FilterPicker
+          <DropdownSelect
             label="İlçe"
-            selectedValue={filters.district}
-            onValueChange={(value) =>
+            value={filters.district}
+            options={districts[filters.city] || []}
+            onSelect={(value) =>
               setFilters((prev) => ({ ...prev, district: value }))
             }
-            options={districts[filters.city] || []}
+            type={FILTER_TYPES.DISTRICT}
+            isMultiSelect={false}
           />
         ) : null;
       case FILTER_TYPES.EXPERTISE_AREAS:
         return (
-          <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>Uzmanlık Alanları</Text>
-            <FlatList
-              data={expertiseAreasOptions}
-              renderItem={({ item: option }) => (
-                <TouchableOpacity
-                  style={styles.checkboxContainer}
-                  onPress={() => toggleSelection("expertiseAreas", option)}
-                  accessibilityLabel={`${option} seçeneği ${
-                    filters.expertiseAreas.includes(option)
-                      ? "seçildi"
-                      : "seçilmedi"
-                  }`}
-                >
-                  <View
-                    style={[
-                      styles.checkbox,
-                      filters.expertiseAreas.includes(option) &&
-                        styles.checkboxSelected,
-                    ]}
-                  >
-                    {filters.expertiseAreas.includes(option) && (
-                      <Ionicons
-                        name="checkmark"
-                        size={16}
-                        color={COLORS.white}
-                      />
-                    )}
-                  </View>
-                  <Text style={styles.checkboxLabel}>{option}</Text>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item) => item}
-              style={styles.checkboxList}
-            />
-          </View>
+          <MultiSelectChips
+            label="Uzmanlık Alanları"
+            options={expertiseAreasOptions}
+            selected={filters.expertiseAreas}
+            onToggle={(value) => toggleSelection("expertiseAreas", value)}
+          />
         );
       case FILTER_TYPES.VEHICLE_BRANDS:
         return (
-          <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>Araç Markaları</Text>
-            <FlatList
-              data={vehicleBrandsOptions}
-              renderItem={({ item: option }) => (
-                <TouchableOpacity
-                  style={styles.checkboxContainer}
-                  onPress={() => toggleSelection("vehicleBrands", option)}
-                  accessibilityLabel={`${option} seçeneği ${
-                    filters.vehicleBrands.includes(option)
-                      ? "seçildi"
-                      : "seçilmedi"
-                  }`}
-                >
-                  <View
-                    style={[
-                      styles.checkbox,
-                      filters.vehicleBrands.includes(option) &&
-                        styles.checkboxSelected,
-                    ]}
-                  >
-                    {filters.vehicleBrands.includes(option) && (
-                      <Ionicons
-                        name="checkmark"
-                        size={16}
-                        color={COLORS.white}
-                      />
-                    )}
-                  </View>
-                  <Text style={styles.checkboxLabel}>{option}</Text>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item) => item}
-              style={styles.checkboxList}
-            />
-          </View>
+          <DropdownSelect
+            label="Araç Markaları"
+            options={vehicleBrandsOptions}
+            selectedValues={filters.vehicleBrands}
+            onToggle={(value) => toggleSelection("vehicleBrands", value)}
+            type={FILTER_TYPES.VEHICLE_BRANDS}
+            isMultiSelect={true}
+          />
         );
       case FILTER_TYPES.MIN_RATING:
         return (
-          <FilterPicker
+          <RatingSelect
             label="Minimum Puan"
-            selectedValue={filters.minRating}
-            onValueChange={(value) =>
+            selected={filters.minRating}
+            onSelect={(value) =>
               setFilters((prev) => ({ ...prev, minRating: value }))
             }
-            options={ratingOptions}
           />
         );
       default:
@@ -406,9 +506,8 @@ export default function CustomerHome() {
             tintColor={COLORS.accentCustomer}
           />
         }
-        onEndReached={async () => {
+        onEndReached={() => {
           if (hasMore && !loading) {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
             fetchMechanicsData(page + 1);
           }
         }}
@@ -476,26 +575,6 @@ export default function CustomerHome() {
     </View>
   );
 }
-
-/* --- Reusable Picker --- */
-const FilterPicker = ({ label, selectedValue, onValueChange, options }) => (
-  <View style={styles.filterSection}>
-    <Text style={styles.filterLabel}>{label}</Text>
-    <View style={styles.pickerContainer}>
-      <Picker
-        selectedValue={selectedValue}
-        onValueChange={onValueChange}
-        style={styles.picker}
-        accessibilityLabel={`${label} seçimi`}
-      >
-        <Picker.Item label="Seçiniz" value="" />
-        {options.map((item) => (
-          <Picker.Item key={item} label={`${item}`} value={item} />
-        ))}
-      </Picker>
-    </View>
-  </View>
-);
 
 const ModalButton = ({ title, onPress, style, accessibilityLabel }) => (
   <TouchableOpacity

@@ -111,5 +111,19 @@
   "tabs": {
     "home": "Ana Sayfa",
     "profile": "Profil"
+  },
+  "filters": {
+    "title": "Filtreleme Seçenekleri",
+    "city": "Şehir",
+    "district": "İlçe",
+    "expertiseAreas": "Uzmanlık Alanları",
+    "vehicleBrands": "Araç Markaları",
+    "minRating": "Minimum Puan",
+    "select": "Seçiniz",
+    "cancel": "İptal",
+    "reset": "Sıfırla",
+    "apply": "Uygula",
+    "noDistricts": "İlçe bulunamadı",
+    "searchPlaceholder": "Sanayici ara..."
   }
 }

@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 8,
   },
   ratingText: {
     marginLeft: 6,
@@ -138,48 +139,125 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   filterSection: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   filterLabel: {
     fontSize: 16,
     fontWeight: "600",
     color: COLORS.textDark,
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  pickerContainer: {
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: 10,
-    marginBottom: 16,
-  },
-  picker: {
-    height: 55,
-    color: COLORS.textDark,
-  },
-  checkboxList: {
-    maxHeight: 200,
-  },
-  checkboxContainer: {
+  dropdownButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
+    justifyContent: "space-between",
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  dropdownText: {
+    fontSize: 15,
+    color: COLORS.textDark,
+  },
+  dropdownContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginTop: 8,
+    elevation: 5,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    position: "relative",
+  },
+  dropdownScroll: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: COLORS.textDark,
+    flex: 1,
+  },
+  dropdownCloseButton: {
+    padding: 12,
+    backgroundColor: COLORS.accentCustomer,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    alignItems: "center",
+  },
+  dropdownCloseText: {
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: "600",
   },
   checkbox: {
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
     borderRadius: 4,
     borderWidth: 2,
     borderColor: COLORS.border,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 14,
+    marginRight: 10,
   },
   checkboxSelected: {
     backgroundColor: COLORS.accentCustomer,
     borderColor: COLORS.accentCustomer,
   },
-  checkboxLabel: {
-    fontSize: 15,
-    color: COLORS.textPrimary,
+  chipsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  chip: {
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  chipSelected: {
+    backgroundColor: COLORS.accentCustomer,
+  },
+  chipText: {
+    fontSize: 14,
+    color: COLORS.textDark,
+  },
+  chipTextSelected: {
+    color: COLORS.white,
+  },
+
+  ratingButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.inputBackground,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  ratingButtonSelected: {
+    backgroundColor: COLORS.accentCustomer,
+    borderColor: COLORS.accentCustomer,
+  },
+  ratingButtonText: {
+    fontSize: 16,
+    color: COLORS.textDark,
+  },
+  ratingButtonTextSelected: {
+    color: COLORS.white,
   },
   modalButtons: {
     flexDirection: "row",
@@ -189,7 +267,7 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: 8,
     alignItems: "center",
     marginHorizontal: 6,
   },
@@ -206,30 +284,6 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: "600",
     fontSize: 15,
-  },
-  pagination: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    backgroundColor: COLORS.cardBackground,
-    borderRadius: 10,
-    marginTop: 12,
-  },
-  paginationButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: COLORS.accentCustomer,
-    borderRadius: 8,
-  },
-  disabledButton: {
-    backgroundColor: COLORS.border,
-  },
-  paginationText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: "500",
   },
   loader: {
     marginVertical: 10,
