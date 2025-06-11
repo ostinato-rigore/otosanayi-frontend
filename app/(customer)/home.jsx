@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -18,6 +19,7 @@ import {
 import { fetchMechanics } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/customer/customer-home-styles";
+import { VEHICLE_BRANDS } from "../../constants/vehicleData";
 
 // Filter item types
 const FILTER_TYPES = {
@@ -28,43 +30,32 @@ const FILTER_TYPES = {
   MIN_RATING: "minRating",
 };
 
-// Static options (to be replaced with API data for expertise and vehicle brands)
 const expertiseAreasOptions = [
-  "Motor Tamiri",
-  "Elektrik",
-  "Kaporta",
-  "Boya",
-  "Fren Sistemleri",
-  "Lastik",
-  "Şanzıman Tamiri",
-  "Süspansiyon",
-  "Egzoz Sistemleri",
-  "Klima Servisi",
-  "Yakıt Sistemi",
-  "Rot Balans",
-  "Debriyaj Tamiri",
-  "Hidrolik Sistemler",
-  "Aks ve Diferansiyel",
-  "Diğer",
+  "customerHome.expertiseMotorRepair",
+  "customerHome.expertiseElectrical",
+  "customerHome.expertiseBodywork",
+  "customerHome.expertisePainting",
+  "customerHome.expertiseBrakeSystems",
+  "customerHome.expertiseTires",
+  "customerHome.expertiseTransmissionRepair",
+  "customerHome.expertiseSuspension",
+  "customerHome.expertiseExhaustSystems",
+  "customerHome.expertiseACService",
+  "customerHome.expertiseFuelSystem",
+  "customerHome.expertiseWheelAlignment",
+  "customerHome.expertiseClutchRepair",
+  "customerHome.expertiseHydraulicSystems",
+  "customerHome.expertiseAxleDifferential",
+  "customerHome.expertiseOther",
 ];
 
-const vehicleBrandsOptions = [
-  "BMW",
-  "Mercedes",
-  "Toyota",
-  "Honda",
-  "Ford",
-  "Volkswagen",
-  "Audi",
-  "Hyundai",
-  "Nissan",
-  "Renault",
-];
+const vehicleBrandsOptions = VEHICLE_BRANDS;
 const ratingOptions = [0, 1, 2, 3, 4, 5];
 
 /* --- Ana Bileşen --- */
 export default function CustomerHome() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -167,7 +158,10 @@ export default function CustomerHome() {
         setHasMore(pageNum < result.totalPages);
         setPage(pageNum);
       } catch (error) {
-        Alert.alert("Hata", error.message || "Sanayiciler yüklenemedi");
+        Alert.alert(
+          t("error"),
+          t("unexpectedError") || "Sanayiciler yüklenemedi"
+        );
         console.error("Fetch Mechanics Error:", error);
       } finally {
         setLoading(false);
@@ -176,7 +170,7 @@ export default function CustomerHome() {
         }
       }
     },
-    [appliedFilters]
+    [appliedFilters, t]
   );
 
   useEffect(() => {
@@ -232,7 +226,9 @@ export default function CustomerHome() {
     <TouchableOpacity
       style={styles.card}
       onPress={() => router.push(`/(customer)/mechanics/${mechanic.id}`)}
-      accessibilityLabel={`Mekanik detayları: ${mechanic.name}`}
+      accessibilityLabel={t("customerHome.mechanicDetails", {
+        name: mechanic.name,
+      })}
     >
       <View style={styles.cardHeader}>
         <View style={styles.avatarContainer}>
@@ -262,17 +258,20 @@ export default function CustomerHome() {
         {mechanic.city}, {mechanic.district}
       </Text>
       <Text style={styles.cardText}>
-        Uzmanlık: {mechanic.expertiseAreas.join(", ")}
+        {t("customerHome.expertise")}:{" "}
+        {mechanic.expertiseAreas.map((area) => t(area)).join(", ")}
       </Text>
       <Text style={styles.cardText}>
-        Araç Markaları: {mechanic.vehicleBrands.join(", ")}
+        {t("customerHome.vehicleBrands")}: {mechanic.vehicleBrands.join(", ")}
       </Text>
       <TouchableOpacity
         style={styles.detailsButton}
         onPress={() => router.push(`/(customer)/mechanics/${mechanic.id}`)}
-        accessibilityLabel="Detayları gör"
+        accessibilityLabel={t("customerHome.viewDetails")}
       >
-        <Text style={styles.detailsButtonText}>Detayları Gör</Text>
+        <Text style={styles.detailsButtonText}>
+          {t("customerHome.viewDetails")}
+        </Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -292,7 +291,7 @@ export default function CustomerHome() {
       <TouchableOpacity
         style={styles.dropdownButton}
         onPress={() => toggleDropdown(type)}
-        accessibilityLabel={`${label} seçimi`}
+        accessibilityLabel={`${label} ${t("customerHome.selection")}`}
         disabled={
           isLoadingCities &&
           (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT)
@@ -301,12 +300,12 @@ export default function CustomerHome() {
         <Text style={styles.dropdownText}>
           {isLoadingCities &&
           (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT)
-            ? "Yükleniyor..."
+            ? t("customerHome.loading")
             : isMultiSelect
             ? selectedValues.length > 0
-              ? `${selectedValues.length} seçenek seçildi`
-              : "Seçiniz"
-            : value || "Seçiniz"}
+              ? `${selectedValues.length} ${t("customerHome.optionsSelected")}`
+              : t("customerHome.select")
+            : value || t("customerHome.select")}
         </Text>
         {isLoadingCities &&
         (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT) ? (
@@ -334,7 +333,9 @@ export default function CustomerHome() {
                   toggleDropdown(null);
                 }}
               >
-                <Text style={styles.dropdownItemText}>Seçiniz</Text>
+                <Text style={styles.dropdownItemText}>
+                  {t("customerHome.select")}
+                </Text>
               </TouchableOpacity>
             )}
             {options.map((option) => (
@@ -367,7 +368,7 @@ export default function CustomerHome() {
                     )}
                   </View>
                 )}
-                <Text style={styles.dropdownItemText}>{option}</Text>
+                <Text style={styles.dropdownItemText}>{t(option)}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -376,7 +377,9 @@ export default function CustomerHome() {
               style={styles.dropdownCloseButton}
               onPress={() => toggleDropdown(null)}
             >
-              <Text style={styles.dropdownCloseText}>Kapat</Text>
+              <Text style={styles.dropdownCloseText}>
+                {t("customerHome.close")}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -393,20 +396,22 @@ export default function CustomerHome() {
             key={option}
             style={[
               styles.chip,
-              selected.includes(option) && styles.chipSelected,
+              selected.includes(t(option)) && styles.chipSelected,
             ]}
-            onPress={() => onToggle(option)}
-            accessibilityLabel={`${option} seçeneği ${
-              selected.includes(option) ? "seçildi" : "seçilmedi"
+            onPress={() => onToggle(t(option))}
+            accessibilityLabel={`${t(option)} ${
+              selected.includes(t(option))
+                ? t("customerHome.selected")
+                : t("customerHome.notSelected")
             }`}
           >
             <Text
               style={[
                 styles.chipText,
-                selected.includes(option) && styles.chipTextSelected,
+                selected.includes(t(option)) && styles.chipTextSelected,
               ]}
             >
-              {option}
+              {t(option)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -426,7 +431,7 @@ export default function CustomerHome() {
               selected === rating && styles.ratingButtonSelected,
             ]}
             onPress={() => onSelect(rating)}
-            accessibilityLabel={`${rating} puan seç`}
+            accessibilityLabel={`${rating} ${t("customerHome.ratingSelect")}`}
           >
             <Text
               style={[
@@ -447,7 +452,7 @@ export default function CustomerHome() {
       case FILTER_TYPES.CITY:
         return (
           <DropdownSelect
-            label="Şehir"
+            label={t("customerHome.city")}
             value={filters.city}
             options={cities}
             onSelect={(value) =>
@@ -464,7 +469,7 @@ export default function CustomerHome() {
       case FILTER_TYPES.DISTRICT:
         return filters.city ? (
           <DropdownSelect
-            label="İlçe"
+            label={t("customerHome.district")}
             value={filters.district}
             options={districts[filters.city] || []}
             onSelect={(value) =>
@@ -477,8 +482,8 @@ export default function CustomerHome() {
       case FILTER_TYPES.EXPERTISE_AREAS:
         return (
           <MultiSelectChips
-            label="Uzmanlık Alanları"
-            options={expertiseAreasOptions}
+            label={t("customerHome.expertiseAreas")}
+            options={expertiseAreasOptions.map((opt) => t(opt))}
             selected={filters.expertiseAreas}
             onToggle={(value) => toggleSelection("expertiseAreas", value)}
           />
@@ -486,7 +491,7 @@ export default function CustomerHome() {
       case FILTER_TYPES.VEHICLE_BRANDS:
         return (
           <DropdownSelect
-            label="Araç Markaları"
+            label={t("customerHome.vehicleBrands")}
             options={vehicleBrandsOptions}
             selectedValues={filters.vehicleBrands}
             onToggle={(value) => toggleSelection("vehicleBrands", value)}
@@ -497,7 +502,7 @@ export default function CustomerHome() {
       case FILTER_TYPES.MIN_RATING:
         return (
           <RatingSelect
-            label="Minimum Puan"
+            label={t("customerHome.minRating")}
             selected={filters.minRating}
             onSelect={(value) =>
               setFilters((prev) => ({ ...prev, minRating: value }))
@@ -514,7 +519,7 @@ export default function CustomerHome() {
       {/* Başlık ve Arama */}
       <View style={styles.header}>
         <Text style={styles.title} accessibilityRole="header">
-          Sanayi Ustaları
+          {t("customerHome.title")}
         </Text>
         <View style={styles.searchContainer} accessibilityRole="search">
           <Ionicons
@@ -524,17 +529,17 @@ export default function CustomerHome() {
             color={COLORS.placeholderText}
           />
           <TextInput
-            placeholder="Sanayi Ustası ara..."
+            placeholder={t("customerHome.searchPlaceholder")}
             placeholderTextColor={COLORS.placeholderText}
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={styles.searchInput}
-            accessibilityLabel="Sanayi Ustası arama çubuğu"
+            accessibilityLabel={t("customerHome.searchAccessibility")}
           />
           <TouchableOpacity
             onPress={() => setFilterModalVisible(true)}
             style={styles.filterButton}
-            accessibilityLabel="Filtreleme menüsünü aç"
+            accessibilityLabel={t("customerHome.filterAccessibility")}
           >
             <Ionicons name="filter" size={24} color={COLORS.accentCustomer} />
           </TouchableOpacity>
@@ -549,7 +554,7 @@ export default function CustomerHome() {
         renderItem={({ item }) => <MechanicCard mechanic={item} />}
         ListEmptyComponent={
           <Text style={styles.emptyText} accessibilityRole="alert">
-            Sanayi Ustası bulunamadı.
+            {t("customerHome.emptyText")}
           </Text>
         }
         refreshing={loading}
@@ -596,7 +601,7 @@ export default function CustomerHome() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle} accessibilityRole="header">
-              Filtreleme Seçenekleri
+              {t("customerHome.modalTitle")}
             </Text>
             <FlatList
               data={[
@@ -613,22 +618,22 @@ export default function CustomerHome() {
             />
             <View style={styles.modalButtons}>
               <ModalButton
-                title="İptal"
+                title={t("customerHome.cancel")}
                 onPress={() => setFilterModalVisible(false)}
                 style={styles.modalButtonCancel}
-                accessibilityLabel="Filtreleme iptal"
+                accessibilityLabel={t("customerHome.cancelAccessibility")}
               />
               <ModalButton
-                title="Sıfırla"
+                title={t("customerHome.resetFilters")}
                 onPress={resetFilters}
                 style={styles.modalButtonReset}
-                accessibilityLabel="Filtreleri sıfırla"
+                accessibilityLabel={t("customerHome.resetAccessibility")}
               />
               <ModalButton
-                title="Uygula"
+                title={t("customerHome.applyFilters")}
                 onPress={applyFilters}
                 style={styles.modalButtonApply}
-                accessibilityLabel="Filtreleri uygula"
+                accessibilityLabel={t("customerHome.applyAccessibility")}
               />
             </View>
           </View>
