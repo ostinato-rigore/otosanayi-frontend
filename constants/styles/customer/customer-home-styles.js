@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   avatarContainer: {
-    marginRight: 16,
+    marginRight: 6,
   },
   avatarImage: {
     width: 44,
@@ -78,8 +78,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
+  ratingContainerStar: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   ratingText: {
-    marginLeft: 6,
+    marginLeft: 3,
     color: COLORS.textDark,
     fontSize: 14,
   },

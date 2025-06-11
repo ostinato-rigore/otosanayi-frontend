@@ -12,6 +12,7 @@ const COLORS = {
   error: "#B00020", // Klasik mat kırmızı - sade hata rengi
   white: "#FFFFFF",
   black: "#000000",
+  star: "#FFD700", // Altın sarısı - yıldızlar için klasik ve dikkat çekici
 };
 
 export default COLORS;

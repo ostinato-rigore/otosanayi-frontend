@@ -21,7 +21,6 @@ import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/customer/customer-home-styles";
 import { VEHICLE_BRANDS } from "../../constants/vehicleData";
 
-// Filter item types
 const FILTER_TYPES = {
   CITY: "city",
   DISTRICT: "district",
@@ -89,8 +88,8 @@ export default function CustomerHome() {
       const response = await axios.get(
         "https://turkiyeapi.dev/api/v1/provinces"
       );
-      if (response.status !== 200) throw new Error("API isteği başarısız oldu");
       const result = response.data;
+
       if (result.status === "OK" && Array.isArray(result.data)) {
         const cityList = result.data.map((city) => city.name);
         const districtMap = result.data.reduce((acc, city) => {
@@ -103,10 +102,9 @@ export default function CustomerHome() {
         throw new Error("Geçersiz API yanıtı");
       }
     } catch (error) {
-      Alert.alert("Hata", "Şehir verileri yüklenemedi: " + error.message);
       console.error("Fetch City Data Error:", error);
       // Fallback to static data if API fails
-      setCities(["İstanbul", "Ankara", "İzmir", "Bursa"]);
+      setCities(["İstanbul", "Ankara", "İzmir"]);
       setDistricts({
         İstanbul: ["Kadıköy", "Beşiktaş", "Şişli"],
         Ankara: ["Çankaya", "Kızılay", "Yenimahalle"],
@@ -249,8 +247,8 @@ export default function CustomerHome() {
           )}
         </View>
         <Text style={styles.cardTitle}>{mechanic.mechanicName}</Text>
-        <View style={styles.ratingContainer}>
-          <Ionicons name="star" size={16} color={COLORS.accentCustomer} />
+        <View style={styles.ratingContainerStar}>
+          <Ionicons name="star" size={16} color={COLORS.star} />
           <Text style={styles.ratingText}>{mechanic.rating}/5</Text>
         </View>
       </View>
