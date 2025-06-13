@@ -90,6 +90,11 @@
     "updateSuccess": "Profil başarıyla güncellendi.",
     "updateFailed": "Güncelleme başarısız.",
     "serverError": "Sunucudan logo URL'si alınamadı",
+    "select": "Seçiniz",
+    "enterName": "Ad soyad girin",
+    "enterPhone": "Telefon numaranızı nirin",
+    "enterModel": "Modeli nirin",
+    "enterYear": "Yılı girin",
     "fuelTypes": {
       "Gasoline": "Benzin",
       "Diesel": "Dizel",

@@ -90,6 +90,11 @@
     "updateSuccess": "Profile updated successfully.",
     "updateFailed": "Update failed.",
     "serverError": "Could not retrieve logo URL from server",
+    "select": "Select",
+    "enterName": "Enter name",
+    "enterPhone": "Enter phone number",
+    "enterModel": "Enter model",
+    "enterYear": "Enter year",
     "fuelTypes": {
       "Gasoline": "Gasoline",
       "Diesel": "Diesel",

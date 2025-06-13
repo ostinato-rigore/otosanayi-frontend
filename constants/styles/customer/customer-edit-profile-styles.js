@@ -1,4 +1,3 @@
-// constants/styles/customer-edit-profile-styles.js
 import { StyleSheet } from "react-native";
 import COLORS from "../../colors";
 
@@ -78,8 +77,8 @@ export default StyleSheet.create({
     borderBottomColor: COLORS.border,
     paddingVertical: 12,
     minHeight: 48,
-    backgroundColor: COLORS.lightGray, // Değiştirilemez olduğunu gösterir
-    opacity: 0.7, // Hafif soluk görünüm
+    backgroundColor: COLORS.lightGray,
+    opacity: 0.7,
   },
   label: {
     fontSize: 16,
@@ -97,16 +96,8 @@ export default StyleSheet.create({
     flex: 1,
     textAlign: "right",
     fontSize: 16,
-    color: COLORS.textSecondary, // Daha soluk renk
+    color: COLORS.textSecondary,
     paddingVertical: 0,
-  },
-  picker: {
-    flex: 1,
-    color: COLORS.textPrimary,
-    fontSize: 16,
-  },
-  disabledPicker: {
-    opacity: 0.5,
   },
   errorText: {
     color: COLORS.error,
@@ -126,5 +117,51 @@ export default StyleSheet.create({
     color: COLORS.white,
     fontWeight: "600",
     fontSize: 16,
+  },
+  filterSection: {
+    marginBottom: 20,
+  },
+  dropdownButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    flex: 1,
+  },
+  dropdownText: {
+    fontSize: 15,
+    color: COLORS.textDark,
+  },
+  dropdownContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginTop: 8,
+    elevation: 5,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    position: "relative",
+  },
+  dropdownScroll: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: COLORS.textDark,
+    flex: 1,
   },
 });

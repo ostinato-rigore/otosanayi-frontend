@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
@@ -22,12 +21,7 @@ import { z } from "zod";
 import { updateCustomerProfile, uploadProfilePhoto } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/customer/customer-edit-profile-styles";
-import {
-  FUEL_TYPES,
-  VEHICLE_BRANDS,
-  VEHICLE_MODELS,
-  VEHICLE_YEARS,
-} from "../../constants/vehicleData";
+import { FUEL_TYPES, VEHICLE_BRANDS } from "../../constants/vehicleData";
 import useAuthStore from "../../store/useAuthStore";
 
 const createCustomerSchema = (t) =>
@@ -46,12 +40,72 @@ const createCustomerSchema = (t) =>
     }),
   });
 
+const DropdownSelect = ({
+  label,
+  value,
+  options,
+  onSelect,
+  type,
+  dropdownVisible,
+  toggleDropdown,
+}) => {
+  const { t } = useTranslation();
+  return (
+    <View style={{ flex: 1 }}>
+      <TouchableOpacity
+        style={styles.dropdownButton}
+        onPress={() => toggleDropdown(type)}
+        accessibilityLabel={`${label} ${t("editProfile.selection")}`}
+      >
+        <Text style={styles.dropdownText}>
+          {value ? t(value) : t("editProfile.select")}
+        </Text>
+        <Ionicons
+          name={dropdownVisible === type ? "chevron-up" : "chevron-down"}
+          size={20}
+          color={COLORS.textPrimary}
+        />
+      </TouchableOpacity>
+      {dropdownVisible === type && (
+        <View style={styles.dropdownContainer}>
+          <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={() => {
+                onSelect("");
+                toggleDropdown(null);
+              }}
+            >
+              <Text style={styles.dropdownItemText}>
+                {t("editProfile.select")}
+              </Text>
+            </TouchableOpacity>
+            {options.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  onSelect(option);
+                  toggleDropdown(null);
+                }}
+              >
+                <Text style={styles.dropdownItemText}>{t(option)}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+};
+
 export default function CustomerEditProfile() {
   const router = useRouter();
   const { user, isLoading, fetchUser } = useAuthStore();
   const { t } = useTranslation();
   const [isEditable, setIsEditable] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [dropdownVisible, setDropdownVisible] = useState(null);
 
   const customerSchema = useMemo(() => createCustomerSchema(t), [t]);
 
@@ -123,7 +177,7 @@ export default function CustomerEditProfile() {
       const payload = {
         ...data,
         profilePhoto: profilePhotoUrl,
-        email: user.email, // E-posta sabit kalır
+        email: user.email,
       };
 
       await updateCustomerProfile(payload);
@@ -150,6 +204,10 @@ export default function CustomerEditProfile() {
     );
   };
 
+  const toggleDropdown = (type) => {
+    setDropdownVisible(dropdownVisible === type ? null : type);
+  };
+
   if (!user || isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -158,8 +216,6 @@ export default function CustomerEditProfile() {
       </View>
     );
   }
-
-  const currentBrand = watch("vehicle.brand");
 
   return (
     <KeyboardAvoidingView
@@ -271,21 +327,18 @@ export default function CustomerEditProfile() {
             <View style={styles.inputRow}>
               <Text style={styles.label}>{t("editProfile.brandLabel")}</Text>
               {isEditable ? (
-                <Picker
-                  selectedValue={value}
-                  onValueChange={(val) => {
+                <DropdownSelect
+                  label={t("editProfile.brandLabel")}
+                  value={value}
+                  options={VEHICLE_BRANDS}
+                  onSelect={(val) => {
                     onChange(val);
                     setValue("vehicle.model", "");
                   }}
-                  style={styles.picker}
-                  enabled={isEditable}
-                  accessibilityLabel={t("editProfile.selectBrand")}
-                >
-                  <Picker.Item label={t("editProfile.selectBrand")} value="" />
-                  {VEHICLE_BRANDS.map((brand) => (
-                    <Picker.Item key={brand} label={brand} value={brand} />
-                  ))}
-                </Picker>
+                  type="brand"
+                  dropdownVisible={dropdownVisible}
+                  toggleDropdown={toggleDropdown}
+                />
               ) : (
                 <Text style={styles.inputValue}>
                   {value || t("editProfile.noValueSet")}
@@ -305,21 +358,14 @@ export default function CustomerEditProfile() {
             <View style={styles.inputRow}>
               <Text style={styles.label}>{t("editProfile.modelLabel")}</Text>
               {isEditable ? (
-                <Picker
-                  selectedValue={value}
-                  onValueChange={onChange}
-                  style={[
-                    styles.picker,
-                    !currentBrand && styles.disabledPicker,
-                  ]}
-                  enabled={isEditable && !!currentBrand}
-                  accessibilityLabel={t("editProfile.selectModel")}
-                >
-                  <Picker.Item label={t("editProfile.selectModel")} value="" />
-                  {(VEHICLE_MODELS[currentBrand] || []).map((model) => (
-                    <Picker.Item key={model} label={model} value={model} />
-                  ))}
-                </Picker>
+                <TextInput
+                  style={styles.inputValue}
+                  value={value}
+                  onChangeText={onChange}
+                  editable={isEditable}
+                  placeholder={t("editProfile.enterModel")}
+                  accessibilityLabel={t("editProfile.modelLabel")}
+                />
               ) : (
                 <Text style={styles.inputValue}>
                   {value || t("editProfile.noValueSet")}
@@ -339,18 +385,15 @@ export default function CustomerEditProfile() {
             <View style={styles.inputRow}>
               <Text style={styles.label}>{t("editProfile.yearLabel")}</Text>
               {isEditable ? (
-                <Picker
-                  selectedValue={value}
-                  onValueChange={onChange}
-                  style={styles.picker}
-                  enabled={isEditable}
-                  accessibilityLabel={t("editProfile.selectYear")}
-                >
-                  <Picker.Item label={t("editProfile.selectYear")} value="" />
-                  {VEHICLE_YEARS.map((year) => (
-                    <Picker.Item key={year} label={year} value={year} />
-                  ))}
-                </Picker>
+                <TextInput
+                  style={styles.inputValue}
+                  value={value}
+                  onChangeText={onChange}
+                  editable={isEditable}
+                  placeholder={t("editProfile.enterYear")}
+                  keyboardType="numeric"
+                  accessibilityLabel={t("editProfile.yearLabel")}
+                />
               ) : (
                 <Text style={styles.inputValue}>
                   {value || t("editProfile.noValueSet")}
@@ -370,25 +413,15 @@ export default function CustomerEditProfile() {
             <View style={styles.inputRow}>
               <Text style={styles.label}>{t("editProfile.fuelTypeLabel")}</Text>
               {isEditable ? (
-                <Picker
-                  selectedValue={value}
-                  onValueChange={onChange}
-                  style={styles.picker}
-                  enabled={isEditable}
-                  accessibilityLabel={t("editProfile.selectFuelType")}
-                >
-                  <Picker.Item
-                    label={t("editProfile.selectFuelType")}
-                    value=""
-                  />
-                  {FUEL_TYPES.map((fuel) => (
-                    <Picker.Item
-                      key={fuel}
-                      label={t(`editProfile.fuelTypes.${fuel}`)}
-                      value={fuel}
-                    />
-                  ))}
-                </Picker>
+                <DropdownSelect
+                  label={t("editProfile.fuelTypeLabel")}
+                  value={value}
+                  options={FUEL_TYPES}
+                  onSelect={onChange}
+                  type="fuelType"
+                  dropdownVisible={dropdownVisible}
+                  toggleDropdown={toggleDropdown}
+                />
               ) : (
                 <Text style={styles.inputValue}>
                   {value
