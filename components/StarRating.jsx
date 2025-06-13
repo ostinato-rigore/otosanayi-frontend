@@ -11,12 +11,7 @@ export default function StarRating({ rating, size = 16 }) {
       {[...Array(5)].map((_, i) => {
         if (i < fullStars) {
           return (
-            <Ionicons
-              key={i}
-              name="star"
-              size={size}
-              color={COLORS.accentCustomer}
-            />
+            <Ionicons key={i} name="star" size={size} color={COLORS.star} />
           );
         } else if (i === fullStars && hasHalfStar) {
           return (
@@ -24,7 +19,7 @@ export default function StarRating({ rating, size = 16 }) {
               key={i}
               name="star-half"
               size={size}
-              color={COLORS.accentCustomer}
+              color={COLORS.star}
             />
           );
         } else {
@@ -33,7 +28,7 @@ export default function StarRating({ rating, size = 16 }) {
               key={i}
               name="star-outline"
               size={size}
-              color={COLORS.accentCustomer}
+              color={COLORS.star}
             />
           );
         }
