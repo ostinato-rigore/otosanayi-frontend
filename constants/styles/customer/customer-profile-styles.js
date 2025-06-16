@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import COLORS from "../../colors";
+import THEME from "../../theme";
 
 const styles = StyleSheet.create({
   container: {
@@ -7,7 +8,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   content: {
-    padding: 15,
+    padding: THEME.spacing.md,
     alignItems: "center",
   },
   loadingContainer: {
@@ -17,31 +18,31 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   loadingText: {
-    marginTop: 10,
+    marginTop: THEME.spacing.sm,
     color: COLORS.textPrimary,
-    fontSize: 14,
+    fontSize: THEME.fontSizes.secondary,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 30,
-    paddingTop: 20,
-    paddingHorizontal: 10,
+    marginBottom: THEME.spacing.xxl,
+    paddingTop: THEME.spacing.lg,
+    paddingHorizontal: THEME.spacing.md,
   },
   profileImageContainer: {
-    marginRight: 15,
+    marginRight: THEME.spacing.lg,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: THEME.sizes.logo.width,
+    height: THEME.sizes.logo.height,
+    borderRadius: THEME.sizes.logo.borderRadius,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
   profilePlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: THEME.sizes.logo.width,
+    height: THEME.sizes.logo.height,
+    borderRadius: THEME.sizes.logo.borderRadius,
     backgroundColor: COLORS.cardBackground,
     justifyContent: "center",
     alignItems: "center",
@@ -52,52 +53,50 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    fontSize: 20,
-    fontWeight: "600",
+    fontSize: THEME.fontSizes.h2,
+    fontWeight: THEME.fontWeights.bold,
     color: COLORS.textPrimary,
-    marginBottom: 5,
+    marginBottom: THEME.spacing.sm,
   },
   email: {
-    fontSize: 14,
+    fontSize: THEME.fontSizes.tag,
     color: COLORS.textSecondary,
-    marginBottom: 15,
+    marginBottom: THEME.spacing.sm,
   },
   menuContainer: {
     width: "100%",
-    marginBottom: 30,
+    marginBottom: THEME.spacing.xxl,
     backgroundColor: COLORS.background,
-    borderRadius: 12,
-    paddingVertical: 15,
+    paddingVertical: THEME.spacing.md,
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 15,
-    paddingHorizontal: 15,
+    paddingVertical: THEME.spacing.md,
+    paddingHorizontal: THEME.spacing.md,
     borderBottomColor: COLORS.border,
   },
   menuItemText: {
-    fontSize: 16,
+    fontSize: THEME.fontSizes.h3,
     color: COLORS.textPrimary,
-    marginLeft: 15,
+    marginLeft: THEME.spacing.md,
   },
   logoutContainer: {
     width: "100%",
     backgroundColor: COLORS.background,
-    borderRadius: 12,
-    paddingVertical: 15,
+    paddingVertical: THEME.spacing.md,
   },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 15,
-    paddingHorizontal: 35,
+    paddingVertical: THEME.spacing.md,
+    paddingHorizontal: THEME.spacing.xxl,
     borderBottomColor: COLORS.border,
   },
   logoutButtonText: {
-    fontSize: 16,
+    fontSize: THEME.fontSizes.h3,
     color: COLORS.error,
-    marginLeft: 15,
+    marginLeft: THEME.spacing.md,
   },
 });
 

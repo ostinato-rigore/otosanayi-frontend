@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import COLORS from "../../colors";
+import THEME from "../../theme";
 
 export default StyleSheet.create({
   container: {
@@ -7,8 +8,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   content: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: THEME.spacing.md,
   },
   loadingContainer: {
     flex: 1,
@@ -17,24 +17,24 @@ export default StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: THEME.spacing.md,
     color: COLORS.textPrimary,
     fontSize: 16,
   },
   profileImageContainer: {
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: THEME.spacing.md,
     position: "relative",
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: THEME.sizes.logo.width,
+    height: THEME.sizes.logo.height,
+    borderRadius: THEME.sizes.logo.borderRadius,
   },
   profilePlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: THEME.sizes.logo.width,
+    height: THEME.sizes.logo.height,
+    borderRadius: THEME.sizes.logo.borderRadius,
     backgroundColor: COLORS.lightGray,
     justifyContent: "center",
     alignItems: "center",
@@ -48,17 +48,28 @@ export default StyleSheet.create({
     padding: 4,
   },
   profileName: {
-    fontSize: 20,
-    fontWeight: "600",
+    fontSize: THEME.fontSizes.h2,
+    fontWeight: THEME.fontWeights.bold,
     color: COLORS.textPrimary,
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: THEME.spacing.xl,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: THEME.fontSizes.h3,
+    fontWeight: THEME.fontWeights.bold,
     color: COLORS.textPrimary,
-    marginBottom: 12,
+    marginBottom: THEME.spacing.md,
+  },
+  cardContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 4, // For Android shadow
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 }, // For iOS shadow
   },
   inputRow: {
     flexDirection: "row",

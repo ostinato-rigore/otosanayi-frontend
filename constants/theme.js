@@ -1,5 +1,4 @@
 const THEME = {
-  // Font Boyutları
   fontSizes: {
     h1: 24, // Ana başlık (örneğin, tamirci adı)
     h2: 18, // Bölüm başlıkları (örneğin, "İletişim Bilgileri")
@@ -47,6 +46,7 @@ const THEME = {
       shadowOpacity: 0.1, // iOS gölge
       shadowRadius: 4,
       shadowOffset: { width: 0, height: 2 },
+      cardWidth: "90%", // Kart genişliği
     },
     button: {
       minWidth: 100, // Minimum buton genişliği
