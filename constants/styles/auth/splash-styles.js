@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import COLORS from "../../colors";
+import THEME from "../../theme";
 
 export default StyleSheet.create({
   container: {
@@ -7,34 +8,33 @@ export default StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: COLORS.background,
-    paddingHorizontal: 20, // Yanlardan boşluk ekledik
+    paddingHorizontal: THEME.spacing.xl, // Yanlardan boşluk ekledik
   },
   logo: {
     width: 400, // Daha makul bir boyut
     height: 400,
-    marginBottom: 30,
     resizeMode: "contain",
   },
   title: {
-    fontSize: 24, // Daha okunabilir boyut
-    fontWeight: "bold",
+    fontSize: THEME.fontSizes.h1, // Daha okunabilir boyut
+    fontWeight: THEME.fontWeights.extraBold, // Kalın yazı tipi
     color: COLORS.primary,
-    marginBottom: 15,
+    marginBottom: THEME.spacing.md, // Başlık ile metin arasında boşluk
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: THEME.fontSizes.h2,
     color: COLORS.textPrimary,
-    marginBottom: 40,
+    marginBottom: THEME.spacing.xl,
     textAlign: "center",
     lineHeight: 24, // Satır aralığı
-    paddingHorizontal: 20, // Metin yan boşlukları
+    paddingHorizontal: THEME.spacing.md, // Metin yan boşlukları
   },
   button: {
-    width: "90%", // Tam genişlik
-    paddingVertical: 15,
-    borderRadius: 8,
-    marginBottom: 15,
+    width: THEME.sizes.button.maxWidth, // Tam genişlik
+    paddingVertical: THEME.sizes.button.paddingVertical,
+    borderRadius: THEME.sizes.button.borderRadius,
+    marginBottom: THEME.spacing.md,
     alignItems: "center",
   },
   customerButton: {
@@ -44,8 +44,8 @@ export default StyleSheet.create({
     backgroundColor: COLORS.accentMechanic,
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: THEME.fontSizes.button,
     color: COLORS.white,
-    fontWeight: "600", // Semi-bold
+    fontWeight: THEME.fontWeights.bold,
   },
 });

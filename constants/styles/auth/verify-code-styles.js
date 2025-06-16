@@ -1,36 +1,37 @@
 import { StyleSheet } from "react-native";
 import COLORS from "../../colors";
+import THEME from "../../theme";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: THEME.spacing.xl,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: THEME.fontSizes.h1,
+    fontWeight: THEME.fontWeights.extraBold,
     color: COLORS.primary,
-    marginBottom: 10,
+    marginBottom: THEME.spacing.md,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: THEME.fontSizes.h2,
     color: COLORS.textPrimary,
-    marginBottom: 10,
+    marginBottom: THEME.spacing.md,
     textAlign: "center",
   },
   infoText: {
-    fontSize: 14,
+    fontSize: THEME.fontSizes.tag,
     color: COLORS.textSecondary,
-    marginBottom: 20,
+    marginBottom: THEME.spacing.lg,
     textAlign: "center",
   },
   otpContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: THEME.spacing.md,
   },
   otpInput: {
     width: 50,
@@ -39,35 +40,35 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     textAlign: "center",
     marginHorizontal: 5,
-    fontSize: 18,
+    fontSize: THEME.fontSizes.h2,
     color: COLORS.textDark,
     backgroundColor: COLORS.inputBackground,
   },
   button: {
-    width: "90%",
-    paddingVertical: 14,
-    borderRadius: 8,
+    width: THEME.sizes.button.maxWidth,
+    paddingVertical: THEME.sizes.button.paddingVertical,
+    borderRadius: THEME.sizes.button.borderRadius,
     alignItems: "center",
-    marginTop: 20,
+    marginTop: THEME.spacing.md,
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: THEME.fontSizes.button,
+    fontWeight: THEME.fontWeights.bold,
     color: COLORS.white,
   },
   resendText: {
-    fontSize: 14,
+    fontSize: THEME.fontSizes.secondary,
     color: COLORS.primary,
-    marginTop: 15,
+    marginTop: THEME.spacing.md,
     textDecorationLine: "underline",
   },
   error: {
     color: COLORS.error,
-    fontSize: 14,
-    marginBottom: 15,
+    fontSize: THEME.fontSizes.secondary,
+    marginBottom: THEME.spacing.md,
     textAlign: "left",
     alignSelf: "flex-start",
-    marginLeft: 20,
+    marginLeft: THEME.spacing.xl,
   },
 });
 

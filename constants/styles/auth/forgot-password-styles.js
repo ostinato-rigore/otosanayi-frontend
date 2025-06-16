@@ -1,56 +1,56 @@
 import { StyleSheet } from "react-native";
 import COLORS from "../../colors";
+import THEME from "../../theme";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: THEME.spacing.xl,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: THEME.fontSizes.h1,
+    fontWeight: THEME.fontWeights.extraBold,
     color: COLORS.primary,
-    marginBottom: 10,
+    marginBottom: THEME.spacing.md,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: THEME.fontSizes.h2,
     color: COLORS.textPrimary,
-    marginBottom: 30,
+    marginBottom: THEME.spacing.xxl,
     textAlign: "center",
   },
   input: {
-    width: "90%",
+    width: THEME.sizes.input.width,
     backgroundColor: COLORS.inputBackground,
     borderColor: COLORS.border,
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 16,
+    borderRadius: THEME.sizes.input.borderRadius,
+    padding: THEME.spacing.md,
+    marginBottom: THEME.spacing.lg,
+    fontSize: THEME.fontSizes.body,
     color: COLORS.textDark,
   },
   button: {
-    width: "90%",
-    paddingVertical: 14,
-    borderRadius: 8,
+    width: THEME.sizes.button.maxWidth,
+    paddingVertical: THEME.sizes.button.paddingVertical,
+    borderRadius: THEME.sizes.button.borderRadius,
     alignItems: "center",
-    marginTop: 20,
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: THEME.fontSizes.button,
+    fontWeight: THEME.fontWeights.bold,
     color: COLORS.white,
   },
   error: {
     color: COLORS.error,
-    fontSize: 14,
-    marginBottom: 15,
+    fontSize: THEME.fontSizes.secondary,
+    marginBottom: THEME.spacing.md,
     textAlign: "left",
     alignSelf: "flex-start",
-    marginLeft: 20,
+    marginLeft: THEME.spacing.xl,
   },
 });
 
