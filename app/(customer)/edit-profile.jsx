@@ -124,7 +124,7 @@ export default function CustomerEditProfile() {
       vehicle: {
         brand: user?.vehicle?.brand || "",
         model: user?.vehicle?.model || "",
-        year: user?.vehicle?.year || "",
+        year: user?.vehicle?.year ? String(user.vehicle.year) : "",
         fuelType: user?.vehicle?.fuelType || "",
       },
     },
@@ -178,6 +178,10 @@ export default function CustomerEditProfile() {
         ...data,
         profilePhoto: profilePhotoUrl,
         email: user.email,
+        vehicle: {
+          ...data.vehicle,
+          year: data.vehicle.year ? Number(data.vehicle.year) : undefined, // Backend için sayıya çevir
+        },
       };
 
       await updateCustomerProfile(payload);
@@ -392,8 +396,8 @@ export default function CustomerEditProfile() {
                 {isEditable ? (
                   <TextInput
                     style={styles.inputValue}
-                    value={value}
-                    onChangeText={onChange}
+                    value={value ? String(value) : ""} // Değeri string'e çevir
+                    onChangeText={(text) => onChange(text)} // Girdiyi string olarak işle
                     editable={isEditable}
                     placeholder={t("editProfile.enterYear")}
                     keyboardType="numeric"
@@ -407,9 +411,6 @@ export default function CustomerEditProfile() {
               </View>
             )}
           />
-          {errors.vehicle?.year && (
-            <Text style={styles.errorText}>{errors.vehicle.year.message}</Text>
-          )}
 
           <Controller
             control={control}
