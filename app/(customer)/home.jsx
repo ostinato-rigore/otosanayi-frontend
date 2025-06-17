@@ -176,9 +176,17 @@ export default function CustomerHome() {
   }, [fetchMechanicsData]);
 
   const filteredMechanics = useMemo(() => {
-    return mechanics.filter((mechanic) =>
-      mechanic.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    if (!searchQuery.trim()) {
+      return mechanics; // Arama sorgusu boşsa tüm mekanikleri döndür
+    }
+
+    const queryWords = searchQuery.toLowerCase().trim().split(/\s+/); // Sorguyu kelimelere ayır
+
+    return mechanics.filter((mechanic) => {
+      const mechanicName = mechanic.mechanicName.toLowerCase();
+      // Her kelimenin mechanicName içinde bulunup bulunmadığını kontrol et
+      return queryWords.every((word) => mechanicName.includes(word));
+    });
   }, [mechanics, searchQuery]);
 
   const toggleSelection = (key, value) => {
