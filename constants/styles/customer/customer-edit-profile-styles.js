@@ -92,7 +92,7 @@ export default StyleSheet.create({
     opacity: 0.7,
   },
   label: {
-    fontSize: THEME.fontSizes.h3,
+    fontSize: THEME.fontSizes.body,
     color: COLORS.textSecondary,
     width: 100,
   },

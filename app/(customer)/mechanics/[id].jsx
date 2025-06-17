@@ -1,6 +1,7 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   ActivityIndicator,
@@ -8,6 +9,7 @@ import {
   FlatList,
   Image,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   ScrollView,
@@ -52,6 +54,7 @@ const ReviewCard = ({ review }) => (
 );
 
 export default function MechanicDetail() {
+  const { t } = useTranslation(); // Çeviri fonksiyonu
   const { id } = useLocalSearchParams();
   const [mechanic, setMechanic] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -97,6 +100,14 @@ export default function MechanicDetail() {
       Alert.alert("Hata", error.message || "Yorum gönderilemedi.");
       console.log(error);
     }
+  };
+
+  // URL geçerliliğini kontrol eden yardımcı fonksiyon
+  const cleanUrl = (url) => {
+    if (!url || typeof url !== "string" || !url.startsWith("http")) {
+      return null;
+    }
+    return url;
   };
 
   if (loading) {
@@ -244,30 +255,85 @@ export default function MechanicDetail() {
         </View>
 
         {/* Social Media Section */}
-        {(mechanic.socialMedia?.facebook ||
-          mechanic.socialMedia?.instagram ||
-          mechanic.socialMedia?.twitter) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Sosyal Medya</Text>
-            <View style={styles.socialContainer}>
-              {mechanic.socialMedia?.facebook && (
-                <TouchableOpacity style={styles.socialButton}>
-                  <FontAwesome name="facebook" size={24} color="#3b5998" />
-                </TouchableOpacity>
-              )}
-              {mechanic.socialMedia?.instagram && (
-                <TouchableOpacity style={styles.socialButton}>
-                  <FontAwesome name="instagram" size={24} color="#E1306C" />
-                </TouchableOpacity>
-              )}
-              {mechanic.socialMedia?.twitter && (
-                <TouchableOpacity style={styles.socialButton}>
-                  <FontAwesome name="twitter" size={24} color="#1DA1F2" />
-                </TouchableOpacity>
-              )}
-            </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t("socialMedia")}</Text>
+          <View style={styles.socialContainer}>
+            {mechanic.socialMedia?.facebook ||
+            mechanic.socialMedia?.instagram ||
+            mechanic.socialMedia?.twitter ? (
+              <>
+                {mechanic.socialMedia?.facebook && (
+                  <TouchableOpacity
+                    style={styles.socialButton}
+                    onPress={async () => {
+                      const url = cleanUrl(mechanic.socialMedia?.facebook);
+                      if (url) {
+                        try {
+                          await Linking.openURL(url);
+                        } catch (error) {
+                          Alert.alert(
+                            t("error"),
+                            t("mechanicDetail.linkCannotBeOpened")
+                          );
+                          console.error("Linking Error:", error);
+                        }
+                      }
+                    }}
+                    disabled={!cleanUrl(mechanic.socialMedia?.facebook)}
+                  >
+                    <FontAwesome name="facebook" size={24} color="#3b5998" />
+                  </TouchableOpacity>
+                )}
+                {mechanic.socialMedia?.instagram && (
+                  <TouchableOpacity
+                    style={styles.socialButton}
+                    onPress={async () => {
+                      const url = cleanUrl(mechanic.socialMedia?.instagram);
+                      if (url) {
+                        try {
+                          await Linking.openURL(url);
+                        } catch (error) {
+                          Alert.alert(
+                            t("error"),
+                            t("mechanicDetail.linkCannotBeOpened")
+                          );
+                          console.error("Linking Error:", error);
+                        }
+                      }
+                    }}
+                    disabled={!cleanUrl(mechanic.socialMedia?.instagram)}
+                  >
+                    <FontAwesome name="instagram" size={24} color="#E1306C" />
+                  </TouchableOpacity>
+                )}
+                {mechanic.socialMedia?.twitter && (
+                  <TouchableOpacity
+                    style={styles.socialButton}
+                    onPress={async () => {
+                      const url = cleanUrl(mechanic.socialMedia?.twitter);
+                      if (url) {
+                        try {
+                          await Linking.openURL(url);
+                        } catch (error) {
+                          Alert.alert(
+                            t("error"),
+                            t("mechanicDetail.linkCannotBeOpened")
+                          );
+                          console.error("Linking Error:", error);
+                        }
+                      }
+                    }}
+                    disabled={!cleanUrl(mechanic.socialMedia?.twitter)}
+                  >
+                    <FontAwesome name="twitter" size={24} color="#1DA1F2" />
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <Text style={styles.noInfoText}>{t("noInfo")}</Text>
+            )}
           </View>
-        )}
+        </View>
 
         {/* Reviews Section */}
         <View style={styles.section}>

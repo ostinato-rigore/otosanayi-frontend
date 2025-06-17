@@ -162,5 +162,9 @@
     "expertiseHydraulicSystems": "Hydraulic Systems",
     "expertiseAxleDifferential": "Axle and Differential",
     "expertiseOther": "Other"
+  },
+  "mechanicDetail": {
+    "socialMedia": "Social Media",
+    "linkCannotBeOpened": "The link cannot be opened."
   }
 }

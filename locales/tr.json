@@ -162,5 +162,10 @@
     "expertiseHydraulicSystems": "Hidrolik Sistemler",
     "expertiseAxleDifferential": "Aks ve Diferansiyel",
     "expertiseOther": "Diğer"
+  },
+
+  "mechanicDetail": {
+    "socialMedia": "Sosyal Medya",
+    "linkCannotBeOpened": "Bağlantı açılamadı."
   }
 }

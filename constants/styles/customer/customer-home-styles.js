@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: THEME.fontSizes.body,
     color: COLORS.textDark,
+    fontWeight: "400",
   },
   chipTextSelected: {
     color: COLORS.white,

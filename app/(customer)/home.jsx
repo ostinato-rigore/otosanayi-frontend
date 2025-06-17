@@ -177,14 +177,13 @@ export default function CustomerHome() {
 
   const filteredMechanics = useMemo(() => {
     if (!searchQuery.trim()) {
-      return mechanics; // Arama sorgusu boşsa tüm mekanikleri döndür
+      return mechanics;
     }
 
-    const queryWords = searchQuery.toLowerCase().trim().split(/\s+/); // Sorguyu kelimelere ayır
+    const queryWords = searchQuery.toLowerCase().trim().split(/\s+/);
 
     return mechanics.filter((mechanic) => {
       const mechanicName = mechanic.mechanicName.toLowerCase();
-      // Her kelimenin mechanicName içinde bulunup bulunmadığını kontrol et
       return queryWords.every((word) => mechanicName.includes(word));
     });
   }, [mechanics, searchQuery]);
