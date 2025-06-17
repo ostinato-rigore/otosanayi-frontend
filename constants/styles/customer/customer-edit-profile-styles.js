@@ -19,7 +19,7 @@ export default StyleSheet.create({
   loadingText: {
     marginTop: THEME.spacing.md,
     color: COLORS.textPrimary,
-    fontSize: THEME.fontSizes.body,
+    fontSize: 16,
   },
   profileImageContainer: {
     alignSelf: "center",
@@ -149,7 +149,7 @@ export default StyleSheet.create({
   },
   dropdownContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: THEME.sizes.card.borderRadius,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
     marginTop: 8,
@@ -166,12 +166,12 @@ export default StyleSheet.create({
   dropdownItem: {
     flexDirection: "row",
     alignItems: "center",
-    padding: THEME.spacing.md,
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   dropdownItemText: {
-    fontSize: THEME.fontSizes.body,
+    fontSize: 15,
     color: COLORS.textDark,
     flex: 1,
   },

@@ -42,6 +42,7 @@ const THEME = {
       borderRadius: 8, // Kart köşe yuvarlatma
       padding: 16, // Kart içi boşluk
       marginHorizontal: 16, // Kart kenar boşluğu
+      marginBottom: 16,
       elevation: 2, // Android gölge
       shadowOpacity: 0.1, // iOS gölge
       shadowRadius: 4,
