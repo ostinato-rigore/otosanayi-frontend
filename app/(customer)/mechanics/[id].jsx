@@ -2,7 +2,6 @@ import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-
 import {
   ActivityIndicator,
   Alert,
@@ -23,38 +22,49 @@ import StarRating from "../../../components/StarRating";
 import COLORS from "../../../constants/colors";
 import styles from "../../../constants/styles/customer/mechanic-detail-styles";
 
-const InfoRow = ({ labelText, text, style }) => (
-  <View style={[styles.infoRowContainer, style]}>
-    <View style={styles.infoRow}>
-      <View style={styles.infoLabelContainer}>
-        <Text style={styles.infoLabel}>{labelText}</Text>
+const InfoRow = ({ labelText, text, style, accessibilityLabel }) => {
+  return (
+    <View style={[styles.infoRowContainer, style]}>
+      <View style={styles.infoRow}>
+        <View style={styles.infoLabelContainer}>
+          <Text style={styles.infoLabel}>{labelText}</Text>
+        </View>
+        <Text style={styles.infoValue} accessibilityLabel={accessibilityLabel}>
+          {text}
+        </Text>
       </View>
-      <Text style={styles.infoValue}>{text}</Text>
+      <View style={styles.infoUnderline} />
     </View>
-    <View style={styles.infoUnderline} />
-  </View>
-);
+  );
+};
 
-const ReviewCard = ({ review }) => (
-  <View style={styles.reviewCard}>
-    <View style={styles.reviewHeader}>
-      <Text style={styles.reviewAuthor}>
-        {review.customer?.name || "Anonim"}
-      </Text>
-      <View style={styles.reviewRatingContainer}>
-        <StarRating rating={review.rating} size={14} />
-        <Text style={styles.reviewRatingText}>{review.rating}/5</Text>
+const ReviewCard = ({ review }) => {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.reviewCard}>
+      <View style={styles.reviewHeader}>
+        <Text style={styles.reviewAuthor}>
+          {review.customer?.name || t("mechanicDetail.anonymous")}
+        </Text>
+        <View style={styles.reviewRatingContainer}>
+          <StarRating rating={review.rating || 0} size={14} />
+          <Text style={styles.reviewRatingText}>{review.rating || 0}/5</Text>
+        </View>
       </View>
+      <Text style={styles.reviewText}>
+        {review.comment || t("mechanicDetail.noInfo")}
+      </Text>
+      <Text style={styles.reviewDate}>
+        {review.createdAt
+          ? new Date(review.createdAt).toLocaleDateString()
+          : t("mechanicDetail.noInfo")}
+      </Text>
     </View>
-    <Text style={styles.reviewText}>{review.comment}</Text>
-    <Text style={styles.reviewDate}>
-      {new Date(review.createdAt).toLocaleDateString()}
-    </Text>
-  </View>
-);
+  );
+};
 
 export default function MechanicDetail() {
-  const { t } = useTranslation(); // Çeviri fonksiyonu
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams();
   const [mechanic, setMechanic] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,20 +75,21 @@ export default function MechanicDetail() {
   const [rating, setRating] = useState(5);
 
   const getMechanic = useCallback(async () => {
+    setLoading(true);
     try {
       const data = await fetchMechanicById(id);
       setMechanic(data);
       setReviews(data.reviews || []);
     } catch (error) {
       Alert.alert(
-        "Hata",
-        "Tamirci bilgileri yüklenemedi. Lütfen tekrar deneyin."
+        t("error"),
+        t("mechanicDetail.mechanicNotFound") || "Mechanic could not be loaded."
       );
-      console.log(error);
+      console.error("Fetch Mechanic Error:", error);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     if (id) getMechanic();
@@ -86,7 +97,7 @@ export default function MechanicDetail() {
 
   const handleSubmitReview = async () => {
     if (!reviewText.trim()) {
-      Alert.alert("Hata", "Lütfen bir yorum yazın.");
+      Alert.alert(t("error"), t("mechanicDetail.commentRequired"));
       return;
     }
     try {
@@ -95,14 +106,16 @@ export default function MechanicDetail() {
       setReviewModalVisible(false);
       setReviewText("");
       setRating(5);
-      Alert.alert("Başarılı", "Yorumunuz gönderildi.");
+      Alert.alert(t("success"), t("mechanicDetail.reviewSuccess"));
     } catch (error) {
-      Alert.alert("Hata", error.message || "Yorum gönderilemedi.");
-      console.log(error);
+      Alert.alert(
+        t("error"),
+        t("mechanicDetail.reviewFailed") || "Review could not be submitted."
+      );
+      console.error("Submit Review Error:", error);
     }
   };
 
-  // URL geçerliliğini kontrol eden yardımcı fonksiyon
   const cleanUrl = (url) => {
     if (!url || typeof url !== "string" || !url.startsWith("http")) {
       return null;
@@ -114,7 +127,12 @@ export default function MechanicDetail() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.accentCustomer} />
-        <Text style={styles.loadingText}>Yükleniyor...</Text>
+        <Text
+          style={styles.loadingText}
+          accessibilityLabel={t("mechanicDetail.loadingAccessibility")}
+        >
+          {t("mechanicDetail.loading")}
+        </Text>
       </View>
     );
   }
@@ -122,15 +140,23 @@ export default function MechanicDetail() {
   if (!mechanic) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Tamirci bulunamadı.</Text>
+        <Text
+          style={styles.errorText}
+          accessibilityLabel={t("mechanicDetail.mechanicNotFoundAccessibility")}
+        >
+          {t("mechanicDetail.mechanicNotFound")}
+        </Text>
         <TouchableOpacity
           style={styles.retryButton}
           onPress={() => {
             setLoading(true);
             getMechanic();
           }}
+          accessibilityLabel={t("mechanicDetail.retryAccessibility")}
         >
-          <Text style={styles.retryButtonText}>Tekrar Dene</Text>
+          <Text style={styles.retryButtonText}>
+            {t("mechanicDetail.retry")}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -152,14 +178,19 @@ export default function MechanicDetail() {
             <Image
               source={{ uri: mechanic.mechanicLogo }}
               style={styles.logo}
+              accessibilityLabel={t("mechanicDetail.mechanicLogo", {
+                name: mechanic.mechanicName || mechanic.name,
+              })}
             />
           ) : (
             <View style={styles.logoPlaceholder}>
               <Ionicons name="car" size={40} color={COLORS.white} />
             </View>
           )}
-          <Text style={styles.title}>
-            {mechanic.mechanicName || mechanic.name}
+          <Text style={styles.title} accessibilityRole="header">
+            {mechanic.mechanicName ||
+              mechanic.name ||
+              t("mechanicDetail.noInfo")}
           </Text>
           <View style={styles.ratingContainer}>
             <View style={styles.ratingStars}>
@@ -168,33 +199,61 @@ export default function MechanicDetail() {
                 {mechanic.averageRating?.toFixed(1) || "0.0"}/5
               </Text>
             </View>
-            <Text style={styles.ratingCount}>({reviews.length} yorum)</Text>
+            <Text style={styles.ratingCount}>
+              ({reviews.length} {t("mechanicDetail.reviews")})
+            </Text>
           </View>
         </View>
 
         {/* Contact Info Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>İletişim Bilgileri</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {t("mechanicDetail.contactInfo")}
+          </Text>
           <InfoRow
-            text={mechanic.phone || "Belirtilmemiş"}
-            labelText={"Telefon"}
+            text={mechanic.phone || t("mechanicDetail.noInfo")}
+            labelText={t("mechanicDetail.phone")}
+            accessibilityLabel={t("mechanicDetail.phoneAccessibility", {
+              phone: mechanic.phone || t("mechanicDetail.noInfo"),
+            })}
           />
           <InfoRow
-            text={mechanic.email || "Belirtilmemiş"}
-            labelText={"E-posta"}
+            text={mechanic.email || t("mechanicDetail.noInfo")}
+            labelText={t("mechanicDetail.email")}
+            accessibilityLabel={t("mechanicDetail.emailAccessibility", {
+              email: mechanic.email || t("mechanicDetail.noInfo"),
+            })}
           />
           <InfoRow
-            text={`${mechanic.mechanicAddress?.city || "Belirtilmemiş"}${
+            text={`${
+              mechanic.mechanicAddress?.city || t("mechanicDetail.noInfo")
+            }${
               mechanic.mechanicAddress?.district
                 ? `, ${mechanic.mechanicAddress.district}`
                 : ""
             }`}
-            labelText={"Konum"}
+            labelText={t("mechanicDetail.location")}
+            accessibilityLabel={t("mechanicDetail.locationAccessibility", {
+              location: `${
+                mechanic.mechanicAddress?.city || t("mechanicDetail.noInfo")
+              }${
+                mechanic.mechanicAddress?.district
+                  ? `, ${mechanic.mechanicAddress.district}`
+                  : ""
+              }`,
+            })}
           />
           {mechanic.mechanicAddress?.fullAddress && (
             <View style={styles.fullAddressContainer}>
-              <Text style={styles.addressLabel}>Adres:</Text>
-              <Text style={styles.addressText}>
+              <Text style={styles.addressLabel}>
+                {t("mechanicDetail.address")}
+              </Text>
+              <Text
+                style={styles.addressText}
+                accessibilityLabel={t("mechanicDetail.addressAccessibility", {
+                  address: mechanic.mechanicAddress.fullAddress,
+                })}
+              >
                 {mechanic.mechanicAddress.fullAddress}
               </Text>
             </View>
@@ -203,44 +262,67 @@ export default function MechanicDetail() {
 
         {/* Working Hours Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Çalışma Saatleri</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {t("mechanicDetail.workingHours")}
+          </Text>
           <View style={styles.hoursContainer}>
             <InfoRow
-              labelText={"Hafta İçi"}
+              labelText={t("mechanicDetail.weekdays")}
               text={`${mechanic.workingHours?.weekdays?.open || "09:00"} - ${
                 mechanic.workingHours?.weekdays?.close || "18:00"
               }`}
               style={styles.hoursRow}
+              accessibilityLabel={t("mechanicDetail.weekdaysAccessibility", {
+                hours: `${mechanic.workingHours?.weekdays?.open || "09:00"} - ${
+                  mechanic.workingHours?.weekdays?.close || "18:00"
+                }`,
+              })}
             />
             <InfoRow
-              labelText={"Hafta Sonu"}
+              labelText={t("mechanicDetail.weekend")}
               text={`${mechanic.workingHours?.weekend?.open || "10:00"} - ${
                 mechanic.workingHours?.weekend?.close || "16:00"
               }`}
               style={styles.hoursRow}
+              accessibilityLabel={t("mechanicDetail.weekendAccessibility", {
+                hours: `${mechanic.workingHours?.weekend?.open || "10:00"} - ${
+                  mechanic.workingHours?.weekend?.close || "16:00"
+                }`,
+              })}
             />
           </View>
         </View>
 
         {/* Expertise Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Uzmanlık Alanları</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {t("mechanicDetail.expertiseAreas")}
+          </Text>
           <View style={styles.tagsContainer}>
             {mechanic.expertiseAreas?.length > 0 ? (
               mechanic.expertiseAreas.map((area, index) => (
                 <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{area}</Text>
+                  <Text style={styles.tagText}>{t(area)}</Text>
                 </View>
               ))
             ) : (
-              <Text style={styles.noInfoText}>Belirtilmemiş</Text>
+              <Text
+                style={styles.noInfoText}
+                accessibilityLabel={t(
+                  "mechanicDetail.noExpertiseAccessibility"
+                )}
+              >
+                {t("mechanicDetail.noInfo")}
+              </Text>
             )}
           </View>
         </View>
 
         {/* Vehicle Brands Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Hizmet Verilen Markalar</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {t("mechanicDetail.vehicleBrands")}
+          </Text>
           <View style={styles.tagsContainer}>
             {mechanic.vehicleBrands?.length > 0 ? (
               mechanic.vehicleBrands.map((brand, index) => (
@@ -249,14 +331,21 @@ export default function MechanicDetail() {
                 </View>
               ))
             ) : (
-              <Text style={styles.noInfoText}>Belirtilmemiş</Text>
+              <Text
+                style={styles.noInfoText}
+                accessibilityLabel={t("mechanicDetail.noBrandsAccessibility")}
+              >
+                {t("mechanicDetail.noInfo")}
+              </Text>
             )}
           </View>
         </View>
 
         {/* Social Media Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t("socialMedia")}</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {t("mechanicDetail.socialMedia")}
+          </Text>
           <View style={styles.socialContainer}>
             {mechanic.socialMedia?.facebook ||
             mechanic.socialMedia?.instagram ||
@@ -280,6 +369,9 @@ export default function MechanicDetail() {
                       }
                     }}
                     disabled={!cleanUrl(mechanic.socialMedia?.facebook)}
+                    accessibilityLabel={t(
+                      "mechanicDetail.facebookAccessibility"
+                    )}
                   >
                     <FontAwesome name="facebook" size={24} color="#3b5998" />
                   </TouchableOpacity>
@@ -302,6 +394,9 @@ export default function MechanicDetail() {
                       }
                     }}
                     disabled={!cleanUrl(mechanic.socialMedia?.instagram)}
+                    accessibilityLabel={t(
+                      "mechanicDetail.instagramAccessibility"
+                    )}
                   >
                     <FontAwesome name="instagram" size={24} color="#E1306C" />
                   </TouchableOpacity>
@@ -324,13 +419,23 @@ export default function MechanicDetail() {
                       }
                     }}
                     disabled={!cleanUrl(mechanic.socialMedia?.twitter)}
+                    accessibilityLabel={t(
+                      "mechanicDetail.twitterAccessibility"
+                    )}
                   >
                     <FontAwesome name="twitter" size={24} color="#1DA1F2" />
                   </TouchableOpacity>
                 )}
               </>
             ) : (
-              <Text style={styles.noInfoText}>{t("noInfo")}</Text>
+              <Text
+                style={styles.noInfoText}
+                accessibilityLabel={t(
+                  "mechanicDetail.noSocialMediaAccessibility"
+                )}
+              >
+                {t("mechanicDetail.noInfo")}
+              </Text>
             )}
           </View>
         </View>
@@ -338,12 +443,17 @@ export default function MechanicDetail() {
         {/* Reviews Section */}
         <View style={styles.section}>
           <View style={styles.reviewsHeader}>
-            <Text style={styles.sectionTitle}>Yorumlar</Text>
+            <Text style={styles.sectionTitle} accessibilityRole="header">
+              {t("mechanicDetail.reviews")}
+            </Text>
             <TouchableOpacity
               style={styles.addReviewButton}
               onPress={() => setReviewModalVisible(true)}
+              accessibilityLabel={t("mechanicDetail.addReviewAccessibility")}
             >
-              <Text style={styles.addReviewText}>Yorum Yap</Text>
+              <Text style={styles.addReviewText}>
+                {t("mechanicDetail.addReview")}
+              </Text>
             </TouchableOpacity>
           </View>
           {reviews.length > 0 ? (
@@ -353,15 +463,24 @@ export default function MechanicDetail() {
                 <TouchableOpacity
                   style={styles.viewCommentsButton}
                   onPress={() => setCommentsModalVisible(true)}
+                  accessibilityLabel={t(
+                    "mechanicDetail.viewAllCommentsAccessibility",
+                    { count: reviews.length }
+                  )}
                 >
                   <Text style={styles.viewCommentsText}>
-                    Tüm Yorumları Görüntüle ({reviews.length})
+                    {t("mechanicDetail.viewAllComments")} ({reviews.length})
                   </Text>
                 </TouchableOpacity>
               )}
             </>
           ) : (
-            <Text style={styles.noReviewsText}>Henüz yorum yapılmamış.</Text>
+            <Text
+              style={styles.noReviewsText}
+              accessibilityLabel={t("mechanicDetail.noReviewsAccessibility")}
+            >
+              {t("mechanicDetail.noReviews")}
+            </Text>
           )}
         </View>
 
@@ -371,13 +490,17 @@ export default function MechanicDetail() {
           transparent={true}
           visible={reviewModalVisible}
           onRequestClose={() => setReviewModalVisible(false)}
+          accessibilityViewIsModal={true}
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Yorum Yap</Text>
-
+              <Text style={styles.modalTitle} accessibilityRole="header">
+                {t("mechanicDetail.writeReview")}
+              </Text>
               <View style={styles.ratingInputContainer}>
-                <Text style={styles.ratingLabel}>Puanınız:</Text>
+                <Text style={styles.ratingLabel}>
+                  {t("mechanicDetail.yourRating")}
+                </Text>
                 <View style={styles.starRatingContainer}>
                   <View style={styles.starContainer}>
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -385,6 +508,9 @@ export default function MechanicDetail() {
                         key={star}
                         onPress={() => setRating(star)}
                         activeOpacity={0.7}
+                        accessibilityLabel={t("mechanicDetail.ratingSelect", {
+                          rating: star,
+                        })}
                       >
                         <Ionicons
                           name={star <= rating ? "star" : "star-outline"}
@@ -400,24 +526,36 @@ export default function MechanicDetail() {
               <TextInput
                 style={styles.reviewInput}
                 multiline
-                placeholder="Yorumunuzu buraya yazın..."
+                placeholder={t("mechanicDetail.writeComment")}
                 placeholderTextColor={COLORS.placeholderText}
                 value={reviewText}
                 onChangeText={setReviewText}
+                accessibilityLabel={t(
+                  "mechanicDetail.commentInputAccessibility"
+                )}
               />
-
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.cancelButton]}
                   onPress={() => setReviewModalVisible(false)}
+                  accessibilityLabel={t(
+                    "mechanicDetail.cancelReviewAccessibility"
+                  )}
                 >
-                  <Text style={styles.cancelButtonText}>İptal</Text>
+                  <Text style={styles.cancelButtonText}>
+                    {t("customerHome.cancel")}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.submitButton]}
                   onPress={handleSubmitReview}
+                  accessibilityLabel={t(
+                    "mechanicDetail.submitReviewAccessibility"
+                  )}
                 >
-                  <Text style={styles.submitButtonText}>Gönder</Text>
+                  <Text style={styles.submitButtonText}>
+                    {t("mechanicDetail.submit")}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -430,16 +568,20 @@ export default function MechanicDetail() {
           transparent={true}
           visible={commentsModalVisible}
           onRequestClose={() => setCommentsModalVisible(false)}
+          accessibilityViewIsModal={true}
         >
           <View style={styles.modalContainer}>
             <View style={[styles.modalContent, styles.commentsModalContent]}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
-                  Tüm Yorumlar ({reviews.length})
+                <Text style={styles.modalTitle} accessibilityRole="header">
+                  {t("mechanicDetail.allComments")} ({reviews.length})
                 </Text>
                 <TouchableOpacity
                   onPress={() => setCommentsModalVisible(false)}
                   style={styles.closeButton}
+                  accessibilityLabel={t(
+                    "mechanicDetail.closeCommentsAccessibility"
+                  )}
                 >
                   <Ionicons name="close" size={24} color={COLORS.textDark} />
                 </TouchableOpacity>
@@ -447,7 +589,7 @@ export default function MechanicDetail() {
               <FlatList
                 data={reviews}
                 renderItem={({ item }) => <ReviewCard review={item} />}
-                keyExtractor={(item) => item._id}
+                keyExtractor={(item) => item._id || Math.random().toString()}
                 contentContainerStyle={styles.commentsListContent}
                 showsVerticalScrollIndicator={false}
               />
