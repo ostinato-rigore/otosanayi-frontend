@@ -22,6 +22,52 @@ import StarRating from "../../../components/StarRating";
 import COLORS from "../../../constants/colors";
 import styles from "../../../constants/styles/customer/mechanic-detail-styles";
 
+// ObjectId'den tarih tahmini için yardımcı fonksiyon (eski yorumlar için)
+const getDateFromObjectId = (objectId) => {
+  try {
+    // ObjectId'nin ilk 4 baytı zaman damgasını içerir (saniye cinsinden)
+    const timestamp = parseInt(objectId.substring(0, 8), 16) * 1000;
+    return new Date(timestamp);
+  } catch (error) {
+    console.error("Error extracting date from ObjectId:", objectId, error);
+    return null;
+  }
+};
+
+// Tarih doğrulama ve formatlama için yardımcı fonksiyon
+const formatReviewDate = (dateString, objectId, t) => {
+  if (dateString) {
+    try {
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleString("tr-TR", {
+          year: "numeric",
+          month: "numeric", // Ayı sayısal olarak göster
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }); // Ör: "22/5/2025 14:30"
+      }
+    } catch (error) {
+      console.error("Invalid date format:", dateString, error);
+    }
+  }
+  // createdAt yoksa, ObjectId'den tahmini tarih kullan
+  if (objectId) {
+    const estimatedDate = getDateFromObjectId(objectId);
+    if (estimatedDate && !isNaN(estimatedDate.getTime())) {
+      return `${t(
+        "mechanicDetail.estimatedDate"
+      )} ${estimatedDate.toLocaleDateString("tr-TR", {
+        year: "numeric",
+        month: "numeric", // Ayı sayısal olarak göster
+        day: "numeric",
+      })}`; // Ör: "Tahmini Tarih: 22/5/2025"
+    }
+  }
+  return t("mechanicDetail.noDate");
+};
+
 const InfoRow = ({ labelText, text, style, accessibilityLabel }) => {
   return (
     <View style={[styles.infoRowContainer, style]}>
@@ -54,10 +100,13 @@ const ReviewCard = ({ review }) => {
       <Text style={styles.reviewText}>
         {review.comment || t("mechanicDetail.noInfo")}
       </Text>
-      <Text style={styles.reviewDate}>
-        {review.createdAt
-          ? new Date(review.createdAt).toLocaleDateString()
-          : t("mechanicDetail.noInfo")}
+      <Text
+        style={styles.reviewDate}
+        accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
+          date: formatReviewDate(review.createdAt, review._id, t),
+        })}
+      >
+        {formatReviewDate(review.createdAt, review._id, t)}
       </Text>
     </View>
   );
@@ -78,6 +127,7 @@ export default function MechanicDetail() {
     setLoading(true);
     try {
       const data = await fetchMechanicById(id);
+      console.log("API Response:", JSON.stringify(data, null, 2)); // Veri yapısını kontrol et
       setMechanic(data);
       setReviews(data.reviews || []);
     } catch (error) {
@@ -102,6 +152,7 @@ export default function MechanicDetail() {
     }
     try {
       const newReview = await postReview(id, { rating, comment: reviewText });
+      console.log("New Review:", JSON.stringify(newReview, null, 2)); // Yeni yorumun yapısını kontrol et
       setReviews((prev) => [newReview, ...prev]);
       setReviewModalVisible(false);
       setReviewText("");
