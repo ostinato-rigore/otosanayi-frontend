@@ -216,6 +216,16 @@
     "mechanicLogo": "{{name}} logosu",
     "commentRequired": "Lütfen bir yorum yazın.",
     "reviewSuccess": "Yorumunuz gönderildi.",
-    "reviewFailed": "Yorum gönderilemedi."
+    "reviewFailed": "Yorum gönderilemedi.",
+    "noDate": "Yorum tarihi mevcut değil",
+    "reviewDateAccessibility": "Yorum tarihi: {{date}}",
+    "viewMechanicDetails": "Usta Detaylarını Görüntüle",
+    "viewMechanicDetailsAccessibility": "Usta detaylarını görüntüle",
+    "error": "Hata"
+  },
+  "customerReviews": {
+    "title": "Yorumlarım",
+    "noReviews": "Henüz yorum yok",
+    "reviewsLoadFailed": "Yorumlar yüklenemedi"
   }
 }

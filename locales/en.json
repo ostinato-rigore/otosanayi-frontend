@@ -216,6 +216,16 @@
     "mechanicLogo": "Logo of {{name}}",
     "commentRequired": "Please write a comment.",
     "reviewSuccess": "Your review has been submitted.",
-    "reviewFailed": "Review could not be submitted."
+    "reviewFailed": "Review could not be submitted.",
+    "noDate": "Review date unavailable",
+    "reviewDateAccessibility": "Review date: {{date}}",
+    "viewMechanicDetails": "View Mechanic Details",
+    "viewMechanicDetailsAccessibility": "View mechanic details",
+    "error": "Error"
+  },
+  "customerReviews": {
+    "title": "My Reviews",
+    "noReviews": "No reviews yet",
+    "reviewsLoadFailed": "Failed to load reviews"
   }
 }
