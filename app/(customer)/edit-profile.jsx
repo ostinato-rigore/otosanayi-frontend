@@ -272,55 +272,62 @@ export default function CustomerEditProfile() {
           <Text style={styles.sectionTitle}>
             {t("editProfile.personalInfo")}
           </Text>
-          <Controller
-            control={control}
-            name="name"
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>{t("nameLabel")}</Text>
-                <TextInput
-                  style={styles.inputValue}
-                  value={value}
-                  onChangeText={onChange}
-                  editable={isEditable}
-                  placeholder={t("editProfile.enterName")}
-                  accessibilityLabel={t("nameLabel")}
+          {[
+            {
+              name: "name",
+              label: t("nameLabel"),
+              placeholder: t("editProfile.enterName"),
+              editable: true,
+            },
+            {
+              name: "phone",
+              label: t("phoneLabel"),
+              placeholder: t("editProfile.enterPhone"),
+              editable: true,
+              keyboardType: "phone-pad",
+            },
+            {
+              name: "email",
+              label: t("emailLabel"),
+              value: user.email || t("profile.noEmailSet"),
+              editable: false,
+            },
+          ].map((field, index, array) => (
+            <View
+              key={field.name}
+              style={[
+                field.editable ? styles.inputRow : styles.disabledInputRow,
+                index === array.length - 1 && styles.noBorderBottom, // Son satırda çizgi yok
+              ]}
+            >
+              <Text style={styles.label}>{field.label}</Text>
+              {field.editable ? (
+                <Controller
+                  control={control}
+                  name={field.name}
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      style={styles.inputValue}
+                      value={value}
+                      onChangeText={onChange}
+                      editable={isEditable}
+                      placeholder={field.placeholder}
+                      keyboardType={field.keyboardType}
+                      accessibilityLabel={field.label}
+                    />
+                  )}
                 />
-              </View>
-            )}
-          />
+              ) : (
+                <Text style={styles.disabledInputValue}>{field.value}</Text>
+              )}
+            </View>
+          ))}
           {errors.name && (
             <Text style={styles.errorText}>{errors.name.message}</Text>
           )}
-
-          <Controller
-            control={control}
-            name="phone"
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>{t("phoneLabel")}</Text>
-                <TextInput
-                  style={styles.inputValue}
-                  value={value}
-                  onChangeText={onChange}
-                  editable={isEditable}
-                  placeholder={t("editProfile.enterPhone")}
-                  keyboardType="phone-pad"
-                  accessibilityLabel={t("phoneLabel")}
-                />
-              </View>
-            )}
-          />
           {errors.phone && (
             <Text style={styles.errorText}>{errors.phone.message}</Text>
           )}
-
-          <View style={styles.disabledInputRow}>
-            <Text style={styles.label}>{t("emailLabel")}</Text>
-            <Text style={styles.disabledInputValue}>
-              {user.email || t("profile.noEmailSet")}
-            </Text>
-          </View>
         </View>
 
         {/* Araç Bilgileri - White Card */}
@@ -328,118 +335,108 @@ export default function CustomerEditProfile() {
           <Text style={styles.sectionTitle}>
             {t("editProfile.vehicleInfo")}
           </Text>
-
-          <Controller
-            control={control}
-            name="vehicle.brand"
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>{t("editProfile.brandLabel")}</Text>
-                {isEditable ? (
-                  <DropdownSelect
-                    label={t("editProfile.brandLabel")}
-                    value={value}
-                    options={VEHICLE_BRANDS}
-                    onSelect={(val) => {
-                      onChange(val);
-                      setValue("vehicle.model", "");
-                    }}
-                    type="brand"
-                    dropdownVisible={dropdownVisible}
-                    toggleDropdown={toggleDropdown}
-                  />
-                ) : (
-                  <Text style={styles.inputValue}>
-                    {value || t("editProfile.noValueSet")}
-                  </Text>
-                )}
-              </View>
-            )}
-          />
+          {[
+            {
+              name: "vehicle.brand",
+              label: t("editProfile.brandLabel"),
+              type: "select",
+              options: VEHICLE_BRANDS,
+            },
+            {
+              name: "vehicle.model",
+              label: t("editProfile.modelLabel"),
+              placeholder: t("editProfile.enterModel"),
+              editable: true,
+            },
+            {
+              name: "vehicle.year",
+              label: t("editProfile.yearLabel"),
+              placeholder: t("editProfile.enterYear"),
+              keyboardType: "numeric",
+              editable: true,
+            },
+            {
+              name: "vehicle.fuelType",
+              label: t("editProfile.fuelTypeLabel"),
+              type: "select",
+              options: FUEL_TYPES,
+            },
+          ].map((field, index, array) => (
+            <View
+              key={index}
+              style={[
+                styles.inputRow,
+                index === array.length - 1 && styles.noBorderBottom,
+              ]}
+            >
+              <Text style={styles.label}>{field.label}</Text>
+              {field.type === "select" ? (
+                <Controller
+                  control={control}
+                  name={field.name}
+                  render={({ field: { onChange, value } }) =>
+                    isEditable ? (
+                      <DropdownSelect
+                        label={field.label}
+                        value={value}
+                        options={field.options}
+                        onSelect={
+                          field.name === "vehicle.brand"
+                            ? (val) => {
+                                onChange(val);
+                                setValue("vehicle.model", "");
+                              }
+                            : onChange
+                        }
+                        type={field.name}
+                        dropdownVisible={dropdownVisible}
+                        toggleDropdown={toggleDropdown}
+                      />
+                    ) : (
+                      <Text style={styles.inputValue}>
+                        {value
+                          ? field.name === "vehicle.fuelType"
+                            ? t(`editProfile.fuelTypes.${value}`)
+                            : t(value)
+                          : t("editProfile.noValueSet")}
+                      </Text>
+                    )
+                  }
+                />
+              ) : (
+                <Controller
+                  control={control}
+                  name={field.name}
+                  render={({ field: { onChange, value } }) =>
+                    isEditable ? (
+                      <TextInput
+                        style={styles.inputValue}
+                        value={value ? String(value) : ""}
+                        onChangeText={onChange}
+                        editable={isEditable}
+                        placeholder={field.placeholder}
+                        keyboardType={field.keyboardType}
+                        accessibilityLabel={field.label}
+                      />
+                    ) : (
+                      <Text style={styles.inputValue}>
+                        {value || t("editProfile.noValueSet")}
+                      </Text>
+                    )
+                  }
+                />
+              )}
+            </View>
+          ))}
           {errors.vehicle?.brand && (
             <Text style={styles.errorText}>{errors.vehicle.brand.message}</Text>
           )}
-
-          <Controller
-            control={control}
-            name="vehicle.model"
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>{t("editProfile.modelLabel")}</Text>
-                {isEditable ? (
-                  <TextInput
-                    style={styles.inputValue}
-                    value={value}
-                    onChangeText={onChange}
-                    editable={isEditable}
-                    placeholder={t("editProfile.enterModel")}
-                    accessibilityLabel={t("editProfile.modelLabel")}
-                  />
-                ) : (
-                  <Text style={styles.inputValue}>
-                    {value || t("editProfile.noValueSet")}
-                  </Text>
-                )}
-              </View>
-            )}
-          />
           {errors.vehicle?.model && (
             <Text style={styles.errorText}>{errors.vehicle.model.message}</Text>
           )}
-
-          <Controller
-            control={control}
-            name="vehicle.year"
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>{t("editProfile.yearLabel")}</Text>
-                {isEditable ? (
-                  <TextInput
-                    style={styles.inputValue}
-                    value={value ? String(value) : ""} // Değeri string'e çevir
-                    onChangeText={(text) => onChange(text)} // Girdiyi string olarak işle
-                    editable={isEditable}
-                    placeholder={t("editProfile.enterYear")}
-                    keyboardType="numeric"
-                    accessibilityLabel={t("editProfile.yearLabel")}
-                  />
-                ) : (
-                  <Text style={styles.inputValue}>
-                    {value || t("editProfile.noValueSet")}
-                  </Text>
-                )}
-              </View>
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="vehicle.fuelType"
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>
-                  {t("editProfile.fuelTypeLabel")}
-                </Text>
-                {isEditable ? (
-                  <DropdownSelect
-                    label={t("editProfile.fuelTypeLabel")}
-                    value={value}
-                    options={FUEL_TYPES}
-                    onSelect={onChange}
-                    type="fuelType"
-                    dropdownVisible={dropdownVisible}
-                    toggleDropdown={toggleDropdown}
-                  />
-                ) : (
-                  <Text style={styles.inputValue}>
-                    {value
-                      ? t(`editProfile.fuelTypes.${value}`)
-                      : t("editProfile.noValueSet")}
-                  </Text>
-                )}
-              </View>
-            )}
-          />
+          {errors.vehicle?.year && (
+            <Text style={styles.errorText}>{errors.vehicle.year.message}</Text>
+          )}
           {errors.vehicle?.fuelType && (
             <Text style={styles.errorText}>
               {errors.vehicle.fuelType.message}

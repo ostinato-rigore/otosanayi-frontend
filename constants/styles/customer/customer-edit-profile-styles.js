@@ -17,7 +17,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   loadingText: {
-    marginTop: THEME.spacing.md,
+    marginTop: THEME.spacing.sm,
     color: COLORS.textPrimary,
     fontSize: 16,
   },
@@ -63,13 +63,14 @@ export default StyleSheet.create({
   cardContainer: {
     backgroundColor: COLORS.white,
     borderRadius: THEME.sizes.card.borderRadius,
-    padding: THEME.sizes.card.padding,
+    paddingTop: THEME.sizes.card.padding, // Sadece üstten padding
+    paddingHorizontal: THEME.sizes.card.padding, // Sağ ve sol padding
     marginBottom: THEME.spacing.xs,
-    elevation: THEME.sizes.card.elevation, // For Android shadow
+    elevation: THEME.sizes.card.elevation,
     shadowColor: COLORS.black,
-    shadowOpacity: THEME.sizes.card.shadowOpacity, // For iOS shadow
+    shadowOpacity: THEME.sizes.card.shadowOpacity,
     shadowRadius: THEME.sizes.card.shadowRadius,
-    shadowOffset: THEME.sizes.card.shadowOffset, // For iOS shadow
+    shadowOffset: THEME.sizes.card.shadowOffset,
   },
   inputRow: {
     flexDirection: "row",
@@ -90,6 +91,9 @@ export default StyleSheet.create({
     minHeight: THEME.sizes.input.height,
     backgroundColor: COLORS.lightGray,
     opacity: 0.7,
+  },
+  noBorderBottom: {
+    borderBottomWidth: 0, // Son satırda alt çizgi yok
   },
   label: {
     fontSize: THEME.fontSizes.body,
@@ -113,7 +117,8 @@ export default StyleSheet.create({
   errorText: {
     color: COLORS.error,
     fontSize: THEME.fontSizes.body,
-    marginTop: THEME.spacing.md,
+    marginTop: THEME.spacing.sm,
+    marginBottom: THEME.spacing.sm, // Hata metni için alt boşluk
   },
   actionButtons: {
     marginTop: THEME.spacing.xl,
@@ -128,9 +133,6 @@ export default StyleSheet.create({
     color: COLORS.white,
     fontWeight: "600",
     fontSize: THEME.fontSizes.h3,
-  },
-  filterSection: {
-    marginBottom: THEME.spacing.md,
   },
   dropdownButton: {
     flexDirection: "row",

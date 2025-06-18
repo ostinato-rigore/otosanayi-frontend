@@ -17,7 +17,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   loadingText: {
-    marginTop: THEME.spacing.md,
+    marginTop: THEME.spacing.sm,
     fontSize: THEME.fontSizes.tag,
     color: COLORS.textPrimary,
   },
@@ -63,7 +63,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.accentCustomer,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: THEME.spacing.md,
+    marginBottom: THEME.spacing.sm,
   },
   title: {
     fontSize: THEME.fontSizes.h1,
@@ -93,10 +93,11 @@ export default StyleSheet.create({
   },
   section: {
     backgroundColor: COLORS.white,
-    marginTop: THEME.spacing.sm,
-    padding: THEME.spacing.lg,
-    borderRadius: THEME.spacing.sm,
-    marginHorizontal: THEME.spacing.md,
+    marginTop: THEME.spacing.lg,
+    paddingTop: THEME.spacing.lg,
+    paddingHorizontal: THEME.spacing.lg,
+    borderRadius: THEME.sizes.card.borderRadius,
+    marginHorizontal: THEME.sizes.card.marginHorizontal,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
@@ -130,10 +131,11 @@ export default StyleSheet.create({
   infoUnderline: {
     height: 1,
     backgroundColor: COLORS.border,
-    marginTop: 6,
+    marginTop: THEME.spacing.xs,
   },
   fullAddressContainer: {
     marginTop: THEME.spacing.sm,
+    marginBottom: THEME.spacing.lg,
     padding: THEME.spacing.sm,
     backgroundColor: COLORS.inputBackground,
     borderRadius: THEME.spacing.sm,
@@ -152,10 +154,14 @@ export default StyleSheet.create({
   hoursContainer: {
     marginTop: THEME.spacing.xs,
   },
+  hoursRow: {
+    // No additional styles needed
+  },
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: THEME.spacing.sm,
+    marginBottom: THEME.spacing.lg,
     gap: 8,
   },
   tag: {
@@ -163,7 +169,6 @@ export default StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    marginBottom: THEME.spacing.sm,
   },
   tagText: {
     color: COLORS.white,
@@ -177,7 +182,8 @@ export default StyleSheet.create({
   },
   socialContainer: {
     flexDirection: "row",
-    marginTop: THEME.spacing.md,
+    marginTop: THEME.spacing.sm,
+    marginBottom: THEME.spacing.lg,
   },
   socialButton: {
     width: 44,
@@ -258,6 +264,7 @@ export default StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: "center",
     marginTop: 8,
+    marginBottom: THEME.spacing.lg,
   },
   viewCommentsText: {
     color: COLORS.accentCustomer,
@@ -295,15 +302,15 @@ export default StyleSheet.create({
     padding: 4,
   },
   ratingInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: THEME.spacing.lg,
-    flexDirection: "row", // Changed from column to row
-    alignItems: "center", // Vertically center items
-    justifyContent: "space-between", // Space between label and stars
   },
   ratingLabel: {
     fontSize: THEME.fontSizes.body,
     color: COLORS.primary,
-    marginRight: THEME.spacing.sm, // Added margin between label and stars
+    marginRight: THEME.spacing.sm,
   },
   starRatingContainer: {
     flexDirection: "row",
@@ -311,7 +318,7 @@ export default StyleSheet.create({
   },
   starContainer: {
     flexDirection: "row",
-    marginRight: THEME.spacing.sm, // Added margin between stars and rating text
+    marginRight: THEME.spacing.sm,
   },
   selectedRatingText: {
     fontSize: THEME.fontSizes.h3,
@@ -324,7 +331,7 @@ export default StyleSheet.create({
     borderColor: COLORS.border,
     borderRadius: THEME.sizes.card.borderRadius,
     padding: THEME.sizes.card.padding,
-    marginBottom: THEME.sizes.card.marginBottom,
+    marginBottom: THEME.spacing.sm,
     textAlignVertical: "top",
     fontSize: THEME.fontSizes.tag,
     color: COLORS.textDark,

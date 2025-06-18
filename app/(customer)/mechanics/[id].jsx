@@ -22,19 +22,17 @@ import StarRating from "../../../components/StarRating";
 import COLORS from "../../../constants/colors";
 import styles from "../../../constants/styles/customer/mechanic-detail-styles";
 
-// ObjectId'den tarih tahmini için yardımcı fonksiyon (eski yorumlar için)
+// ObjectId'den tarih tahmini için yardımcı fonksiyon
 const getDateFromObjectId = (objectId) => {
   try {
-    // ObjectId'nin ilk 4 baytı zaman damgasını içerir (saniye cinsinden)
     const timestamp = parseInt(objectId.substring(0, 8), 16) * 1000;
     return new Date(timestamp);
-  } catch (error) {
-    console.error("Error extracting date from ObjectId:", objectId, error);
+  } catch {
     return null;
   }
 };
 
-// Tarih doğrulama ve formatlama için yardımcı fonksiyon
+// Tarih formatlama için yardımcı fonksiyon
 const formatReviewDate = (dateString, objectId, t) => {
   if (dateString) {
     try {
@@ -42,17 +40,16 @@ const formatReviewDate = (dateString, objectId, t) => {
       if (!isNaN(date.getTime())) {
         return date.toLocaleString("tr-TR", {
           year: "numeric",
-          month: "numeric", // Ayı sayısal olarak göster
+          month: "numeric",
           day: "numeric",
           hour: "2-digit",
           minute: "2-digit",
-        }); // Ör: "22/5/2025 14:30"
+        });
       }
-    } catch (error) {
-      console.error("Invalid date format:", dateString, error);
+    } catch {
+      // Hata durumunda fallback
     }
   }
-  // createdAt yoksa, ObjectId'den tahmini tarih kullan
   if (objectId) {
     const estimatedDate = getDateFromObjectId(objectId);
     if (estimatedDate && !isNaN(estimatedDate.getTime())) {
@@ -60,26 +57,30 @@ const formatReviewDate = (dateString, objectId, t) => {
         "mechanicDetail.estimatedDate"
       )} ${estimatedDate.toLocaleDateString("tr-TR", {
         year: "numeric",
-        month: "numeric", // Ayı sayısal olarak göster
+        month: "numeric",
         day: "numeric",
-      })}`; // Ör: "Tahmini Tarih: 22/5/2025"
+      })}`;
     }
   }
   return t("mechanicDetail.noDate");
 };
 
-const InfoRow = ({ labelText, text, style, accessibilityLabel }) => {
+const InfoRow = ({
+  labelText,
+  text,
+  style,
+  accessibilityLabel,
+  noUnderline,
+}) => {
   return (
     <View style={[styles.infoRowContainer, style]}>
       <View style={styles.infoRow}>
-        <View style={styles.infoLabelContainer}>
-          <Text style={styles.infoLabel}>{labelText}</Text>
-        </View>
+        <Text style={styles.infoLabel}>{labelText}</Text>
         <Text style={styles.infoValue} accessibilityLabel={accessibilityLabel}>
           {text}
         </Text>
       </View>
-      <View style={styles.infoUnderline} />
+      {!noUnderline && <View style={styles.infoUnderline} />}
     </View>
   );
 };
@@ -127,15 +128,12 @@ export default function MechanicDetail() {
     setLoading(true);
     try {
       const data = await fetchMechanicById(id);
-      console.log("API Response:", JSON.stringify(data, null, 2)); // Veri yapısını kontrol et
       setMechanic(data);
       setReviews(data.reviews || []);
     } catch (error) {
-      Alert.alert(
-        t("error"),
-        t("mechanicDetail.mechanicNotFound") || "Mechanic could not be loaded."
-      );
-      console.error("Fetch Mechanic Error:", error);
+      console.log(error);
+
+      Alert.alert(t("error"), t("mechanicDetail.mechanicNotFound"));
     } finally {
       setLoading(false);
     }
@@ -152,18 +150,15 @@ export default function MechanicDetail() {
     }
     try {
       const newReview = await postReview(id, { rating, comment: reviewText });
-      console.log("New Review:", JSON.stringify(newReview, null, 2)); // Yeni yorumun yapısını kontrol et
       setReviews((prev) => [newReview, ...prev]);
       setReviewModalVisible(false);
       setReviewText("");
       setRating(5);
       Alert.alert(t("success"), t("mechanicDetail.reviewSuccess"));
     } catch (error) {
-      Alert.alert(
-        t("error"),
-        t("mechanicDetail.reviewFailed") || "Review could not be submitted."
-      );
-      console.error("Submit Review Error:", error);
+      console.log(error);
+
+      Alert.alert(t("error"), t("mechanicDetail.reviewFailed"));
     }
   };
 
@@ -199,10 +194,7 @@ export default function MechanicDetail() {
         </Text>
         <TouchableOpacity
           style={styles.retryButton}
-          onPress={() => {
-            setLoading(true);
-            getMechanic();
-          }}
+          onPress={getMechanic}
           accessibilityLabel={t("mechanicDetail.retryAccessibility")}
         >
           <Text style={styles.retryButtonText}>
@@ -247,7 +239,7 @@ export default function MechanicDetail() {
             <View style={styles.ratingStars}>
               <StarRating rating={mechanic.averageRating || 0} size={20} />
               <Text style={styles.ratingValue}>
-                {mechanic.averageRating?.toFixed(1) || "0.0"}/5
+                {(mechanic.averageRating || 0).toFixed(1)}/5
               </Text>
             </View>
             <Text style={styles.ratingCount}>
@@ -261,39 +253,49 @@ export default function MechanicDetail() {
           <Text style={styles.sectionTitle} accessibilityRole="header">
             {t("mechanicDetail.contactInfo")}
           </Text>
-          <InfoRow
-            text={mechanic.phone || t("mechanicDetail.noInfo")}
-            labelText={t("mechanicDetail.phone")}
-            accessibilityLabel={t("mechanicDetail.phoneAccessibility", {
-              phone: mechanic.phone || t("mechanicDetail.noInfo"),
-            })}
-          />
-          <InfoRow
-            text={mechanic.email || t("mechanicDetail.noInfo")}
-            labelText={t("mechanicDetail.email")}
-            accessibilityLabel={t("mechanicDetail.emailAccessibility", {
-              email: mechanic.email || t("mechanicDetail.noInfo"),
-            })}
-          />
-          <InfoRow
-            text={`${
-              mechanic.mechanicAddress?.city || t("mechanicDetail.noInfo")
-            }${
-              mechanic.mechanicAddress?.district
-                ? `, ${mechanic.mechanicAddress.district}`
-                : ""
-            }`}
-            labelText={t("mechanicDetail.location")}
-            accessibilityLabel={t("mechanicDetail.locationAccessibility", {
-              location: `${
+          {[
+            {
+              labelText: t("mechanicDetail.phone"),
+              text: mechanic.phone || t("mechanicDetail.noInfo"),
+              accessibilityLabel: t("mechanicDetail.phoneAccessibility", {
+                phone: mechanic.phone || t("mechanicDetail.noInfo"),
+              }),
+            },
+            {
+              labelText: t("mechanicDetail.email"),
+              text: mechanic.email || t("mechanicDetail.noInfo"),
+              accessibilityLabel: t("mechanicDetail.emailAccessibility", {
+                email: mechanic.email || t("mechanicDetail.noInfo"),
+              }),
+            },
+            {
+              labelText: t("mechanicDetail.location"),
+              text: `${
                 mechanic.mechanicAddress?.city || t("mechanicDetail.noInfo")
               }${
                 mechanic.mechanicAddress?.district
                   ? `, ${mechanic.mechanicAddress.district}`
                   : ""
               }`,
-            })}
-          />
+              accessibilityLabel: t("mechanicDetail.locationAccessibility", {
+                location: `${
+                  mechanic.mechanicAddress?.city || t("mechanicDetail.noInfo")
+                }${
+                  mechanic.mechanicAddress?.district
+                    ? `, ${mechanic.mechanicAddress.district}`
+                    : ""
+                }`,
+              }),
+            },
+          ].map((row, index, array) => (
+            <InfoRow
+              key={index}
+              labelText={row.labelText}
+              text={row.text}
+              accessibilityLabel={row.accessibilityLabel}
+              noUnderline={index === array.length - 1}
+            />
+          ))}
           {mechanic.mechanicAddress?.fullAddress && (
             <View style={styles.fullAddressContainer}>
               <Text style={styles.addressLabel}>
@@ -317,30 +319,39 @@ export default function MechanicDetail() {
             {t("mechanicDetail.workingHours")}
           </Text>
           <View style={styles.hoursContainer}>
-            <InfoRow
-              labelText={t("mechanicDetail.weekdays")}
-              text={`${mechanic.workingHours?.weekdays?.open || "09:00"} - ${
-                mechanic.workingHours?.weekdays?.close || "18:00"
-              }`}
-              style={styles.hoursRow}
-              accessibilityLabel={t("mechanicDetail.weekdaysAccessibility", {
-                hours: `${mechanic.workingHours?.weekdays?.open || "09:00"} - ${
+            {[
+              {
+                labelText: t("mechanicDetail.weekdays"),
+                text: `${mechanic.workingHours?.weekdays?.open || "09:00"} - ${
                   mechanic.workingHours?.weekdays?.close || "18:00"
                 }`,
-              })}
-            />
-            <InfoRow
-              labelText={t("mechanicDetail.weekend")}
-              text={`${mechanic.workingHours?.weekend?.open || "10:00"} - ${
-                mechanic.workingHours?.weekend?.close || "16:00"
-              }`}
-              style={styles.hoursRow}
-              accessibilityLabel={t("mechanicDetail.weekendAccessibility", {
-                hours: `${mechanic.workingHours?.weekend?.open || "10:00"} - ${
+                accessibilityLabel: t("mechanicDetail.weekdaysAccessibility", {
+                  hours: `${
+                    mechanic.workingHours?.weekdays?.open || "09:00"
+                  } - ${mechanic.workingHours?.weekdays?.close || "18:00"}`,
+                }),
+              },
+              {
+                labelText: t("mechanicDetail.weekend"),
+                text: `${mechanic.workingHours?.weekend?.open || "10:00"} - ${
                   mechanic.workingHours?.weekend?.close || "16:00"
                 }`,
-              })}
-            />
+                accessibilityLabel: t("mechanicDetail.weekendAccessibility", {
+                  hours: `${
+                    mechanic.workingHours?.weekend?.open || "10:00"
+                  } - ${mechanic.workingHours?.weekend?.close || "16:00"}`,
+                }),
+              },
+            ].map((row, index, array) => (
+              <InfoRow
+                key={index}
+                labelText={row.labelText}
+                text={row.text}
+                style={styles.hoursRow}
+                accessibilityLabel={row.accessibilityLabel}
+                noUnderline={index === array.length - 1}
+              />
+            ))}
           </View>
         </View>
 
@@ -406,20 +417,19 @@ export default function MechanicDetail() {
                   <TouchableOpacity
                     style={styles.socialButton}
                     onPress={async () => {
-                      const url = cleanUrl(mechanic.socialMedia?.facebook);
+                      const url = cleanUrl(mechanic.socialMedia.facebook);
                       if (url) {
                         try {
                           await Linking.openURL(url);
-                        } catch (error) {
+                        } catch {
                           Alert.alert(
                             t("error"),
                             t("mechanicDetail.linkCannotBeOpened")
                           );
-                          console.error("Linking Error:", error);
                         }
                       }
                     }}
-                    disabled={!cleanUrl(mechanic.socialMedia?.facebook)}
+                    disabled={!cleanUrl(mechanic.socialMedia.facebook)}
                     accessibilityLabel={t(
                       "mechanicDetail.facebookAccessibility"
                     )}
@@ -431,20 +441,19 @@ export default function MechanicDetail() {
                   <TouchableOpacity
                     style={styles.socialButton}
                     onPress={async () => {
-                      const url = cleanUrl(mechanic.socialMedia?.instagram);
+                      const url = cleanUrl(mechanic.socialMedia.instagram);
                       if (url) {
                         try {
                           await Linking.openURL(url);
-                        } catch (error) {
+                        } catch {
                           Alert.alert(
                             t("error"),
                             t("mechanicDetail.linkCannotBeOpened")
                           );
-                          console.error("Linking Error:", error);
                         }
                       }
                     }}
-                    disabled={!cleanUrl(mechanic.socialMedia?.instagram)}
+                    disabled={!cleanUrl(mechanic.socialMedia.instagram)}
                     accessibilityLabel={t(
                       "mechanicDetail.instagramAccessibility"
                     )}
@@ -456,20 +465,19 @@ export default function MechanicDetail() {
                   <TouchableOpacity
                     style={styles.socialButton}
                     onPress={async () => {
-                      const url = cleanUrl(mechanic.socialMedia?.twitter);
+                      const url = cleanUrl(mechanic.socialMedia.twitter);
                       if (url) {
                         try {
                           await Linking.openURL(url);
-                        } catch (error) {
+                        } catch {
                           Alert.alert(
                             t("error"),
                             t("mechanicDetail.linkCannotBeOpened")
                           );
-                          console.error("Linking Error:", error);
                         }
                       }
                     }}
-                    disabled={!cleanUrl(mechanic.socialMedia?.twitter)}
+                    disabled={!cleanUrl(mechanic.socialMedia.twitter)}
                     accessibilityLabel={t(
                       "mechanicDetail.twitterAccessibility"
                     )}
@@ -558,7 +566,6 @@ export default function MechanicDetail() {
                       <TouchableOpacity
                         key={star}
                         onPress={() => setRating(star)}
-                        activeOpacity={0.7}
                         accessibilityLabel={t("mechanicDetail.ratingSelect", {
                           rating: star,
                         })}
