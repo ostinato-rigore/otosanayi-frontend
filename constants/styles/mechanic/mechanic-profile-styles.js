@@ -2,13 +2,14 @@ import { StyleSheet } from "react-native";
 import COLORS from "../../colors";
 import THEME from "../../theme";
 
-export default StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
   content: {
     padding: THEME.spacing.md,
+    alignItems: "center",
   },
   loadingContainer: {
     flex: 1,
@@ -19,190 +20,84 @@ export default StyleSheet.create({
   loadingText: {
     marginTop: THEME.spacing.sm,
     color: COLORS.textPrimary,
-    fontSize: 16,
+    fontSize: THEME.fontSizes.secondary,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: THEME.spacing.xxl,
+    paddingTop: THEME.spacing.lg,
+    paddingHorizontal: THEME.spacing.md,
   },
   profileImageContainer: {
-    alignSelf: "center",
-    marginBottom: THEME.spacing.md,
-    backgroundColor: COLORS.accentMechanic,
-    position: "relative",
-    borderRadius: THEME.sizes.logo.borderRadius,
+    marginRight: THEME.spacing.lg,
   },
   profileImage: {
     width: THEME.sizes.logo.width,
     height: THEME.sizes.logo.height,
     borderRadius: THEME.sizes.logo.borderRadius,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   profilePlaceholder: {
     width: THEME.sizes.logo.width,
     height: THEME.sizes.logo.height,
     borderRadius: THEME.sizes.logo.borderRadius,
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: COLORS.cardBackground,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  cameraIcon: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 4,
+  profileInfo: {
+    flex: 1,
   },
-  profileName: {
+  name: {
     fontSize: THEME.fontSizes.h2,
     fontWeight: THEME.fontWeights.bold,
     color: COLORS.textPrimary,
-    textAlign: "center",
-    marginBottom: THEME.spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: THEME.fontSizes.h3,
-    fontWeight: THEME.fontWeights.bold,
-    color: COLORS.textPrimary,
-    marginBottom: THEME.spacing.md,
-  },
-  cardContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: THEME.sizes.card.borderRadius,
-    paddingTop: THEME.sizes.card.padding,
-    paddingHorizontal: THEME.sizes.card.padding,
-    marginBottom: THEME.spacing.xs,
-    elevation: THEME.sizes.card.elevation,
-    shadowColor: COLORS.black,
-    shadowOpacity: THEME.sizes.card.shadowOpacity,
-    shadowRadius: THEME.sizes.card.shadowRadius,
-    shadowOffset: THEME.sizes.card.shadowOffset,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    paddingVertical: THEME.spacing.sm,
-    minHeight: THEME.sizes.input.height,
-  },
-  disabledInputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    paddingVertical: THEME.spacing.md,
-    minHeight: THEME.sizes.input.height,
-    backgroundColor: COLORS.lightGray,
-    opacity: 0.7,
-  },
-  noBorderBottom: {
-    borderBottomWidth: 0,
-  },
-  label: {
-    fontSize: THEME.fontSizes.body,
-    color: COLORS.textSecondary,
-    width: 100,
-  },
-  inputValue: {
-    flex: 1,
-    textAlign: "right",
-    fontSize: THEME.fontSizes.body,
-    color: COLORS.textPrimary,
-    paddingVertical: 0,
-  },
-  disabledInputValue: {
-    flex: 1,
-    textAlign: "right",
-    fontSize: THEME.fontSizes.body,
-    color: COLORS.textSecondary,
-    paddingVertical: 0,
-  },
-  errorText: {
-    color: COLORS.error,
-    fontSize: THEME.fontSizes.body,
-    marginTop: THEME.spacing.sm,
     marginBottom: THEME.spacing.sm,
   },
-  actionButtons: {
-    marginTop: THEME.spacing.xl,
+  email: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.textSecondary,
+    marginBottom: THEME.spacing.sm,
   },
-  button: {
-    paddingVertical: THEME.sizes.button.paddingVertical,
-    borderRadius: THEME.sizes.button.borderRadius,
-    alignItems: "center",
-    marginBottom: THEME.spacing.md,
+  menuContainer: {
+    width: "100%",
+    marginBottom: THEME.spacing.xxl,
+    backgroundColor: COLORS.background,
+    paddingVertical: THEME.spacing.md,
   },
-  buttonText: {
-    color: COLORS.white,
-    fontWeight: "600",
-    fontSize: THEME.fontSizes.h3,
-  },
-  dropdownButton: {
+  menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: THEME.sizes.button.borderRadius,
-    padding: THEME.spacing.sm,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    flex: 1,
-  },
-  dropdownText: {
-    fontSize: THEME.fontSizes.body,
-    color: COLORS.textDark,
-  },
-  dropdownContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginTop: 8,
-    elevation: 5,
-    shadowColor: COLORS.black,
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    position: "relative",
-  },
-  dropdownScroll: {
-    maxHeight: 200,
-  },
-  dropdownItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderBottomWidth: 1,
+    paddingVertical: THEME.spacing.md,
+    paddingHorizontal: THEME.spacing.md,
     borderBottomColor: COLORS.border,
   },
-  dropdownItemText: {
-    fontSize: 15,
-    color: COLORS.textDark,
-    flex: 1,
+  menuItemText: {
+    fontSize: THEME.fontSizes.h3,
+    color: COLORS.textPrimary,
+    marginLeft: THEME.spacing.md,
   },
-  dropdownCloseButton: {
-    padding: THEME.spacing.md,
-    backgroundColor: COLORS.accentMechanic,
-    borderBottomLeftRadius: THEME.sizes.button.borderRadius,
-    borderBottomRightRadius: THEME.sizes.button.borderRadius,
+  logoutContainer: {
+    width: "100%",
+    backgroundColor: COLORS.background,
+    paddingVertical: THEME.spacing.md,
+  },
+  logoutButton: {
+    flexDirection: "row",
     alignItems: "center",
+    paddingVertical: THEME.spacing.md,
+    paddingHorizontal: THEME.spacing.xxl,
+    borderBottomColor: COLORS.border,
   },
-  dropdownCloseText: {
-    color: COLORS.white,
-    fontSize: THEME.fontSizes.body,
-    fontWeight: THEME.fontWeights.bold,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: COLORS.border,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: THEME.spacing.sm,
-  },
-  checkboxSelected: {
-    backgroundColor: COLORS.accentMechanic,
-    borderColor: COLORS.accentMechanic,
+  logoutButtonText: {
+    fontSize: THEME.fontSizes.h3,
+    color: COLORS.error,
+    marginLeft: THEME.spacing.md,
   },
 });
+
+export default styles;
