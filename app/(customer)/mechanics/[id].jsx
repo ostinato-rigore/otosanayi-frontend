@@ -87,15 +87,34 @@ const InfoRow = ({
 
 const ReviewCard = ({ review }) => {
   const { t } = useTranslation();
+
   return (
     <View style={styles.reviewCard}>
       <View style={styles.reviewHeader}>
-        <Text style={styles.reviewAuthor}>
-          {review.customer?.name || t("mechanicDetail.anonymous")}
-        </Text>
-        <View style={styles.reviewRatingContainer}>
-          <StarRating rating={review.rating || 0} size={14} />
-          <Text style={styles.reviewRatingText}>{review.rating || 0}/5</Text>
+        <View style={styles.avatarContainer}>
+          {review.customer?.profilePhoto ? (
+            <Image
+              source={{ uri: review.customer.profilePhoto }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Ionicons
+                name="person-outline"
+                size={16}
+                color={COLORS.placeholderText}
+              />
+            </View>
+          )}
+        </View>
+        <View style={styles.reviewAuthorContainer}>
+          <Text style={styles.reviewAuthor}>
+            {review.customer?.name || t("mechanicDetail.anonymous")}
+          </Text>
+          <View style={styles.reviewRatingContainer}>
+            <StarRating rating={review.rating || 0} size={14} />
+            <Text style={styles.reviewRatingText}>{review.rating || 0}/5</Text>
+          </View>
         </View>
       </View>
       <Text style={styles.reviewText}>
