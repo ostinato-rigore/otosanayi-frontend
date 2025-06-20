@@ -47,6 +47,12 @@ export default function MechanicLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="mechanics/[id]"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

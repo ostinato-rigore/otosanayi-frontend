@@ -229,7 +229,7 @@ export default function MechanicHome() {
   const MechanicCard = ({ mechanic }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => router.push(`/(customer)/mechanics/${mechanic.id}`)}
+      onPress={() => router.push(`/(mechanic)/mechanics/${mechanic.id}`)}
       accessibilityLabel={t("customerHome.mechanicDetails", {
         name: mechanic.name,
       })}

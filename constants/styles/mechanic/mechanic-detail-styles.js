@@ -1,0 +1,372 @@
+import { StyleSheet } from "react-native";
+import COLORS from "../../colors";
+import THEME from "../../theme";
+
+export default StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  content: {
+    paddingBottom: THEME.spacing.lg,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+  },
+  loadingText: {
+    marginTop: THEME.spacing.sm,
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.textPrimary,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+  },
+  errorText: {
+    fontSize: THEME.fontSizes.h3,
+    color: COLORS.textDark,
+    marginBottom: THEME.spacing.lg,
+  },
+  retryButton: {
+    backgroundColor: COLORS.accentMechanic,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: THEME.sizes.button.borderRadius,
+  },
+  retryButtonText: {
+    color: COLORS.white,
+    fontSize: THEME.fontSizes.tag,
+    fontWeight: THEME.fontWeights.bold,
+  },
+  header: {
+    alignItems: "center",
+    padding: THEME.spacing.lg,
+    backgroundColor: COLORS.background,
+  },
+  logo: {
+    width: THEME.sizes.logo.width,
+    height: THEME.sizes.logo.height,
+    borderRadius: THEME.sizes.logo.borderRadius,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  logoPlaceholder: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: COLORS.accentMechanic,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: THEME.spacing.sm,
+  },
+  title: {
+    fontSize: THEME.fontSizes.h1,
+    fontWeight: THEME.fontWeights.bold,
+    color: COLORS.textDark,
+    marginBottom: THEME.spacing.xs,
+    textAlign: "center",
+  },
+  ratingContainer: {
+    alignItems: "center",
+    marginTop: THEME.spacing.xs,
+  },
+  ratingStars: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ratingValue: {
+    fontSize: THEME.fontSizes.h3,
+    fontWeight: THEME.fontWeights.bold,
+    color: COLORS.textDark,
+    marginLeft: THEME.spacing.sm,
+  },
+  ratingCount: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  section: {
+    backgroundColor: COLORS.white,
+    marginTop: THEME.spacing.lg,
+    paddingTop: THEME.spacing.lg,
+    paddingHorizontal: THEME.spacing.lg,
+    borderRadius: THEME.sizes.card.borderRadius,
+    marginHorizontal: THEME.sizes.card.marginHorizontal,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  sectionTitle: {
+    fontSize: THEME.fontSizes.h3,
+    fontWeight: THEME.fontWeights.bold,
+    color: COLORS.primary,
+    marginBottom: THEME.spacing.md,
+  },
+  infoRowContainer: {
+    marginBottom: THEME.spacing.sm,
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: THEME.spacing.sm,
+  },
+  infoLabel: {
+    fontSize: THEME.fontSizes.body,
+    color: COLORS.textSecondary,
+    width: 100,
+  },
+  infoValue: {
+    fontSize: THEME.fontSizes.body,
+    color: COLORS.textPrimary,
+    textAlign: "right",
+    flex: 1,
+    paddingVertical: 0,
+  },
+  infoUnderline: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginTop: THEME.spacing.xs,
+  },
+  fullAddressContainer: {
+    marginTop: THEME.spacing.sm,
+    marginBottom: THEME.spacing.lg,
+    padding: THEME.spacing.sm,
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: THEME.spacing.sm,
+  },
+  addressLabel: {
+    fontSize: THEME.fontSizes.tag,
+    fontWeight: THEME.fontWeights.medium,
+    color: COLORS.textSecondary,
+    marginBottom: THEME.spacing.xs,
+  },
+  addressText: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.textDark,
+    lineHeight: THEME.lineHeights.body,
+  },
+  hoursContainer: {
+    marginTop: THEME.spacing.xs,
+  },
+  hoursRow: {
+    // No additional styles needed
+  },
+  tagsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: THEME.spacing.sm,
+    marginBottom: THEME.spacing.lg,
+    gap: 8,
+  },
+  tag: {
+    backgroundColor: COLORS.accentMechanic,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  tagText: {
+    color: COLORS.white,
+    fontSize: THEME.fontSizes.tag,
+    fontWeight: THEME.fontWeights.medium,
+  },
+  noInfoText: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.placeholderText,
+    marginTop: THEME.spacing.xs,
+  },
+  socialContainer: {
+    flexDirection: "row",
+    marginTop: THEME.spacing.sm,
+    marginBottom: THEME.spacing.lg,
+  },
+  socialButton: {
+    width: 44,
+    height: 44,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: THEME.spacing.md,
+    borderRadius: THEME.spacing.xl,
+    backgroundColor: COLORS.inputBackground,
+  },
+  reviewsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: THEME.spacing.md,
+  },
+  addReviewButton: {
+    backgroundColor: COLORS.accentMechanic,
+    paddingHorizontal: THEME.spacing.lg,
+    paddingVertical: 8,
+    borderRadius: 16,
+    alignItems: "center",
+  },
+  addReviewText: {
+    color: COLORS.white,
+    fontSize: THEME.fontSizes.tag,
+    fontWeight: THEME.fontWeights.bold,
+  },
+  reviewCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: THEME.sizes.card.borderRadius,
+    padding: THEME.sizes.card.padding,
+    marginBottom: THEME.spacing.sm,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  reviewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: THEME.spacing.sm,
+  },
+  reviewAuthor: {
+    fontSize: THEME.fontSizes.tag,
+    fontWeight: THEME.fontWeights.bold,
+    color: COLORS.primary,
+  },
+  reviewRatingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  reviewRatingText: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.textSecondary,
+    marginLeft: THEME.spacing.xs,
+  },
+  reviewText: {
+    fontSize: THEME.fontSizes.secondary,
+    color: COLORS.textPrimary,
+    lineHeight: 18,
+    marginBottom: THEME.spacing.sm,
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: COLORS.placeholderText,
+  },
+  noReviewsText: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.placeholderText,
+    textAlign: "center",
+    marginTop: THEME.spacing.sm,
+    paddingVertical: THEME.spacing.lg,
+  },
+  viewCommentsButton: {
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    marginTop: 8,
+    marginBottom: THEME.spacing.lg,
+  },
+  viewCommentsText: {
+    color: COLORS.accentMechanic,
+    fontSize: THEME.fontSizes.secondary,
+    fontWeight: "700",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    width: "90%",
+    backgroundColor: COLORS.white,
+    borderRadius: THEME.sizes.card.borderRadius,
+    padding: THEME.sizes.card.padding,
+  },
+  commentsModalContent: {
+    maxHeight: "80%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: THEME.spacing.lg,
+  },
+  modalTitle: {
+    fontSize: THEME.fontSizes.h2,
+    fontWeight: THEME.fontWeights.bold,
+    color: COLORS.primary,
+    marginBottom: THEME.spacing.sm,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  ratingInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: THEME.spacing.lg,
+  },
+  ratingLabel: {
+    fontSize: THEME.fontSizes.body,
+    color: COLORS.primary,
+    marginRight: THEME.spacing.sm,
+  },
+  starRatingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  starContainer: {
+    flexDirection: "row",
+    marginRight: THEME.spacing.sm,
+  },
+  selectedRatingText: {
+    fontSize: THEME.fontSizes.h3,
+    fontWeight: THEME.fontWeights.medium,
+    color: COLORS.primary,
+  },
+  reviewInput: {
+    height: 120,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: THEME.sizes.card.borderRadius,
+    padding: THEME.sizes.card.padding,
+    marginBottom: THEME.spacing.sm,
+    textAlignVertical: "top",
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.textDark,
+    backgroundColor: COLORS.inputBackground,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginHorizontal: 8,
+  },
+  cancelButton: {
+    backgroundColor: COLORS.inputBackground,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  cancelButtonText: {
+    color: COLORS.textDark,
+    fontSize: THEME.fontSizes.tag,
+    fontWeight: THEME.fontWeights.bold,
+  },
+  submitButton: {
+    backgroundColor: COLORS.accentMechanic,
+  },
+  submitButtonText: {
+    color: COLORS.white,
+    fontSize: THEME.fontSizes.tag,
+    fontWeight: THEME.fontWeights.bold,
+  },
+  commentsListContent: {
+    paddingBottom: THEME.spacing.xl,
+  },
+});
