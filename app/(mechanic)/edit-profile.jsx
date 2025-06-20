@@ -298,7 +298,7 @@ const DropdownSelect = ({
 
 export default function MechanicEditProfile() {
   const router = useRouter();
-  const { user, isLoading, fetchUser, logout } = useAuthStore();
+  const { user, isLoading, fetchUser } = useAuthStore();
   const { t } = useTranslation();
   const [isEditable, setIsEditable] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -528,7 +528,7 @@ export default function MechanicEditProfile() {
       });
       Alert.alert(t("success"), t("mechanicProfile.updateSuccess"));
       setIsEditable(false);
-      router.replace("/(mechanic)/profile");
+      router.replace("/(mechanic)/edit-profile");
     } catch (error) {
       console.error("onSubmit Error:", error);
       Alert.alert(
@@ -556,11 +556,6 @@ export default function MechanicEditProfile() {
         );
       }
     )();
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    router.replace("/(auth)");
   };
 
   const toggleDropdown = (type) => {
@@ -1040,13 +1035,6 @@ export default function MechanicEditProfile() {
                   : t("mechanicProfile.editProfile")}
               </Text>
             )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: COLORS.error }]}
-            onPress={handleLogout}
-            accessibilityLabel={t("mechanicProfile.logout")}
-          >
-            <Text style={styles.buttonText}>{t("mechanicProfile.logout")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

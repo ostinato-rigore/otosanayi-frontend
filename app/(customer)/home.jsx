@@ -142,7 +142,7 @@ export default function CustomerHome() {
           expertiseAreas: mechanic.expertiseAreas || [],
           vehicleBrands: mechanic.vehicleBrands || [],
           rating: mechanic.averageRating || 0,
-          avatarUrl: mechanic.avatarUrl || null,
+          avatarUrl: mechanic.mechanicLogo || null,
         }));
 
         setMechanics((prev) => {

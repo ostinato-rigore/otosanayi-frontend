@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     marginBottom: THEME.spacing.sm,
   },
   detailsButton: {
-    backgroundColor: COLORS.accentCustomer,
+    backgroundColor: COLORS.accentMechanic,
     borderRadius: THEME.sizes.button.borderRadius,
     paddingVertical: 10,
     alignItems: "center",
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   dropdownCloseButton: {
     padding: THEME.spacing.md,
-    backgroundColor: COLORS.accentCustomer,
+    backgroundColor: COLORS.accentMechanic,
     borderBottomLeftRadius: THEME.sizes.input.borderRadius,
     borderBottomRightRadius: THEME.sizes.input.borderRadius,
     alignItems: "center",
@@ -217,8 +217,8 @@ const styles = StyleSheet.create({
     marginRight: THEME.spacing.sm,
   },
   checkboxSelected: {
-    backgroundColor: COLORS.accentCustomer,
-    borderColor: COLORS.accentCustomer,
+    backgroundColor: COLORS.accentMechanic,
+    borderColor: COLORS.accentMechanic,
   },
   chipsContainer: {
     flexDirection: "row",
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     marginBottom: THEME.spacing.sm,
   },
   chipSelected: {
-    backgroundColor: COLORS.accentCustomer,
+    backgroundColor: COLORS.accentMechanic,
   },
   chipText: {
     fontSize: THEME.fontSizes.body,
@@ -255,8 +255,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   ratingButtonSelected: {
-    backgroundColor: COLORS.accentCustomer,
-    borderColor: COLORS.accentCustomer,
+    backgroundColor: COLORS.accentMechanic,
+    borderColor: COLORS.accentMechanic,
   },
   ratingButtonText: {
     fontSize: THEME.fontSizes.h3,
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.textPrimary,
   },
   modalButtonApply: {
-    backgroundColor: COLORS.accentCustomer,
+    backgroundColor: COLORS.accentMechanic,
   },
   modalButtonText: {
     color: COLORS.white,
