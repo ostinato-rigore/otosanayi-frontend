@@ -1,7 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -15,172 +19,460 @@ import {
   View,
 } from "react-native";
 import { z } from "zod";
-import {
-  deleteMechanicAccount,
-  updateMechanicProfile,
-  uploadMechanicLogo,
-} from "../../api/apiClient";
+import { updateMechanicProfile, uploadMechanicLogo } from "../../api/apiClient";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/mechanic/mechanic-profile-styles";
+import { VEHICLE_BRANDS } from "../../constants/vehicleData";
 import useAuthStore from "../../store/useAuthStore";
 
+const expertise_areas = [
+  "customerHome.expertiseMotorRepair",
+  "customerHome.expertiseElectrical",
+  "customerHome.expertiseBodywork",
+  "customerHome.expertisePainting",
+  "customerHome.expertiseBrakeSystems",
+  "customerHome.expertiseTires",
+  "customerHome.expertiseTransmissionRepair",
+  "customerHome.expertiseSuspension",
+  "customerHome.expertiseExhaustSystems",
+  "customerHome.expertiseACService",
+  "customerHome.expertiseFuelSystem",
+  "customerHome.expertiseWheelAlignment",
+  "customerHome.expertiseClutchRepair",
+  "customerHome.expertiseHydraulicSystems",
+  "customerHome.expertiseAxleDifferential",
+  "customerHome.expertiseOther",
+];
+
 // Validation schema
-const profileSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Full name must be at least 2 characters" })
-    .nonempty("Full name is required"),
-  phone: z
-    .string()
-    .regex(/^\+?\d{10,15}$/, { message: "Enter a valid phone number" })
-    .nonempty("Phone number is required"),
-  mechanicName: z
-    .string()
-    .min(2, { message: "Garage name must be at least 2 characters" })
-    .nonempty("Garage name is required"),
-  mechanicAddress: z.object({
-    fullAddress: z
+const createMechanicSchema = (t) =>
+  z.object({
+    name: z
       .string()
-      .min(5, { message: "Full address must be at least 5 characters" })
-      .nonempty("Full address is required"),
-    city: z
+      .min(2, t("mechanicProfile.errors.nameMinLength"))
+      .optional(),
+    phone: z
       .string()
-      .min(2, { message: "City must be at least 2 characters" })
-      .nonempty("City is required"),
-    district: z
+      .regex(/^\+?\d{10,15}$/, t("mechanicProfile.errors.invalidPhone"))
+      .optional(),
+    mechanicName: z
       .string()
-      .min(2, { message: "District must be at least 2 characters" })
-      .nonempty("District is required"),
-  }),
-  workingHours: z.object({
-    weekdays: z.object({
-      open: z
-        .string()
-        .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, {
-          message: "Weekdays open time must be in HH:MM format (e.g., 09:00)",
-        })
-        .nonempty("Weekdays open time is required"),
-      close: z
-        .string()
-        .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, {
-          message: "Weekdays close time must be in HH:MM format (e.g., 17:00)",
-        })
-        .nonempty("Weekdays close time is required"),
-    }),
-    weekend: z.object({
-      open: z
-        .string()
-        .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, {
-          message: "Weekend open time must be in HH:MM format (e.g., 10:00)",
-        })
-        .nonempty("Weekend open time is required"),
-      close: z
-        .string()
-        .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, {
-          message: "Weekend close time must be in HH:MM format (e.g., 16:00)",
-        })
-        .nonempty("Weekend close time is required"),
-    }),
-  }),
-  website: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/.test(val),
-      { message: "Enter a valid URL (e.g., https://example.com)" }
-    ),
-  socialMedia: z.object({
-    facebook: z
+      .min(2, t("mechanicProfile.errors.mechanicNameMinLength"))
+      .optional(),
+    mechanicLogo: z.string().optional(),
+    mechanicAddress: z
+      .object({
+        fullAddress: z
+          .string()
+          .min(5, t("mechanicProfile.errors.fullAddressMinLength"))
+          .optional(),
+        city: z
+          .string()
+          .min(2, t("mechanicProfile.errors.cityMinLength"))
+          .optional(),
+        district: z
+          .string()
+          .min(2, t("mechanicProfile.errors.districtMinLength"))
+          .optional(),
+      })
+      .optional(),
+    workingHours: z
+      .object({
+        weekdays: z
+          .object({
+            open: z
+              .string()
+              .regex(
+                /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+                t("mechanicProfile.errors.invalidTimeFormat")
+              )
+              .optional(),
+            close: z
+              .string()
+              .regex(
+                /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+                t("mechanicProfile.errors.invalidTimeFormat")
+              )
+              .optional(),
+          })
+          .refine(
+            (data) => {
+              if (!data.open || !data.close) return true;
+              const [openHour, openMinute] = data.open.split(":").map(Number);
+              const [closeHour, closeMinute] = data.close
+                .split(":")
+                .map(Number);
+              const openTime = openHour * 60 + openMinute;
+              const closeTime = closeHour * 60 + closeMinute;
+              return closeTime > openTime;
+            },
+            { message: t("mechanicProfile.errors.invalidTimeRange") }
+          ),
+        weekend: z
+          .object({
+            open: z
+              .string()
+              .regex(
+                /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+                t("mechanicProfile.errors.invalidTimeFormat")
+              )
+              .optional(),
+            close: z
+              .string()
+              .regex(
+                /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+                t("mechanicProfile.errors.invalidTimeFormat")
+              )
+              .optional(),
+          })
+          .refine(
+            (data) => {
+              if (!data.open || !data.close) return true;
+              const [openHour, openMinute] = data.open.split(":").map(Number); // EE hatası düzeltildi
+              const [closeHour, closeMinute] = data.close
+                .split(":")
+                .map(Number);
+              const openTime = openHour * 60 + openMinute;
+              const closeTime = closeHour * 60 + closeMinute;
+              return closeTime > openTime;
+            },
+            { message: t("mechanicProfile.errors.invalidTimeRange") }
+          ),
+      })
+      .optional(),
+    website: z
       .string()
+      .url(t("mechanicProfile.errors.invalidUrl"))
       .optional()
-      .refine(
-        (val) =>
-          !val || /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/.test(val),
-        { message: "Enter a valid Facebook URL" }
-      ),
-    instagram: z
-      .string()
-      .optional()
-      .refine(
-        (val) =>
-          !val || /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/.test(val),
-        { message: "Enter a valid Instagram URL" }
-      ),
-    twitter: z
-      .string()
-      .optional()
-      .refine(
-        (val) =>
-          !val || /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/.test(val),
-        { message: "Enter a valid Twitter URL" }
-      ),
-  }),
-  expertiseAreas: z
-    .string()
-    .min(2, { message: "Expertise areas must be at least 2 characters" })
-    .nonempty("Expertise areas are required"),
-  vehicleBrands: z
-    .string()
-    .min(2, { message: "Vehicle brands must be at least 2 characters" })
-    .nonempty("Vehicle brands are required"),
-});
+      .or(z.literal("")),
+    socialMedia: z
+      .object({
+        facebook: z
+          .string()
+          .url(t("mechanicProfile.errors.invalidUrl"))
+          .optional()
+          .or(z.literal("")),
+        instagram: z
+          .string()
+          .url(t("mechanicProfile.errors.invalidUrl"))
+          .optional()
+          .or(z.literal("")),
+        twitter: z
+          .string()
+          .url(t("mechanicProfile.errors.invalidUrl"))
+          .optional()
+          .or(z.literal("")),
+      })
+      .optional(),
+    expertiseAreas: z.array(z.string()).optional(),
+    vehicleBrands: z.array(z.string()).optional(),
+  });
+
+const DropdownSelect = ({
+  label,
+  value = [],
+  onSelect,
+  type,
+  dropdownVisible,
+  toggleDropdown,
+  options,
+  isEditable,
+  isMultiSelect,
+}) => {
+  const { t } = useTranslation();
+  const [selectedOptions, setSelectedOptions] = useState(value || []);
+
+  useEffect(() => {
+    setSelectedOptions(value || []); // Sync with value prop
+  }, [value, isEditable]);
+
+  const handleOptionToggle = (option) => {
+    if (isMultiSelect) {
+      const newSelected = selectedOptions.includes(option)
+        ? selectedOptions.filter((item) => item !== option)
+        : [...selectedOptions, option];
+      setSelectedOptions(newSelected);
+      onSelect(newSelected);
+    } else {
+      setSelectedOptions([option]);
+      onSelect(option);
+      toggleDropdown(null);
+    }
+  };
+
+  const getDisplayedValue = () => {
+    if (isMultiSelect) {
+      return selectedOptions.length > 0
+        ? `${selectedOptions.length} ${t("customerHome.optionsSelected")}`
+        : t("mechanicProfile.select");
+    }
+    return selectedOptions[0] || t("mechanicProfile.select");
+  };
+
+  const displayOptions =
+    type === "expertiseAreas"
+      ? options.map((opt) => ({
+          key: opt,
+          label: t(opt),
+        }))
+      : options.map((opt) => ({
+          key: opt,
+          label: opt,
+        }));
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TouchableOpacity
+        style={styles.dropdownButton}
+        onPress={isEditable ? () => toggleDropdown(type) : null}
+        disabled={!isEditable}
+        accessibilityLabel={`${label} ${t("mechanicProfile.selection")}`}
+      >
+        <Text style={styles.dropdownText}>{getDisplayedValue()}</Text>
+        {isEditable && (
+          <Ionicons
+            name={dropdownVisible === type ? "chevron-up" : "chevron-down"}
+            size={20}
+            color={COLORS.textPrimary}
+          />
+        )}
+      </TouchableOpacity>
+      {dropdownVisible === type && isEditable && (
+        <View style={styles.dropdownContainer}>
+          <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+            {isMultiSelect && (
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelectedOptions([]);
+                  onSelect([]);
+                  toggleDropdown(null);
+                }}
+              >
+                <Text style={styles.dropdownItemText}>
+                  {t("mechanicProfile.clear")}
+                </Text>
+              </TouchableOpacity>
+            )}
+            {displayOptions.map(({ key, label }) => (
+              <TouchableOpacity
+                key={key}
+                style={styles.dropdownItem}
+                onPress={() => handleOptionToggle(key)}
+              >
+                {isMultiSelect && (
+                  <View
+                    style={[
+                      styles.checkbox,
+                      selectedOptions.includes(key) && styles.checkboxSelected,
+                    ]}
+                  >
+                    {selectedOptions.includes(key) && (
+                      <Ionicons
+                        name="checkmark"
+                        size={16}
+                        color={COLORS.white}
+                      />
+                    )}
+                  </View>
+                )}
+                <Text style={styles.dropdownItemText}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {isMultiSelect && (
+            <TouchableOpacity
+              style={styles.dropdownCloseButton}
+              onPress={() => toggleDropdown(null)}
+            >
+              <Text style={styles.dropdownCloseText}>
+                {t("customerHome.close")}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </View>
+  );
+};
 
 export default function MechanicProfile() {
   const router = useRouter();
   const { user, isLoading, fetchUser, logout } = useAuthStore();
-
-  const [isEditable, setIsEditable] = useState(true);
+  const { t } = useTranslation();
+  const [isEditable, setIsEditable] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [dropdownVisible, setDropdownVisible] = useState(null);
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState({});
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
 
-  const [formData, setFormData] = useState(
-    user
-      ? {
-          name: user.name || "",
-          email: user.email || "",
-          phone: user.phone || "",
-          mechanicName: user.mechanicName || "",
-          mechanicLogo: user.mechanicLogo || "",
-          mechanicAddress: {
-            fullAddress: user.mechanicAddress?.fullAddress || "",
-            city: user.mechanicAddress?.city || "",
-            district: user.mechanicAddress?.district || "",
+  const generateTimeOptions = () => {
+    const times = [];
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const hourStr = hour.toString().padStart(2, "0");
+        const minuteStr = minute.toString().padStart(2, "0");
+        times.push(`${hourStr}:${minuteStr}`);
+      }
+    }
+    return times;
+  };
+
+  const timeOptions = useMemo(generateTimeOptions, []);
+
+  const mechanicSchema = useMemo(() => createMechanicSchema(t), [t]);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset,
+  } = useForm({
+    resolver: zodResolver(mechanicSchema),
+    defaultValues: {
+      name: user?.name || "",
+      phone: user?.phone || "",
+      mechanicName: user?.mechanicName || "",
+      mechanicLogo: user?.mechanicLogo || "",
+      mechanicAddress: {
+        fullAddress: user?.mechanicAddress?.fullAddress || "",
+        city: user?.mechanicAddress?.city || "",
+        district: user?.mechanicAddress?.district || "",
+      },
+      workingHours: {
+        weekdays: {
+          open: user?.workingHours?.weekdays?.open || "",
+          close: user?.workingHours?.weekdays?.close || "",
+        },
+        weekend: {
+          open: user?.workingHours?.weekend?.open || "",
+          close: user?.workingHours?.weekend?.close || "",
+        },
+      },
+      website: user?.website || "",
+      socialMedia: {
+        facebook: user?.socialMedia?.facebook || "",
+        instagram: user?.socialMedia?.instagram || "",
+        twitter: user?.socialMedia?.twitter || "",
+      },
+      expertiseAreas: user?.expertiseAreas || [],
+      vehicleBrands: user?.vehicleBrands || [],
+    },
+  });
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user?.name || "",
+        phone: user?.phone || "",
+        mechanicName: user?.mechanicName || "",
+        mechanicLogo: user?.mechanicLogo || "",
+        mechanicAddress: {
+          fullAddress: user?.mechanicAddress?.fullAddress || "",
+          city: user?.mechanicAddress?.city || "",
+          district: user?.mechanicAddress?.district || "",
+        },
+        workingHours: {
+          weekdays: {
+            open: user?.workingHours?.weekdays?.open || "",
+            close: user?.workingHours?.weekdays?.close || "",
           },
-          workingHours: {
-            weekdays: {
-              open: user.workingHours?.weekdays?.open || "",
-              close: user.workingHours?.weekdays?.close || "",
-            },
-            weekend: {
-              open: user.workingHours?.weekend?.open || "",
-              close: user.workingHours?.weekend?.close || "",
-            },
+          weekend: {
+            open: user?.workingHours?.weekend?.open || "",
+            close: user?.workingHours?.weekend?.close || "",
           },
-          website: user.website || "",
-          socialMedia: {
-            facebook: user.socialMedia?.facebook || "",
-            instagram: user.socialMedia?.instagram || "",
-            twitter: user.socialMedia?.twitter || "",
-          },
-          expertiseAreas: Array.isArray(user.expertiseAreas)
-            ? user.expertiseAreas.join(", ")
-            : user.expertiseAreas || "",
-          vehicleBrands: Array.isArray(user.vehicleBrands)
-            ? user.vehicleBrands.join(", ")
-            : user.vehicleBrands || "",
-          reviews: user.reviews || [],
-          averageRating: user.averageRating || 0,
-          isVerified: user.isVerified || false,
+        },
+        website: user?.website || "",
+        socialMedia: {
+          facebook: user?.socialMedia?.facebook || "",
+          instagram: user?.socialMedia?.instagram || "",
+          twitter: user?.socialMedia?.twitter || "",
+        },
+        expertiseAreas: user?.expertiseAreas || [],
+        vehicleBrands: user?.vehicleBrands || [],
+      });
+    }
+  }, [user, reset]);
+
+  const fetchCityData = async (selectedCity) => {
+    setIsLoadingCities(true);
+    try {
+      const response = await axios.get(
+        "https://turkiyeapi.dev/api/v1/provinces"
+      );
+      const result = response.data;
+
+      if (result.status === "OK" && Array.isArray(result.data)) {
+        const cityList = result.data.map((city) => city.name);
+        const districtMap = result.data.reduce((acc, city) => {
+          acc[city.name] = city.districts.map((dist) => dist.name);
+          return acc;
+        }, {});
+        setCities(cityList);
+        if (selectedCity) {
+          setDistricts((prev) => ({
+            ...prev,
+            [selectedCity]: districtMap[selectedCity] || [],
+          }));
+        } else {
+          setDistricts(districtMap);
         }
-      : null
-  );
+      } else {
+        throw new Error("Geçersiz API yanıtı");
+      }
+    } catch (error) {
+      console.error("Fetch City Data Error:", error);
+      setCities(["İstanbul", "Ankara", "İzmir"]);
+      if (selectedCity) {
+        setDistricts((prev) => ({
+          ...prev,
+          [selectedCity]:
+            selectedCity === "İstanbul"
+              ? ["Kadıköy", "Beşiktaş", "Şişli"]
+              : selectedCity === "Ankara"
+              ? ["Çankaya", "Kızılay", "Yenimahalle"]
+              : selectedCity === "İzmir"
+              ? ["Bornova", "Karşıyaka", "Konak"]
+              : [],
+        }));
+      } else {
+        setDistricts({
+          İstanbul: ["Kadıköy", "Beşiktaş", "Şişli"],
+          Ankara: ["Çankaya", "Kızılay", "Yenimahalle"],
+          İzmir: ["Bornova", "Karşıyaka", "Konak"],
+        });
+      }
+    } finally {
+      setIsLoadingCities(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCityData();
+  }, []);
+
+  const handleCityChange = (city) => {
+    setValue("mechanicAddress.city", city);
+    if (isEditable && city) {
+      setIsLoadingCities(true);
+      fetchCityData(city).then(() => {
+        setValue("mechanicAddress.district", "");
+      });
+    }
+  };
 
   const pickImage = async () => {
     try {
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
-        Alert.alert("Permission required", "Gallery access is required.");
+        Alert.alert(
+          t("mechanicProfile.permissionRequired"),
+          t("mechanicProfile.galleryPermission")
+        );
         return;
       }
 
@@ -193,102 +485,77 @@ export default function MechanicProfile() {
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
-        setFormData((prev) => ({
-          ...prev,
-          mechanicLogo: imageUri,
-        }));
-        Alert.alert("Info", "Photo selected. Save your profile to upload.");
+        setValue("mechanicLogo", imageUri);
+        Alert.alert(t("success"), t("mechanicProfile.photoSelected"));
       }
     } catch (error) {
-      Alert.alert("Error", error.message || "Failed to select photo.");
+      console.error("Image Picker Error:", error);
+      Alert.alert(
+        t("error"),
+        error.message || t("mechanicProfile.photoSelectionFailed")
+      );
     }
   };
 
-  const handleSave = async () => {
+  const onSubmit = async (data) => {
+    console.log("onSubmit called with data:", data); // Hata ayıklama için
     setIsSaving(true);
-    setErrors({}); // Önceki hataları temizle
-
     try {
-      // Form verilerini şemaya göre doğrula
-      const validationResult = profileSchema.safeParse(formData);
-
-      if (!validationResult.success) {
-        const errorMessages = {};
-        validationResult.error.errors.forEach((error) => {
-          const path = error.path.join(".");
-          errorMessages[path] = error.message;
-        });
-        setErrors(errorMessages);
-        setIsSaving(false);
-        Alert.alert("Validation Error", "Please fix the errors in the form.");
-        return;
-      }
-
-      let mechanicLogoUrl = formData.mechanicLogo;
-
+      let mechanicLogoUrl = data.mechanicLogo;
       if (mechanicLogoUrl && mechanicLogoUrl.startsWith("file://")) {
+        console.log("Uploading logo:", mechanicLogoUrl);
         const response = await uploadMechanicLogo(mechanicLogoUrl);
         if (!response.mechanicLogo) {
-          throw new Error("Failed to get logo URL from server");
+          throw new Error(t("mechanicProfile.serverError"));
         }
         mechanicLogoUrl = response.mechanicLogo;
+        console.log("Logo uploaded successfully:", mechanicLogoUrl);
       }
 
       const payload = {
-        ...formData,
+        ...data,
         mechanicLogo: mechanicLogoUrl,
-        expertiseAreas: formData.expertiseAreas
-          ? formData.expertiseAreas.split(",").map((item) => item.trim())
-          : [],
-        vehicleBrands: formData.vehicleBrands
-          ? formData.vehicleBrands.split(",").map((item) => item.trim())
-          : [],
+        expertiseAreas: data.expertiseAreas || [],
+        vehicleBrands: data.vehicleBrands || [],
       };
 
+      console.log("Updating profile with payload:", payload);
       await updateMechanicProfile(payload);
       await fetchUser();
-      Alert.alert("Success", "Profile updated successfully.");
+      reset({
+        ...data,
+        mechanicLogo: mechanicLogoUrl,
+      });
+      Alert.alert(t("success"), t("mechanicProfile.updateSuccess"));
       setIsEditable(false);
-
-      setTimeout(() => {
-        router.replace("/(mechanic)/profile");
-      }, 0);
+      router.replace("/(mechanic)/profile");
     } catch (error) {
-      if (error.message.includes("Failed to upload logo")) {
-        Alert.alert("Error", "Failed to upload logo. Please try again.");
-      } else {
-        Alert.alert("Error", error.message || "Update failed");
-      }
+      console.error("onSubmit Error:", error);
+      Alert.alert(
+        t("error"),
+        error.message || t("mechanicProfile.updateFailed")
+      );
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDeleteAccount = async () => {
-    Alert.alert(
-      "Confirm Delete",
-      "Are you sure you want to delete your account? This action cannot be undone.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteMechanicAccount();
-              await logout();
-              router.replace("/(auth)");
-              Alert.alert("Success", "Account deleted successfully.");
-            } catch (error) {
-              Alert.alert("Error", error.message || "Failed to delete account");
-            }
-          },
-        },
-      ]
-    );
+  const handleSave = () => {
+    console.log("handleSave called"); // Hata ayıklama için
+    handleSubmit(
+      (data) => onSubmit(data),
+      (errors) => {
+        console.log("Form validation errors:", errors); // Hata ayıklama için
+        Alert.alert(
+          t("error"),
+          t("mechanicProfile.validationError") +
+            "\n" +
+            Object.values(errors)
+              .map((err) => err.message)
+              .join("\n")
+        );
+      }
+    )();
   };
 
   const handleLogout = async () => {
@@ -296,11 +563,17 @@ export default function MechanicProfile() {
     router.replace("/(auth)");
   };
 
-  if (!formData || isLoading) {
+  const toggleDropdown = (type) => {
+    setDropdownVisible(dropdownVisible === type ? null : type);
+  };
+
+  if (!user || isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading profile...</Text>
+        <Text style={styles.loadingText}>
+          {t("mechanicProfile.loadingProfile")}
+        </Text>
       </View>
     );
   }
@@ -315,706 +588,465 @@ export default function MechanicProfile() {
         style={styles.container}
         contentContainerStyle={styles.content}
       >
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.logoContainer}
-            onPress={isEditable ? pickImage : null}
-            disabled={!isEditable}
-          >
-            {formData.mechanicLogo ? (
-              <View style={styles.logoWrapper}>
-                <Image
-                  source={{ uri: formData.mechanicLogo }}
-                  style={styles.logo}
-                />
-                {isEditable && (
-                  <Ionicons
-                    name="camera"
-                    size={24}
-                    color={COLORS.accentMechanic}
-                    style={styles.editIcon}
-                  />
-                )}
-              </View>
-            ) : (
-              <View style={styles.logoPlaceholder}>
-                <Text style={styles.uploadText}>Upload Logo</Text>
-                {isEditable && (
-                  <Ionicons
-                    name="camera"
-                    size={24}
-                    color={COLORS.accentMechanic}
-                    style={styles.editIcon}
-                  />
-                )}
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.statusRow}>
-          <View style={styles.verifiedBadge}>
-            {formData.isVerified ? (
-              <>
-                <Ionicons name="checkmark-circle" size={18} color="#4CAF50" />
-                <Text style={styles.verifiedText}>Verified</Text>
-              </>
-            ) : (
-              <>
-                <Ionicons name="close-circle" size={18} color={COLORS.error} />
-                <Text style={[styles.verifiedText, { color: COLORS.error }]}>
-                  Not Verified
-                </Text>
-              </>
-            )}
-          </View>
-          <View style={styles.ratingBox}>
-            <Ionicons name="star" size={18} color="#FFD700" />
-            <Text style={styles.ratingText}>
-              {formData.averageRating.toFixed(1)} / 5
-            </Text>
-          </View>
-        </View>
-
         <TouchableOpacity
-          style={styles.reviewRow}
-          onPress={() => router.push("/mechanic/reviews")}
+          style={styles.profileImageContainer}
+          onPress={isEditable ? pickImage : undefined}
+          disabled={!isEditable}
+          accessibilityLabel={t("mechanicProfile.selectLogo")}
+          accessibilityHint={
+            isEditable ? t("mechanicProfile.tapToSelectLogo") : ""
+          }
         >
-          <Ionicons
-            name="chatbubble-ellipses-outline"
-            size={20}
-            color={COLORS.accentMechanic}
-          />
-          <Text style={styles.reviewText}>
-            {formData.reviews.length} Reviews
-          </Text>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.border} />
+          {watch("mechanicLogo") ? (
+            <Image
+              source={{ uri: watch("mechanicLogo") }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={styles.profilePlaceholder}>
+              <Ionicons name="business" size={50} color={COLORS.white} />
+            </View>
+          )}
+          {isEditable && (
+            <Ionicons
+              name="camera"
+              size={18}
+              color={COLORS.accentMechanic}
+              style={styles.cameraIcon}
+            />
+          )}
         </TouchableOpacity>
+        <Text style={styles.profileName}>
+          {watch("mechanicName") || t("mechanicProfile.noMechanicNameSet")}
+        </Text>
 
-        <Text style={styles.sectionTitle}>Personal Information</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Full Name</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="person"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
+        {/* Personal Information */}
+        <View style={styles.cardContainer}>
+          <Text style={styles.sectionTitle}>
+            {t("mechanicProfile.personalInfo")}
+          </Text>
+          {[
+            {
+              name: "name",
+              label: t("mechanicProfile.nameLabel"),
+              placeholder: t("mechanicProfile.enterName"),
+              editable: true,
+            },
+            {
+              name: "phone",
+              label: t("mechanicProfile.phoneLabel"),
+              placeholder: t("mechanicProfile.enterPhone"),
+              editable: true,
+              keyboardType: "phone-pad",
+            },
+            {
+              name: "mechanicName",
+              label: t("mechanicProfile.mechanicNameLabel"),
+              placeholder: t("mechanicProfile.enterMechanicName"),
+              editable: true,
+            },
+            {
+              name: "email",
+              label: t("mechanicProfile.emailLabel"),
+              value: user.email || t("mechanicProfile.noEmailSet"),
+              editable: false,
+            },
+          ].map((field, index, array) => (
+            <View
+              key={field.name}
               style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
+                field.editable ? styles.inputRow : styles.disabledInputRow,
+                index === array.length - 1 && styles.noBorderBottom,
               ]}
-              placeholder="Full Name"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.name}
-              onChangeText={(val) =>
-                setFormData((prev) => ({ ...prev, name: val }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="mail"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                { backgroundColor: COLORS.inputBackground },
-              ]}
-              placeholder="Email"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.email}
-              editable={false}
-            />
-          </View>
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Phone Number</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="call"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="Phone Number"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.phone}
-              onChangeText={(val) =>
-                setFormData((prev) => ({ ...prev, phone: val }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Garage Name</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="business"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="Garage Name"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.mechanicName}
-              onChangeText={(val) =>
-                setFormData((prev) => ({ ...prev, mechanicName: val }))
-              }
-              editable={isEditable}
-            />
-          </View>
+            >
+              <Text style={styles.label}>{field.label}</Text>
+              {field.editable ? (
+                <Controller
+                  control={control}
+                  name={field.name}
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      style={styles.inputValue}
+                      value={value}
+                      onChangeText={onChange}
+                      editable={isEditable}
+                      placeholder={field.placeholder}
+                      keyboardType={field.keyboardType}
+                      accessibilityLabel={field.label}
+                    />
+                  )}
+                />
+              ) : (
+                <Text style={styles.disabledInputValue}>{field.value}</Text>
+              )}
+            </View>
+          ))}
+          {errors.name && (
+            <Text style={styles.errorText}>{errors.name.message}</Text>
+          )}
+          {errors.phone && (
+            <Text style={styles.errorText}>{errors.phone.message}</Text>
+          )}
           {errors.mechanicName && (
-            <Text style={styles.errorText}>{errors.mechanicName}</Text>
+            <Text style={styles.errorText}>{errors.mechanicName.message}</Text>
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>Address</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Full Address</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="location"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
+        {/* Address Information */}
+        <View style={[styles.cardContainer, { marginTop: 24 }]}>
+          <Text style={styles.sectionTitle}>
+            {t("mechanicProfile.addressInfo")}
+          </Text>
+          {[
+            {
+              name: "mechanicAddress.fullAddress",
+              label: t("mechanicProfile.fullAddressLabel"),
+              placeholder: t("mechanicProfile.enterFullAddress"),
+              editable: true,
+              multiline: true,
+            },
+            {
+              name: "mechanicAddress.city",
+              label: t("mechanicProfile.cityLabel"),
+              placeholder: t("mechanicProfile.enterCity"),
+              editable: true,
+              options: cities,
+            },
+            {
+              name: "mechanicAddress.district",
+              label: t("mechanicProfile.districtLabel"),
+              placeholder: t("mechanicProfile.enterDistrict"),
+              editable: true,
+              options: districts[watch("mechanicAddress.city")] || [],
+            },
+          ].map((field, index, array) => (
+            <View
+              key={field.name}
               style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                  height: 80,
-                  textAlignVertical: "top",
-                },
+                styles.inputRow,
+                index === array.length - 1 && styles.noBorderBottom,
               ]}
-              placeholder="Full Address"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.mechanicAddress.fullAddress}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  mechanicAddress: {
-                    ...prev.mechanicAddress,
-                    fullAddress: val,
-                  },
-                }))
-              }
-              editable={isEditable}
-              multiline
-              numberOfLines={3}
-            />
-          </View>
-          {errors["mechanicAddress.fullAddress"] && (
+            >
+              <Text style={styles.label}>{field.label}</Text>
+              <Controller
+                control={control}
+                name={field.name}
+                render={({ field: { onChange, value } }) => {
+                  const fieldOptions = field.options || [];
+                  return isEditable && fieldOptions.length > 0 ? (
+                    <DropdownSelect
+                      label={field.label}
+                      value={value ? [value] : []}
+                      onSelect={
+                        field.name === "mechanicAddress.city"
+                          ? handleCityChange
+                          : onChange
+                      }
+                      type={field.name}
+                      dropdownVisible={dropdownVisible}
+                      toggleDropdown={toggleDropdown}
+                      options={fieldOptions}
+                      isEditable={isEditable}
+                      isMultiSelect={false}
+                    />
+                  ) : isLoadingCities &&
+                    field.name === "mechanicAddress.district" ? (
+                    <ActivityIndicator size="small" color={COLORS.primary} />
+                  ) : (
+                    <TextInput
+                      style={styles.inputValue}
+                      value={value}
+                      onChangeText={onChange}
+                      editable={isEditable}
+                      placeholder={field.placeholder}
+                      multiline={field.multiline}
+                      numberOfLines={field.multiline ? 3 : 1}
+                      accessibilityLabel={field.label}
+                    />
+                  );
+                }}
+              />
+            </View>
+          ))}
+          {errors.mechanicAddress?.fullAddress && (
             <Text style={styles.errorText}>
-              {errors["mechanicAddress.fullAddress"]}
+              {errors.mechanicAddress.fullAddress.message}
             </Text>
           )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>City</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="map"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="City"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.mechanicAddress.city}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  mechanicAddress: { ...prev.mechanicAddress, city: val },
-                }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors["mechanicAddress.city"] && (
+          {errors.mechanicAddress?.city && (
             <Text style={styles.errorText}>
-              {errors["mechanicAddress.city"]}
+              {errors.mechanicAddress.city.message}
             </Text>
           )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>District</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="navigate"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="District"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.mechanicAddress.district}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  mechanicAddress: { ...prev.mechanicAddress, district: val },
-                }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors["mechanicAddress.district"] && (
+          {errors.mechanicAddress?.district && (
             <Text style={styles.errorText}>
-              {errors["mechanicAddress.district"]}
+              {errors.mechanicAddress.district.message}
             </Text>
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>Working Hours</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Weekdays Open</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="time"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
+        {/* Working Hours */}
+        <View style={[styles.cardContainer, { marginTop: 24 }]}>
+          <Text style={styles.sectionTitle}>
+            {t("mechanicProfile.workingHours")}
+          </Text>
+          {[
+            {
+              name: "workingHours.weekdays.open",
+              label: t("mechanicProfile.weekdaysOpenLabel"),
+              placeholder: t("mechanicProfile.select"),
+              editable: true,
+              options: timeOptions,
+            },
+            {
+              name: "workingHours.weekdays.close",
+              label: t("mechanicProfile.weekdaysCloseLabel"),
+              placeholder: t("mechanicProfile.select"),
+              editable: true,
+              options: timeOptions,
+            },
+            {
+              name: "workingHours.weekend.open",
+              label: t("mechanicProfile.weekendOpenLabel"),
+              placeholder: t("mechanicProfile.select"),
+              editable: true,
+              options: timeOptions,
+            },
+            {
+              name: "workingHours.weekend.close",
+              label: t("mechanicProfile.weekendCloseLabel"),
+              placeholder: t("mechanicProfile.select"),
+              editable: true,
+              options: timeOptions,
+            },
+          ].map((field, index, array) => (
+            <View
+              key={field.name}
               style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
+                styles.inputRow,
+                index === array.length - 1 && styles.noBorderBottom,
               ]}
-              placeholder="Weekdays Open (e.g., 09:00)"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.workingHours.weekdays.open}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  workingHours: {
-                    ...prev.workingHours,
-                    weekdays: { ...prev.workingHours.weekdays, open: val },
-                  },
-                }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors["workingHours.weekdays.open"] && (
+            >
+              <Text style={styles.label}>{field.label}</Text>
+              <Controller
+                control={control}
+                name={field.name}
+                render={({ field: { onChange, value } }) =>
+                  isEditable && field.options ? (
+                    <DropdownSelect
+                      label={field.label}
+                      value={value ? [value] : []}
+                      onSelect={onChange}
+                      type={field.name}
+                      dropdownVisible={dropdownVisible}
+                      toggleDropdown={toggleDropdown}
+                      options={field.options.map((time) => time)}
+                      isEditable={isEditable}
+                      isMultiSelect={false}
+                    />
+                  ) : (
+                    <TextInput
+                      style={styles.inputValue}
+                      value={value}
+                      onChangeText={onChange}
+                      editable={isEditable}
+                      placeholder={field.placeholder}
+                      accessibilityLabel={field.label}
+                    />
+                  )
+                }
+              />
+            </View>
+          ))}
+          {errors.workingHours?.weekdays?.open && (
             <Text style={styles.errorText}>
-              {errors["workingHours.weekdays.open"]}
+              {errors.workingHours.weekdays.open.message}
             </Text>
           )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Weekdays Close</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="time"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="Weekdays Close (e.g., 17:00)"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.workingHours.weekdays.close}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  workingHours: {
-                    ...prev.workingHours,
-                    weekdays: { ...prev.workingHours.weekdays, close: val },
-                  },
-                }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors["workingHours.weekdays.close"] && (
+          {errors.workingHours?.weekdays?.close && (
             <Text style={styles.errorText}>
-              {errors["workingHours.weekdays.close"]}
+              {errors.workingHours.weekdays.close.message}
             </Text>
           )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Weekend Open</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="time"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="Weekend Open (e.g., 10:00)"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.workingHours.weekend.open}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  workingHours: {
-                    ...prev.workingHours,
-                    weekend: { ...prev.workingHours.weekend, open: val },
-                  },
-                }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors["workingHours.weekend.open"] && (
+          {errors.workingHours?.weekend?.open && (
             <Text style={styles.errorText}>
-              {errors["workingHours.weekend.open"]}
+              {errors.workingHours.weekend.open.message}
             </Text>
           )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Weekend Close</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="time"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="Weekend Close (e.g., 16:00)"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.workingHours.weekend.close}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  workingHours: {
-                    ...prev.workingHours,
-                    weekend: { ...prev.workingHours.weekend, close: val },
-                  },
-                }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors["workingHours.weekend.close"] && (
+          {errors.workingHours?.weekend?.close && (
             <Text style={styles.errorText}>
-              {errors["workingHours.weekend.close"]}
+              {errors.workingHours.weekend.close.message}
             </Text>
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>Social Media & Website</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Website</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="globe"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
+        {/* Social Media & Website */}
+        <View style={[styles.cardContainer, { marginTop: 24 }]}>
+          <Text style={styles.sectionTitle}>
+            {t("mechanicProfile.socialMediaWebsite")}
+          </Text>
+          {[
+            {
+              name: "website",
+              label: t("mechanicProfile.websiteLabel"),
+              placeholder: t("mechanicProfile.enterWebsite"),
+              editable: true,
+            },
+            {
+              name: "socialMedia.facebook",
+              label: t("mechanicProfile.facebookLabel"),
+              placeholder: t("mechanicProfile.enterFacebook"),
+              editable: true,
+            },
+            {
+              name: "socialMedia.instagram",
+              label: t("mechanicProfile.instagramLabel"),
+              placeholder: t("mechanicProfile.enterInstagram"),
+              editable: true,
+            },
+            {
+              name: "socialMedia.twitter",
+              label: t("mechanicProfile.twitterLabel"),
+              placeholder: t("mechanicProfile.enterTwitter"),
+              editable: true,
+            },
+          ].map((field, index, array) => (
+            <View
+              key={field.name}
               style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
+                styles.inputRow,
+                index === array.length - 1 && styles.noBorderBottom,
               ]}
-              placeholder="Website (e.g., https://example.com)"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.website}
-              onChangeText={(val) =>
-                setFormData((prev) => ({ ...prev, website: val }))
-              }
-              editable={isEditable}
-            />
-          </View>
+            >
+              <Text style={styles.label}>{field.label}</Text>
+              <Controller
+                control={control}
+                name={field.name}
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    style={styles.inputValue}
+                    value={value}
+                    onChangeText={onChange}
+                    editable={isEditable}
+                    placeholder={field.placeholder}
+                    accessibilityLabel={field.label}
+                  />
+                )}
+              />
+            </View>
+          ))}
           {errors.website && (
-            <Text style={styles.errorText}>{errors.website}</Text>
+            <Text style={styles.errorText}>{errors.website.message}</Text>
           )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Facebook</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="logo-facebook"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="Facebook URL"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.socialMedia.facebook}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  socialMedia: { ...prev.socialMedia, facebook: val },
-                }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors["socialMedia.facebook"] && (
+          {errors.socialMedia?.facebook && (
             <Text style={styles.errorText}>
-              {errors["socialMedia.facebook"]}
+              {errors.socialMedia.facebook.message}
             </Text>
           )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Instagram</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="logo-instagram"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="Instagram URL"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.socialMedia.instagram}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  socialMedia: { ...prev.socialMedia, instagram: val },
-                }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors["socialMedia.instagram"] && (
+          {errors.socialMedia?.instagram && (
             <Text style={styles.errorText}>
-              {errors["socialMedia.instagram"]}
+              {errors.socialMedia.instagram.message}
             </Text>
           )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Twitter</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="logo-twitter"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="Twitter URL"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.socialMedia.twitter}
-              onChangeText={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  socialMedia: { ...prev.socialMedia, twitter: val },
-                }))
-              }
-              editable={isEditable}
-            />
-          </View>
-          {errors["socialMedia.twitter"] && (
+          {errors.socialMedia?.twitter && (
             <Text style={styles.errorText}>
-              {errors["socialMedia.twitter"]}
+              {errors.socialMedia.twitter.message}
             </Text>
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>Expertise & Brands</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Expertise Areas (comma separated)</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="checkmark-circle-outline"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
+        {/* Expertise & Brands */}
+        <View style={[styles.cardContainer, { marginTop: 24 }]}>
+          <Text style={styles.sectionTitle}>
+            {t("mechanicProfile.expertiseBrands")}
+          </Text>
+          {[
+            {
+              name: "expertiseAreas",
+              label: t("mechanicProfile.expertiseAreasLabel"),
+              type: "select",
+              options: expertise_areas,
+            },
+            {
+              name: "vehicleBrands",
+              label: t("mechanicProfile.vehicleBrandsLabel"),
+              type: "select",
+              options: VEHICLE_BRANDS,
+            },
+          ].map((field, index, array) => (
+            <View
+              key={field.name}
               style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
+                styles.inputRow,
+                index === array.length - 1 && styles.noBorderBottom,
               ]}
-              placeholder="Expertise Areas (comma separated)"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.expertiseAreas}
-              onChangeText={(val) =>
-                setFormData((prev) => ({ ...prev, expertiseAreas: val }))
-              }
-              editable={isEditable}
-            />
-          </View>
+            >
+              <Text style={styles.label}>{field.label}</Text>
+              <Controller
+                control={control}
+                name={field.name}
+                render={({ field: { onChange, value } }) =>
+                  isEditable ? (
+                    <DropdownSelect
+                      label={field.label}
+                      value={value || []}
+                      onSelect={onChange}
+                      type={field.name}
+                      dropdownVisible={dropdownVisible}
+                      toggleDropdown={toggleDropdown}
+                      options={field.options}
+                      isEditable={isEditable}
+                      isMultiSelect={true}
+                    />
+                  ) : (
+                    <Text style={styles.inputValue}>
+                      {value?.length
+                        ? value.map((opt) => t(opt)).join(", ")
+                        : t("mechanicProfile.noValueSet")}
+                    </Text>
+                  )
+                }
+              />
+            </View>
+          ))}
           {errors.expertiseAreas && (
-            <Text style={styles.errorText}>{errors.expertiseAreas}</Text>
+            <Text style={styles.errorText}>
+              {errors.expertiseAreas.message}
+            </Text>
           )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Vehicle Brands (comma separated)</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="car"
-              size={20}
-              color={COLORS.placeholderText}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isEditable
-                    ? COLORS.white
-                    : COLORS.inputBackground,
-                },
-              ]}
-              placeholder="Vehicle Brands (comma separated)"
-              placeholderTextColor={COLORS.placeholderText}
-              value={formData.vehicleBrands}
-              onChangeText={(val) =>
-                setFormData((prev) => ({ ...prev, vehicleBrands: val }))
-              }
-              editable={isEditable}
-            />
-          </View>
           {errors.vehicleBrands && (
-            <Text style={styles.errorText}>{errors.vehicleBrands}</Text>
+            <Text style={styles.errorText}>{errors.vehicleBrands.message}</Text>
           )}
         </View>
 
-        <View style={styles.buttonContainer}>
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
           <TouchableOpacity
-            style={[
-              styles.button,
-              {
-                backgroundColor: isEditable
-                  ? COLORS.accentMechanic
-                  : COLORS.primary,
-              },
-            ]}
-            onPress={() => (isEditable ? handleSave() : setIsEditable(true))}
+            style={[styles.button, { backgroundColor: COLORS.accentMechanic }]}
+            onPress={isEditable ? handleSave : () => setIsEditable(true)}
             disabled={isSaving}
+            accessibilityLabel={
+              isEditable
+                ? t("mechanicProfile.save")
+                : t("mechanicProfile.editProfile")
+            }
           >
             {isSaving ? (
               <ActivityIndicator size="small" color={COLORS.white} />
             ) : (
               <Text style={styles.buttonText}>
-                {isEditable ? "Save" : "Edit Profile"}
+                {isEditable
+                  ? t("mechanicProfile.save")
+                  : t("mechanicProfile.editProfile")}
               </Text>
             )}
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: COLORS.error }]}
             onPress={handleLogout}
+            accessibilityLabel={t("mechanicProfile.logout")}
           >
-            <Text style={styles.buttonText}>Logout</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: COLORS.error }]}
-            onPress={handleDeleteAccount}
-          >
-            <Text style={styles.buttonText}>Delete Account</Text>
+            <Text style={styles.buttonText}>{t("mechanicProfile.logout")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
