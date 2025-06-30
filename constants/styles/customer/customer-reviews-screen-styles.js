@@ -15,7 +15,7 @@ export default StyleSheet.create({
     fontSize: THEME.fontSizes.h1,
     fontWeight: THEME.fontWeights.extraBold,
     color: COLORS.primary,
-    marginBottom: THEME.spacing.md,
+    marginBottom: THEME.spacing.lg,
   },
   noReviewsText: {
     fontSize: THEME.fontSizes.tag,
