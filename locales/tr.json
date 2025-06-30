@@ -95,6 +95,7 @@
     "enterPhone": "Telefon numaranızı nirin",
     "enterModel": "Modeli nirin",
     "enterYear": "Yılı girin",
+    "noValueSet": "Belirtilmemiş",
     "fuelTypes": {
       "Gasoline": "Benzin",
       "Diesel": "Dizel",

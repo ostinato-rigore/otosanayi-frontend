@@ -164,3 +164,22 @@ export const fetchMechanicReviews = async () => {
     throw new Error(error.response?.data?.message || "Failed to fetch reviews");
   }
 };
+
+export const likeReview = async (reviewId) => {
+  try {
+    const response = await api.post(
+      `/customers/reviews/${reviewId}/like`,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data; // { success, message, likeCount, hasLiked }
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Yorum beğenme işlemi başarısız"
+    );
+  }
+};

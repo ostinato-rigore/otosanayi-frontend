@@ -95,6 +95,8 @@
     "enterPhone": "Enter phone number",
     "enterModel": "Enter model",
     "enterYear": "Enter year",
+    "noValueSet": "Not Specified",
+
     "fuelTypes": {
       "Gasoline": "Gasoline",
       "Diesel": "Diesel",

@@ -17,10 +17,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { fetchMechanicById, postReview } from "../../../api/apiClient";
+import {
+  fetchMechanicById,
+  likeReview,
+  postReview,
+} from "../../../api/apiClient";
 import StarRating from "../../../components/StarRating";
 import COLORS from "../../../constants/colors";
 import styles from "../../../constants/styles/customer/mechanic-detail-styles";
+import useAuthStore from "../../../store/useAuthStore";
 
 // ObjectId'den tarih tahmini için yardımcı fonksiyon
 const getDateFromObjectId = (objectId) => {
@@ -87,11 +92,24 @@ const InfoRow = ({
 
 const ReviewCard = ({ review }) => {
   const { t } = useTranslation();
-  const [isLiked, setIsLiked] = useState(review.isLiked || false); // Initialize with review.isLiked or false
+  const [isLiked, setIsLiked] = useState(review.isLiked || false); // Backend'den gelen isLiked veya false
+  const [likeCount, setLikeCount] = useState(review.likeCount || 0); // Backend'den gelen likeCount veya 0
+  const [isLoading, setIsLoading] = useState(false); // Beğeni işlemi sırasında yükleme durumu
 
-  const handleLikeToggle = () => {
-    setIsLiked(!isLiked); // Toggle like state
-    // Note: Add API call here if you need to persist the like state to a backend
+  const handleLikeToggle = async () => {
+    setIsLoading(true); // İşlem başlarken yükleme durumunu başlat
+    try {
+      const response = await likeReview(review._id); // API çağrısı
+      if (response.success) {
+        setIsLiked(response.hasLiked); // Backend'den gelen hasLiked ile durumu güncelle
+        setLikeCount(response.likeCount); // Backend'den gelen likeCount ile sayıyı güncelle
+      }
+    } catch (error) {
+      // Hata mesajını kullanıcıya göster
+      Alert.alert(t("common.error"), error.message || t("common.unknownError"));
+    } finally {
+      setIsLoading(false); // İşlem bittiğinde yükleme durumunu kapat
+    }
   };
 
   return (
@@ -136,20 +154,28 @@ const ReviewCard = ({ review }) => {
           {formatReviewDate(review.createdAt, review._id, t)}
         </Text>
         <TouchableOpacity
-          style={styles.likeContainer}
+          style={[styles.likeContainer, isLiked && styles.accentCustomerLight]} // Aktif stil için koşullu ekleme
           onPress={handleLikeToggle}
           accessibilityLabel={
             isLiked
               ? t("mechanicDetail.unlikeReview")
               : t("mechanicDetail.likeReview")
           }
+          disabled={isLoading} // Yükleme sırasında butonu devre dışı bırak
         >
           <Ionicons
             name={isLiked ? "heart" : "heart-outline"}
             size={20}
-            color={isLiked ? COLORS.accentCustomer : COLORS.textSecondary}
+            color={isLiked ? COLORS.accentCustomer : COLORS.textSecondary} // Beğenildiyse vurgulanan renk
           />
-          <Text style={styles.likeCount}>{review.likeCount || 0}</Text>
+          <Text
+            style={[
+              styles.likeCount,
+              isLiked && { color: COLORS.accentCustomer }, // Beğenildiyse sayı da vurgulanan renk
+            ]}
+          >
+            {likeCount}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -167,20 +193,31 @@ export default function MechanicDetail() {
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(5);
 
+  const { user } = useAuthStore();
+
   const getMechanic = useCallback(async () => {
     setLoading(true);
     try {
+      const currentUserId = user?._id;
+
       const data = await fetchMechanicById(id);
+
+      const reviewsWithIsLiked = (data.reviews || []).map((review) => ({
+        ...review,
+        isLiked: review.likes?.some(
+          (likeId) => likeId?.toString?.() === currentUserId
+        ),
+      }));
+
       setMechanic(data);
-      setReviews(data.reviews || []);
+      setReviews(reviewsWithIsLiked);
     } catch (error) {
       console.log(error);
-
       Alert.alert(t("error"), t("mechanicDetail.mechanicNotFound"));
     } finally {
       setLoading(false);
     }
-  }, [id, t]);
+  }, [id, t, user]);
 
   useEffect(() => {
     if (id) getMechanic();

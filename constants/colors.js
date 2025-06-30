@@ -13,6 +13,7 @@ const COLORS = {
   white: "#FFFFFF",
   black: "#000000",
   star: "#FFD700", // Altın sarısı - yıldızlar için klasik ve dikkat çekici
+  accentCustomerLight: "rgba(255, 165, 0, 0.1)",
 };
 
 export default COLORS;
