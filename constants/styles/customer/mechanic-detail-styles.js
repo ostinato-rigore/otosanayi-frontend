@@ -271,10 +271,27 @@ export default StyleSheet.create({
     lineHeight: 18,
     marginBottom: THEME.spacing.sm,
   },
+  reviewFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   reviewDate: {
     fontSize: 12,
     color: COLORS.placeholderText,
   },
+
+  likeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    padding: THEME.spacing.xs,
+  },
+  likeCount: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.textSecondary,
+  },
+
   noReviewsText: {
     fontSize: THEME.fontSizes.tag,
     color: COLORS.placeholderText,
@@ -364,14 +381,13 @@ export default StyleSheet.create({
   },
   modalButtons: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap: 8,
   },
   modalButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
-    marginHorizontal: 8,
   },
   cancelButton: {
     backgroundColor: COLORS.inputBackground,

@@ -87,6 +87,12 @@ const InfoRow = ({
 
 const ReviewCard = ({ review }) => {
   const { t } = useTranslation();
+  const [isLiked, setIsLiked] = useState(review.isLiked || false); // Initialize with review.isLiked or false
+
+  const handleLikeToggle = () => {
+    setIsLiked(!isLiked); // Toggle like state
+    // Note: Add API call here if you need to persist the like state to a backend
+  };
 
   return (
     <View style={styles.reviewCard}>
@@ -120,14 +126,32 @@ const ReviewCard = ({ review }) => {
       <Text style={styles.reviewText}>
         {review.comment || t("mechanicDetail.noInfo")}
       </Text>
-      <Text
-        style={styles.reviewDate}
-        accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
-          date: formatReviewDate(review.createdAt, review._id, t),
-        })}
-      >
-        {formatReviewDate(review.createdAt, review._id, t)}
-      </Text>
+      <View style={styles.reviewFooter}>
+        <Text
+          style={styles.reviewDate}
+          accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
+            date: formatReviewDate(review.createdAt, review._id, t),
+          })}
+        >
+          {formatReviewDate(review.createdAt, review._id, t)}
+        </Text>
+        <TouchableOpacity
+          style={styles.likeContainer}
+          onPress={handleLikeToggle}
+          accessibilityLabel={
+            isLiked
+              ? t("mechanicDetail.unlikeReview")
+              : t("mechanicDetail.likeReview")
+          }
+        >
+          <Ionicons
+            name={isLiked ? "heart" : "heart-outline"}
+            size={20}
+            color={isLiked ? COLORS.accentCustomer : COLORS.textSecondary}
+          />
+          <Text style={styles.likeCount}>{review.likeCount || 0}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

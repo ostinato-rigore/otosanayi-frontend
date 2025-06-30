@@ -78,7 +78,7 @@ const ReviewItem = ({ review }) => {
               <Ionicons
                 name="person-outline"
                 size={16}
-                color={COLORS.placeholderText}
+                color={COLORS.accentCustomer}
               />
             </View>
           )}
