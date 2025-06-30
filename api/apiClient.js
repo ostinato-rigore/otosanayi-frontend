@@ -155,3 +155,12 @@ export const fetchCustomerReviews = async () => {
     throw new Error(error.response?.data?.message || "Failed to fetch reviews");
   }
 };
+
+export const fetchMechanicReviews = async () => {
+  try {
+    const response = await api.get("/mechanics/reviews");
+    return response.data.data; // Yorumlar dizisini döndür
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to fetch reviews");
+  }
+};

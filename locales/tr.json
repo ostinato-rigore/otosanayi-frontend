@@ -228,6 +228,7 @@
     "noReviews": "Henüz yorum yok",
     "reviewsLoadFailed": "Yorumlar yüklenemedi"
   },
+
   "mechanicProfile": {
     "loadingProfile": "Profil yükleniyor...",
     "noMechanicNameSet": "Tamirci Adı Belirlenmedi",
