@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -5,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   Text,
   TouchableOpacity,
   View,
@@ -65,19 +67,27 @@ const ReviewItem = ({ review }) => {
   return (
     <View style={styles.reviewItem}>
       <View style={styles.reviewHeader}>
+        <View style={styles.avatarContainer}>
+          {review.mechanic?.mechanicLogo ? (
+            <Image
+              source={{ uri: review.mechanic.mechanicLogo }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Ionicons
+                name="person-outline"
+                size={16}
+                color={COLORS.placeholderText}
+              />
+            </View>
+          )}
+        </View>
         <View style={styles.reviewAuthorContainer}>
           <Text style={styles.reviewMechanic}>
             {review.mechanic?.mechanicName ||
               review.mechanic?.name ||
               t("mechanicDetail.noInfo")}
-          </Text>
-          <Text
-            style={styles.reviewDate}
-            accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
-              date: formatReviewDate(review.createdAt, review._id, t),
-            })}
-          >
-            {formatReviewDate(review.createdAt, review._id, t)}
           </Text>
         </View>
         <View style={styles.reviewRatingContainer}>
@@ -87,6 +97,15 @@ const ReviewItem = ({ review }) => {
       </View>
       <Text style={styles.reviewComment}>
         {review.comment || t("mechanicDetail.noInfo")}
+      </Text>
+
+      <Text
+        style={styles.reviewDate}
+        accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
+          date: formatReviewDate(review.createdAt, review._id, t),
+        })}
+      >
+        {formatReviewDate(review.createdAt, review._id, t)}
       </Text>
       <TouchableOpacity
         style={styles.detailsButton}

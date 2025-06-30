@@ -48,19 +48,40 @@ export default StyleSheet.create({
   },
   reviewHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: THEME.spacing.sm,
   },
+
+  avatarContainer: {
+    marginRight: THEME.spacing.sm,
+  },
+  avatar: {
+    width: THEME.sizes.icon.large,
+    height: THEME.sizes.icon.large,
+    borderRadius: THEME.sizes.icon.large / 2,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  avatarPlaceholder: {
+    width: THEME.sizes.icon.large,
+    height: THEME.sizes.icon.large,
+    borderRadius: THEME.sizes.icon.large / 2,
+    backgroundColor: COLORS.inputBackground,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
   reviewAuthorContainer: {
-    flexDirection: "column",
     flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   reviewMechanic: {
     fontSize: THEME.fontSizes.tag,
     fontWeight: THEME.fontWeights.bold,
     color: COLORS.primary,
-    marginBottom: THEME.spacing.xs,
   },
   reviewDate: {
     fontSize: 12,
