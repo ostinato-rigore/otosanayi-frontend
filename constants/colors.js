@@ -13,7 +13,8 @@ const COLORS = {
   white: "#FFFFFF",
   black: "#000000",
   star: "#FFD700", // Altın sarısı - yıldızlar için klasik ve dikkat çekici
-  accentCustomerLight: "rgba(255, 165, 0, 0.1)",
+  likeColor: "#D32F2F", // Daha koyu kırmızı - beğeni ikonu için
+  likeColorLight: "rgba(211, 47, 47, 0.1)", // Beğeni için daha koyu açık kırmızı arka plan
 };
 
 export default COLORS;

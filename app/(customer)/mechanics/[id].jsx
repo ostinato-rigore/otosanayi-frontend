@@ -154,7 +154,7 @@ const ReviewCard = ({ review }) => {
           {formatReviewDate(review.createdAt, review._id, t)}
         </Text>
         <TouchableOpacity
-          style={[styles.likeContainer, isLiked && styles.accentCustomerLight]} // Aktif stil için koşullu ekleme
+          style={[styles.likeContainer, isLiked && styles.likeColorLight]} // Beğenildiğinde açık kırmızı arka plan
           onPress={handleLikeToggle}
           accessibilityLabel={
             isLiked
@@ -166,12 +166,12 @@ const ReviewCard = ({ review }) => {
           <Ionicons
             name={isLiked ? "heart" : "heart-outline"}
             size={20}
-            color={isLiked ? COLORS.accentCustomer : COLORS.textSecondary} // Beğenildiyse vurgulanan renk
+            color={isLiked ? COLORS.likeColor : COLORS.textSecondary} // Beğenildiyse tatlı kırmızı
           />
           <Text
             style={[
               styles.likeCount,
-              isLiked && { color: COLORS.accentCustomer }, // Beğenildiyse sayı da vurgulanan renk
+              isLiked && { color: COLORS.likeColor }, // Beğenildiyse sayı da tatlı kırmızı
             ]}
           >
             {likeCount}
