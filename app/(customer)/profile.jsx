@@ -63,78 +63,79 @@ export default function Profile() {
         style={styles.container}
         contentContainerStyle={styles.content}
       >
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.profileImageContainer}>
-            {formData.profilePhoto ? (
-              <Image
-                source={{ uri: formData.profilePhoto }}
-                style={styles.profileImage}
-              />
-            ) : (
-              <View style={styles.profilePlaceholder}>
-                <Ionicons
-                  name="person"
-                  size={50}
-                  color={COLORS.placeholderText}
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.profileImageContainer}>
+              {formData.profilePhoto ? (
+                <Image
+                  source={{ uri: formData.profilePhoto }}
+                  style={styles.profileImage}
                 />
-              </View>
-            )}
-          </TouchableOpacity>
+              ) : (
+                <View style={styles.profilePlaceholder}>
+                  <Ionicons
+                    name="person"
+                    size={50}
+                    color={COLORS.placeholderText}
+                  />
+                </View>
+              )}
+            </TouchableOpacity>
 
-          <View style={styles.profileInfo}>
-            <Text style={styles.name}>
-              {formData.name || t("profile.noNameSet")}
-            </Text>
-            <Text style={styles.email}>
-              {formData.email || t("profile.noEmailSet")}
-            </Text>
+            <View style={styles.profileInfo}>
+              <Text style={styles.name}>
+                {formData.name || t("profile.noNameSet")}
+              </Text>
+              <Text style={styles.email}>
+                {formData.email || t("profile.noEmailSet")}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.menuContainer}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleEditProfile}
+              accessible
+              accessibilityLabel={t("profile.myProfile")}
+            >
+              <Ionicons
+                name="person-outline"
+                size={20}
+                color={COLORS.textPrimary}
+              />
+              <Text style={styles.menuItemText}>{t("profile.myProfile")}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleMyReviews}
+              accessible
+              accessibilityLabel={t("profile.myReviews")}
+            >
+              <Ionicons
+                name="star-outline"
+                size={20}
+                color={COLORS.textPrimary}
+              />
+              <Text style={styles.menuItemText}>{t("profile.myReviews")}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.spacer} />
+          <View style={styles.logoutContainer}>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+              accessible
+              accessibilityLabel={t("profile.logout")}
+            >
+              <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+              <Text style={styles.logoutButtonText}>{t("profile.logout")}</Text>
+            </TouchableOpacity>
           </View>
         </View>
-
-        {/* Menü */}
-        <View style={styles.menuContainer}>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={handleEditProfile}
-            accessible
-            accessibilityLabel={t("profile.myProfile")}
-          >
-            <Ionicons
-              name="person-outline"
-              size={20}
-              color={COLORS.textPrimary}
-            />
-            <Text style={styles.menuItemText}>{t("profile.myProfile")}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={handleMyReviews}
-            accessible
-            accessibilityLabel={t("profile.myReviews")}
-          >
-            <Ionicons
-              name="star-outline"
-              size={20}
-              color={COLORS.textPrimary}
-            />
-            <Text style={styles.menuItemText}>{t("profile.myReviews")}</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
-
-      {/* Logout en alta sabit */}
-      <View style={styles.logoutContainer}>
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          accessible
-          accessibilityLabel={t("profile.logout")}
-        >
-          <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
-          <Text style={styles.logoutButtonText}>{t("profile.logout")}</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
