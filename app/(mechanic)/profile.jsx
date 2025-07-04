@@ -65,84 +65,85 @@ export default function MechanicProfile() {
         style={styles.container}
         contentContainerStyle={styles.content}
       >
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.profileImageContainer}>
-            {formData.mechanicLogo ? (
-              <Image
-                source={{ uri: formData.mechanicLogo }}
-                style={styles.profileImage}
-              />
-            ) : (
-              <View style={styles.profilePlaceholder}>
-                <Ionicons
-                  name="business-outline"
-                  size={50}
-                  color={COLORS.placeholderText}
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.profileImageContainer}>
+              {formData.mechanicLogo ? (
+                <Image
+                  source={{ uri: formData.mechanicLogo }}
+                  style={styles.profileImage}
                 />
-              </View>
-            )}
-          </TouchableOpacity>
+              ) : (
+                <View style={styles.profilePlaceholder}>
+                  <Ionicons
+                    name="business-outline"
+                    size={50}
+                    color={COLORS.placeholderText}
+                  />
+                </View>
+              )}
+            </TouchableOpacity>
 
-          <View style={styles.profileInfo}>
-            <Text style={styles.name}>
-              {formData.name || t("mechanicProfile.noNameSet")}
-            </Text>
-            <Text style={styles.email}>
-              {formData.email || t("mechanicProfile.noEmailSet")}
-            </Text>
+            <View style={styles.profileInfo}>
+              <Text style={styles.name}>
+                {formData.name || t("mechanicProfile.noNameSet")}
+              </Text>
+              <Text style={styles.email}>
+                {formData.email || t("mechanicProfile.noEmailSet")}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.menuContainer}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleEditProfile}
+              accessible
+              accessibilityLabel={t("mechanicProfile.myProfile")}
+            >
+              <Ionicons
+                name="person-outline"
+                size={20}
+                color={COLORS.textPrimary}
+              />
+              <Text style={styles.menuItemText}>
+                {t("mechanicProfile.myProfile")}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleCustomerReviews}
+              accessible
+              accessibilityLabel={t("mechanicProfile.customerReviews")}
+            >
+              <Ionicons
+                name="chatbubble-outline"
+                size={20}
+                color={COLORS.textPrimary}
+              />
+              <Text style={styles.menuItemText}>
+                {t("mechanicProfile.customerReviews")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.spacer} />
+          <View style={styles.logoutContainer}>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+              accessible
+              accessibilityLabel={t("mechanicProfile.logout")}
+            >
+              <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+              <Text style={styles.logoutButtonText}>
+                {t("mechanicProfile.logout")}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-
-        {/* Menü */}
-        <View style={styles.menuContainer}>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={handleEditProfile}
-            accessible
-            accessibilityLabel={t("mechanicProfile.myProfile")}
-          >
-            <Ionicons
-              name="person-outline"
-              size={20}
-              color={COLORS.textPrimary}
-            />
-            <Text style={styles.menuItemText}>
-              {t("mechanicProfile.myProfile")}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={handleCustomerReviews}
-            accessible
-            accessibilityLabel={t("mechanicProfile.customerReviews")}
-          >
-            <Ionicons
-              name="chatbubble-outline"
-              size={20}
-              color={COLORS.textPrimary}
-            />
-            <Text style={styles.menuItemText}>
-              {t("mechanicProfile.customerReviews")}
-            </Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
-
-      {/* Logout en alta sabit */}
-      <View style={styles.logoutContainer}>
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          accessible
-          accessibilityLabel={t("mechanicProfile.logout")}
-        >
-          <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
-          <Text style={styles.logoutButtonText}>
-            {t("mechanicProfile.logout")}
-          </Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
