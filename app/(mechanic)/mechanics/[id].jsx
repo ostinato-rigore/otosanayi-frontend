@@ -119,14 +119,25 @@ const ReviewCard = ({ review }) => {
       <Text style={styles.reviewText}>
         {review.comment || t("mechanicDetail.noInfo")}
       </Text>
-      <Text
-        style={styles.reviewDate}
-        accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
-          date: formatReviewDate(review.createdAt, review._id, t),
-        })}
-      >
-        {formatReviewDate(review.createdAt, review._id, t)}
-      </Text>
+      <View style={styles.reviewFooter}>
+        <Text
+          style={styles.reviewDate}
+          accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
+            date: formatReviewDate(review.createdAt, review._id, t),
+          })}
+        >
+          {formatReviewDate(review.createdAt, review._id, t)}
+        </Text>
+        <View style={styles.likeContainer}>
+          <Ionicons
+            name="heart-outline"
+            size={16}
+            color={COLORS.textPrimary}
+            style={styles.likeIcon}
+          />
+          <Text style={styles.likeCount}>{review.likeCount || 0}</Text>
+        </View>
+      </View>
     </View>
   );
 };
@@ -147,7 +158,6 @@ export default function MechanicDetail() {
       setReviews(data.reviews || []);
     } catch (error) {
       console.log(error);
-
       Alert.alert(t("error"), t("mechanicDetail.mechanicNotFound"));
     } finally {
       setLoading(false);

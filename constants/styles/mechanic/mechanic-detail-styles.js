@@ -275,6 +275,22 @@ export default StyleSheet.create({
     fontSize: 12,
     color: COLORS.placeholderText,
   },
+  reviewFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  likeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  likeIcon: {
+    marginRight: THEME.spacing.xs,
+  },
+  likeCount: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.textPrimary,
+  },
   noReviewsText: {
     fontSize: THEME.fontSizes.tag,
     color: COLORS.placeholderText,

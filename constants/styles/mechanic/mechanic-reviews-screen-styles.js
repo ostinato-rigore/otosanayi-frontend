@@ -51,7 +51,6 @@ export default StyleSheet.create({
     alignItems: "center",
     marginBottom: THEME.spacing.sm,
   },
-
   avatarContainer: {
     marginRight: THEME.spacing.sm,
   },
@@ -103,5 +102,21 @@ export default StyleSheet.create({
     color: COLORS.textPrimary,
     lineHeight: 18,
     marginBottom: THEME.spacing.sm,
+  },
+  reviewFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  likeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  likeIcon: {
+    marginRight: THEME.spacing.xs,
+  },
+  likeCount: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.textPrimary,
   },
 });

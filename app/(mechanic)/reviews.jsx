@@ -37,7 +37,7 @@ const formatReviewDate = (dateString, objectId, t) => {
           day: "numeric",
           hour: "2-digit",
           minute: "2-digit",
-        }); // Ör: "18/6/2025 12:43"
+        });
       }
     } catch (error) {
       console.error("Invalid date format:", dateString, error);
@@ -52,7 +52,7 @@ const formatReviewDate = (dateString, objectId, t) => {
         year: "numeric",
         month: "numeric",
         day: "numeric",
-      })}`; // Ör: "Tahmini Tarih: 18/6/2025"
+      })}`;
     }
   }
   return t("mechanicDetail.noDate");
@@ -95,15 +95,20 @@ const ReviewItem = ({ review }) => {
       <Text style={styles.reviewComment}>
         {review.comment || t("mechanicDetail.noInfo")}
       </Text>
-
-      <Text
-        style={styles.reviewDate}
-        accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
-          date: formatReviewDate(review.createdAt, review._id, t),
-        })}
-      >
-        {formatReviewDate(review.createdAt, review._id, t)}
-      </Text>
+      <View style={styles.reviewFooter}>
+        <Text style={styles.reviewDate}>
+          {formatReviewDate(review.createdAt, review._id, t)}
+        </Text>
+        <View style={styles.likeContainer}>
+          <Ionicons
+            name="heart-outline"
+            size={16}
+            color={COLORS.textPrimary}
+            style={styles.likeIcon}
+          />
+          <Text style={styles.likeCount}>{review.likeCount || 0}</Text>
+        </View>
+      </View>
     </View>
   );
 };
@@ -117,7 +122,6 @@ export default function MechanicReviews() {
     const loadReviews = async () => {
       try {
         const data = await fetchMechanicReviews();
-        // Yorumları createdAt veya _id'den türetilen tarihe göre azalan sırayla sırala
         const sortedReviews = (data || []).sort((a, b) => {
           const dateA = a.createdAt
             ? new Date(a.createdAt)
@@ -125,7 +129,7 @@ export default function MechanicReviews() {
           const dateB = b.createdAt
             ? new Date(b.createdAt)
             : getDateFromObjectId(b._id) || new Date(0);
-          return dateB - dateA; // En yeni tarih önce
+          return dateB - dateA;
         });
         setReviews(sortedReviews);
       } catch (error) {
