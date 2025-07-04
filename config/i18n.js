@@ -13,7 +13,9 @@ if (!i18n.isInitialized) {
   };
 
   // Cihaz dilini al, undefined ise varsayılan olarak 'en' kullan
-  const deviceLocale = Localization.locale || "en";
+
+  const deviceLocale = Localization.getLocales?.()[0]?.languageCode || "en";
+
   console.log("📱 Detected locale:", deviceLocale);
 
   // Dili yalnızca dil koduna indirge (örneğin, 'tr-TR' -> 'tr')

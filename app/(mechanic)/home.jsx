@@ -520,9 +520,6 @@ export default function MechanicHome() {
 
   return (
     <View style={styles.container}>
-      <Text style={{ fontFamily: "InterMedium", fontSize: 20 }}>
-        Auto Mechanics
-      </Text>
       {/* Başlık ve Arama */}
       <View style={styles.header}>
         <Text style={styles.title} accessibilityRole="header">
