@@ -76,7 +76,7 @@ export default function Profile() {
                   <Ionicons
                     name="person"
                     size={50}
-                    color={COLORS.placeholderText}
+                    color={COLORS.accentCustomer}
                   />
                 </View>
               )}

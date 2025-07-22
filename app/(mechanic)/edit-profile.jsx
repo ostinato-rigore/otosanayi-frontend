@@ -599,7 +599,11 @@ export default function MechanicEditProfile() {
             />
           ) : (
             <View style={styles.profilePlaceholder}>
-              <Ionicons name="business" size={50} color={COLORS.white} />
+              <Ionicons
+                name="business"
+                size={50}
+                color={COLORS.accentMechanic}
+              />
             </View>
           )}
           {isEditable && (
@@ -1016,26 +1020,79 @@ export default function MechanicEditProfile() {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: COLORS.accentMechanic }]}
-            onPress={isEditable ? handleSave : () => setIsEditable(true)}
-            disabled={isSaving}
-            accessibilityLabel={
-              isEditable
-                ? t("mechanicProfile.save")
-                : t("mechanicProfile.editProfile")
-            }
-          >
-            {isSaving ? (
-              <ActivityIndicator size="small" color={COLORS.white} />
-            ) : (
+          {isEditable ? (
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => {
+                  setIsEditable(false);
+                  // Form verilerini reset et
+                  reset({
+                    name: user?.name || "",
+                    phone: user?.phone || "",
+                    mechanicName: user?.mechanicName || "",
+                    mechanicLogo: user?.mechanicLogo || "",
+                    mechanicAddress: {
+                      fullAddress: user?.mechanicAddress?.fullAddress || "",
+                      city: user?.mechanicAddress?.city || "",
+                      district: user?.mechanicAddress?.district || "",
+                    },
+                    workingHours: {
+                      weekdays: {
+                        open: user?.workingHours?.weekdays?.open || "",
+                        close: user?.workingHours?.weekdays?.close || "",
+                      },
+                      weekend: {
+                        open: user?.workingHours?.weekend?.open || "",
+                        close: user?.workingHours?.weekend?.close || "",
+                      },
+                    },
+                    website: user?.website || "",
+                    socialMedia: {
+                      facebook: user?.socialMedia?.facebook || "",
+                      instagram: user?.socialMedia?.instagram || "",
+                      twitter: user?.socialMedia?.twitter || "",
+                    },
+                    expertiseAreas: user?.expertiseAreas || [],
+                    vehicleBrands: user?.vehicleBrands || [],
+                  });
+                }}
+                disabled={isSaving}
+                accessibilityLabel={t("mechanicProfile.cancel")}
+              >
+                <Text style={styles.cancelButtonText}>
+                  {t("mechanicProfile.cancel")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.saveButton]}
+                onPress={handleSave}
+                disabled={isSaving}
+                accessibilityLabel={t("mechanicProfile.save")}
+              >
+                {isSaving ? (
+                  <ActivityIndicator size="small" color={COLORS.white} />
+                ) : (
+                  <Text style={styles.buttonText}>
+                    {t("mechanicProfile.save")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { backgroundColor: COLORS.accentMechanic },
+              ]}
+              onPress={() => setIsEditable(true)}
+              accessibilityLabel={t("mechanicProfile.editProfile")}
+            >
               <Text style={styles.buttonText}>
-                {isEditable
-                  ? t("mechanicProfile.save")
-                  : t("mechanicProfile.editProfile")}
+                {t("mechanicProfile.editProfile")}
               </Text>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

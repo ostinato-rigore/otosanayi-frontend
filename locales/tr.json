@@ -222,6 +222,7 @@
     "reviewDateAccessibility": "Yorum tarihi: {{date}}",
     "viewMechanicDetails": "Usta Detaylarını Görüntüle",
     "viewMechanicDetailsAccessibility": "Usta detaylarını görüntüle",
+    "reiewsLoadFailed": "Yorumlar yüklenemedi",
     "error": "Hata"
   },
   "customerReviews": {
@@ -234,6 +235,7 @@
     "loadingProfile": "Profil yükleniyor...",
     "noMechanicNameSet": "Tamirci Adı Belirlenmedi",
     "noEmailSet": "E-posta Belirlenmedi",
+    "noNameSet": "İsim Belirlenmedi",
     "personalInfo": "Kişisel Bilgiler",
     "addressInfo": "Adres Bilgileri",
     "workingHours": "Çalışma Saatleri",

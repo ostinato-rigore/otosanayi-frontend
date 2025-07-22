@@ -223,6 +223,7 @@
     "reviewDateAccessibility": "Review date: {{date}}",
     "viewMechanicDetails": "View Mechanic Details",
     "viewMechanicDetailsAccessibility": "View mechanic details",
+    "reiewsLoadFailed": "Failed to load reviews",
     "error": "Error"
   },
   "customerReviews": {

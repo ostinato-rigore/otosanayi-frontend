@@ -247,11 +247,7 @@ export default function CustomerEditProfile() {
             />
           ) : (
             <View style={styles.profilePlaceholder}>
-              <Ionicons
-                name="person"
-                size={50}
-                color={COLORS.placeholderText}
-              />
+              <Ionicons name="person" size={50} color={COLORS.accentCustomer} />
             </View>
           )}
           {isEditable && (
@@ -446,24 +442,58 @@ export default function CustomerEditProfile() {
 
         {/* Aksiyon Butonları */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: COLORS.accentCustomer }]}
-            onPress={isEditable ? handleSave : () => setIsEditable(true)}
-            disabled={isSaving}
-            accessibilityLabel={
-              isEditable ? t("editProfile.save") : t("editProfile.editProfile")
-            }
-          >
-            {isSaving ? (
-              <ActivityIndicator size="small" color={COLORS.white} />
-            ) : (
+          {isEditable ? (
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => {
+                  setIsEditable(false);
+                  // Form verilerini reset et
+                  setValue("name", user?.name || "");
+                  setValue("phone", user?.phone || "");
+                  setValue("profilePhoto", user?.profilePhoto || "");
+                  setValue("vehicle.brand", user?.vehicle?.brand || "");
+                  setValue("vehicle.model", user?.vehicle?.model || "");
+                  setValue(
+                    "vehicle.year",
+                    user?.vehicle?.year ? String(user.vehicle.year) : ""
+                  );
+                  setValue("vehicle.fuelType", user?.vehicle?.fuelType || "");
+                }}
+                disabled={isSaving}
+                accessibilityLabel={t("editProfile.cancel")}
+              >
+                <Text style={styles.cancelButtonText}>
+                  {t("editProfile.cancel")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.saveButton]}
+                onPress={handleSave}
+                disabled={isSaving}
+                accessibilityLabel={t("editProfile.save")}
+              >
+                {isSaving ? (
+                  <ActivityIndicator size="small" color={COLORS.white} />
+                ) : (
+                  <Text style={styles.buttonText}>{t("editProfile.save")}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { backgroundColor: COLORS.accentCustomer },
+              ]}
+              onPress={() => setIsEditable(true)}
+              accessibilityLabel={t("editProfile.editProfile")}
+            >
               <Text style={styles.buttonText}>
-                {isEditable
-                  ? t("editProfile.save")
-                  : t("editProfile.editProfile")}
+                {t("editProfile.editProfile")}
               </Text>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

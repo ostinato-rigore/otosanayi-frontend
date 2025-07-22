@@ -37,7 +37,10 @@ export default StyleSheet.create({
     width: THEME.sizes.logo.width,
     height: THEME.sizes.logo.height,
     borderRadius: THEME.sizes.logo.borderRadius,
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: COLORS.accentMechanic,
+    borderStyle: "dashed",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -125,14 +128,32 @@ export default StyleSheet.create({
   actionButtons: {
     marginTop: THEME.spacing.xl,
   },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: THEME.spacing.md,
+  },
   button: {
     paddingVertical: THEME.sizes.button.paddingVertical,
     borderRadius: THEME.sizes.button.borderRadius,
     alignItems: "center",
     marginBottom: THEME.spacing.md,
   },
+  saveButton: {
+    backgroundColor: COLORS.accentMechanic,
+    flex: 1,
+  },
+  cancelButton: {
+    backgroundColor: COLORS.border,
+    flex: 1,
+  },
   buttonText: {
     color: COLORS.white,
+    fontWeight: "600",
+    fontSize: THEME.fontSizes.h3,
+  },
+  cancelButtonText: {
+    color: COLORS.textPrimary,
     fontWeight: "600",
     fontSize: THEME.fontSizes.h3,
   },

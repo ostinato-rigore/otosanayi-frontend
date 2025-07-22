@@ -78,7 +78,7 @@ export default function MechanicProfile() {
                   <Ionicons
                     name="business-outline"
                     size={50}
-                    color={COLORS.placeholderText}
+                    color={COLORS.accentMechanic}
                   />
                 </View>
               )}
