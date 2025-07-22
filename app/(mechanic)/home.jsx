@@ -270,7 +270,7 @@ export default function MechanicHome() {
       </Text>
       <TouchableOpacity
         style={styles.detailsButton}
-        onPress={() => router.push(`/(customer)/mechanics/${mechanic.id}`)}
+        onPress={() => router.push(`/(mechanic)/mechanics/${mechanic.id}`)}
         accessibilityLabel={t("customerHome.viewDetails")}
       >
         <Text style={styles.detailsButtonText}>
