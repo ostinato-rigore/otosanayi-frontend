@@ -240,13 +240,18 @@ export default function CustomerEditProfile() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1, backgroundColor: COLORS.background }}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 50}
     >
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: 100 }]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        scrollEventThrottle={16}
+        automaticallyAdjustKeyboardInsets={true}
+        automaticallyAdjustContentInsets={false}
       >
         <TouchableOpacity
           style={styles.profileImageContainer}
