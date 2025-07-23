@@ -289,6 +289,11 @@
     "viewMechanicDetails": "Usta Detaylarını Görüntüle",
     "viewMechanicDetailsAccessibility": "Usta detaylarını görüntüle",
     "reviewsLoadFailed": "Yorumlar yüklenemedi",
+    "likeReview": "Yorumu beğen",
+    "unlikeReview": "Beğeniyi kaldır",
+    "ownReviewLike": "Kendi Yorumunuz",
+    "cannotLikeOwnReview": "Kendi yorumunuzu beğenemezsiniz",
+    "ownReviewNotLikeable": "Kendi yorumunuz - beğenemezsiniz",
     "error": "Hata"
   },
   "customerReviews": {

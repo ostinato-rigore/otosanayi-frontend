@@ -290,6 +290,11 @@
     "viewMechanicDetails": "View Mechanic Details",
     "viewMechanicDetailsAccessibility": "View mechanic details",
     "reviewsLoadFailed": "Failed to load reviews",
+    "likeReview": "Like review",
+    "unlikeReview": "Remove like",
+    "ownReviewLike": "Your Own Review",
+    "cannotLikeOwnReview": "You cannot like your own review",
+    "ownReviewNotLikeable": "Your own review - cannot like",
     "error": "Error"
   },
   "customerReviews": {

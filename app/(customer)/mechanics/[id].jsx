@@ -105,13 +105,25 @@ const InfoRow = ({
   );
 };
 
-const ReviewCard = ({ review }) => {
+const ReviewCard = ({ review, currentUser }) => {
   const { t } = useTranslation();
   const [isLiked, setIsLiked] = useState(review.isLiked || false); // Backend'den gelen isLiked veya false
   const [likeCount, setLikeCount] = useState(review.likeCount || 0); // Backend'den gelen likeCount veya 0
   const [isLoading, setIsLoading] = useState(false); // Beğeni işlemi sırasında yükleme durumu
 
+  // Kullanıcının kendi yorumu olup olmadığını kontrol et
+  const isOwnReview = review.customer?._id === currentUser?._id;
+
   const handleLikeToggle = async () => {
+    // Kendi yorumunu beğenemez
+    if (isOwnReview) {
+      Alert.alert(
+        t("mechanicDetail.ownReviewLike"),
+        t("mechanicDetail.cannotLikeOwnReview")
+      );
+      return;
+    }
+
     setIsLoading(true); // İşlem başlarken yükleme durumunu başlat
     try {
       const response = await likeReview(review._id); // API çağrısı
@@ -169,24 +181,37 @@ const ReviewCard = ({ review }) => {
           {formatReviewDate(review.createdAt, review._id, t)}
         </Text>
         <TouchableOpacity
-          style={[styles.likeContainer, isLiked && styles.likeColorLight]} // Beğenildiğinde açık kırmızı arka plan
+          style={[
+            styles.likeContainer,
+            isLiked && styles.likeColorLight,
+            isOwnReview && styles.disabledLikeContainer, // Kendi yorumu için disable stil
+          ]}
           onPress={handleLikeToggle}
           accessibilityLabel={
-            isLiked
+            isOwnReview
+              ? t("mechanicDetail.ownReviewNotLikeable")
+              : isLiked
               ? t("mechanicDetail.unlikeReview")
               : t("mechanicDetail.likeReview")
           }
-          disabled={isLoading} // Yükleme sırasında butonu devre dışı bırak
+          disabled={isLoading || isOwnReview} // Yükleme sırasında veya kendi yorumu ise devre dışı bırak
         >
           <Ionicons
             name={isLiked ? "heart" : "heart-outline"}
             size={20}
-            color={isLiked ? COLORS.likeColor : COLORS.textSecondary} // Beğenildiyse tatlı kırmızı
+            color={
+              isOwnReview
+                ? COLORS.placeholderText
+                : isLiked
+                ? COLORS.likeColor
+                : COLORS.textSecondary
+            }
           />
           <Text
             style={[
               styles.likeCount,
-              isLiked && { color: COLORS.likeColor }, // Beğenildiyse sayı da tatlı kırmızı
+              isLiked && !isOwnReview && { color: COLORS.likeColor },
+              isOwnReview && { color: COLORS.placeholderText },
             ]}
           >
             {likeCount}
@@ -245,14 +270,29 @@ export default function MechanicDetail() {
     }
     try {
       const newReview = await postReview(id, { rating, comment: reviewText });
-      setReviews((prev) => [newReview, ...prev]);
+      const updatedReviews = [newReview, ...reviews];
+      setReviews(updatedReviews);
+
+      // Ortalama puanı yeniden hesapla
+      const totalRating = updatedReviews.reduce(
+        (sum, review) => sum + (review.rating || 0),
+        0
+      );
+      const averageRating =
+        updatedReviews.length > 0 ? totalRating / updatedReviews.length : 0;
+
+      // Mechanic state'ini güncelle
+      setMechanic((prev) => ({
+        ...prev,
+        averageRating: averageRating,
+      }));
+
       setReviewModalVisible(false);
       setReviewText("");
       setRating(5);
       Alert.alert(t("success"), t("mechanicDetail.reviewSuccess"));
     } catch (error) {
       console.log(error);
-
       Alert.alert(t("error"), t("mechanicDetail.reviewFailed"));
     }
   };
@@ -341,9 +381,17 @@ export default function MechanicDetail() {
                 {(mechanic.averageRating || 0).toFixed(1)}/5
               </Text>
             </View>
-            <Text style={styles.ratingCount}>
-              ({reviews.length} {t("mechanicDetail.reviews")})
-            </Text>
+            <TouchableOpacity
+              onPress={() => setCommentsModalVisible(true)}
+              accessibilityLabel={t(
+                "mechanicDetail.viewAllCommentsAccessibility",
+                { count: reviews.length }
+              )}
+            >
+              <Text style={styles.ratingCount}>
+                ({reviews.length} {t("mechanicDetail.reviews")})
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -624,7 +672,7 @@ export default function MechanicDetail() {
           </View>
           {reviews.length > 0 ? (
             <>
-              <ReviewCard review={reviews[0]} />
+              <ReviewCard review={reviews[0]} currentUser={user} />
               {reviews.length > 1 && (
                 <TouchableOpacity
                   style={styles.viewCommentsButton}
@@ -753,7 +801,9 @@ export default function MechanicDetail() {
               </View>
               <FlatList
                 data={reviews}
-                renderItem={({ item }) => <ReviewCard review={item} />}
+                renderItem={({ item }) => (
+                  <ReviewCard review={item} currentUser={user} />
+                )}
                 keyExtractor={(item) => item._id || Math.random().toString()}
                 contentContainerStyle={styles.commentsListContent}
                 showsVerticalScrollIndicator={false}

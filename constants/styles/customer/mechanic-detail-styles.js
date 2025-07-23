@@ -288,6 +288,9 @@ export default StyleSheet.create({
     gap: 4,
     padding: THEME.spacing.xs,
   },
+  disabledLikeContainer: {
+    opacity: 0.5,
+  },
   likeCount: {
     fontSize: THEME.fontSizes.tag,
     color: COLORS.textSecondary,
