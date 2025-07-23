@@ -85,6 +85,15 @@ const formatWorkingHours = (open, close, t) => {
   }
 };
 
+// Yorumları tarihe göre sıralama için yardımcı fonksiyon
+const sortReviewsByDate = (reviews) => {
+  return reviews.sort((a, b) => {
+    const dateA = new Date(a.createdAt || a._id);
+    const dateB = new Date(b.createdAt || b._id);
+    return dateB - dateA; // En yeni en üstte
+  });
+};
+
 const InfoRow = ({
   labelText,
   text,
@@ -105,11 +114,17 @@ const InfoRow = ({
   );
 };
 
-const ReviewCard = ({ review, currentUser }) => {
+const ReviewCard = ({ review, currentUser, onLikeUpdate }) => {
   const { t } = useTranslation();
   const [isLiked, setIsLiked] = useState(review.isLiked || false); // Backend'den gelen isLiked veya false
   const [likeCount, setLikeCount] = useState(review.likeCount || 0); // Backend'den gelen likeCount veya 0
   const [isLoading, setIsLoading] = useState(false); // Beğeni işlemi sırasında yükleme durumu
+
+  // Review prop'u değiştiğinde state'i güncelle
+  useEffect(() => {
+    setIsLiked(review.isLiked || false);
+    setLikeCount(review.likeCount || 0);
+  }, [review.isLiked, review.likeCount]);
 
   // Kullanıcının kendi yorumu olup olmadığını kontrol et
   const isOwnReview = review.customer?._id === currentUser?._id;
@@ -130,6 +145,11 @@ const ReviewCard = ({ review, currentUser }) => {
       if (response.success) {
         setIsLiked(response.hasLiked); // Backend'den gelen hasLiked ile durumu güncelle
         setLikeCount(response.likeCount); // Backend'den gelen likeCount ile sayıyı güncelle
+
+        // Ana component'a beğeni güncellemesini bildir
+        if (onLikeUpdate) {
+          onLikeUpdate(review._id, response.hasLiked, response.likeCount);
+        }
       }
     } catch (error) {
       // Hata mesajını kullanıcıya göster
@@ -249,8 +269,11 @@ export default function MechanicDetail() {
         ),
       }));
 
+      // Yorumları en yeni tarihli olanın en üstte olacak şekilde sırala
+      const sortedReviews = sortReviewsByDate(reviewsWithIsLiked);
+
       setMechanic(data);
-      setReviews(reviewsWithIsLiked);
+      setReviews(sortedReviews);
     } catch (error) {
       console.log(error);
       Alert.alert(t("error"), t("mechanicDetail.mechanicNotFound"));
@@ -263,6 +286,17 @@ export default function MechanicDetail() {
     if (id) getMechanic();
   }, [id, getMechanic]);
 
+  // Beğeni güncellemesini handle et
+  const handleLikeUpdate = (reviewId, hasLiked, likeCount) => {
+    setReviews((prevReviews) =>
+      prevReviews.map((review) =>
+        review._id === reviewId
+          ? { ...review, isLiked: hasLiked, likeCount: likeCount }
+          : review
+      )
+    );
+  };
+
   const handleSubmitReview = async () => {
     if (!reviewText.trim()) {
       Alert.alert(t("error"), t("mechanicDetail.commentRequired"));
@@ -271,15 +305,19 @@ export default function MechanicDetail() {
     try {
       const newReview = await postReview(id, { rating, comment: reviewText });
       const updatedReviews = [newReview, ...reviews];
-      setReviews(updatedReviews);
+
+      // Yorumları tarihe göre sırala (en yeni en üstte)
+      const sortedReviews = sortReviewsByDate(updatedReviews);
+
+      setReviews(sortedReviews);
 
       // Ortalama puanı yeniden hesapla
-      const totalRating = updatedReviews.reduce(
+      const totalRating = sortedReviews.reduce(
         (sum, review) => sum + (review.rating || 0),
         0
       );
       const averageRating =
-        updatedReviews.length > 0 ? totalRating / updatedReviews.length : 0;
+        sortedReviews.length > 0 ? totalRating / sortedReviews.length : 0;
 
       // Mechanic state'ini güncelle
       setMechanic((prev) => ({
@@ -672,7 +710,11 @@ export default function MechanicDetail() {
           </View>
           {reviews.length > 0 ? (
             <>
-              <ReviewCard review={reviews[0]} currentUser={user} />
+              <ReviewCard
+                review={reviews[0]}
+                currentUser={user}
+                onLikeUpdate={handleLikeUpdate}
+              />
               {reviews.length > 1 && (
                 <TouchableOpacity
                   style={styles.viewCommentsButton}
@@ -802,7 +844,11 @@ export default function MechanicDetail() {
               <FlatList
                 data={reviews}
                 renderItem={({ item }) => (
-                  <ReviewCard review={item} currentUser={user} />
+                  <ReviewCard
+                    review={item}
+                    currentUser={user}
+                    onLikeUpdate={handleLikeUpdate}
+                  />
                 )}
                 keyExtractor={(item) => item._id || Math.random().toString()}
                 contentContainerStyle={styles.commentsListContent}

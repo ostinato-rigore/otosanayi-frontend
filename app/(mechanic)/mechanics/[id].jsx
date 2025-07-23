@@ -79,6 +79,15 @@ const formatWorkingHours = (open, close, t) => {
   }
 };
 
+// Yorumları tarihe göre sıralama için yardımcı fonksiyon
+const sortReviewsByDate = (reviews) => {
+  return reviews.sort((a, b) => {
+    const dateA = new Date(a.createdAt || a._id);
+    const dateB = new Date(b.createdAt || b._id);
+    return dateB - dateA; // En yeni en üstte
+  });
+};
+
 const InfoRow = ({
   labelText,
   text,
@@ -169,8 +178,12 @@ export default function MechanicDetail() {
     setLoading(true);
     try {
       const data = await fetchMechanicById(id);
+
+      // Yorumları en yeni tarihli olanın en üstte olacak şekilde sırala
+      const sortedReviews = sortReviewsByDate(data.reviews || []);
+
       setMechanic(data);
-      setReviews(data.reviews || []);
+      setReviews(sortedReviews);
     } catch (error) {
       console.log(error);
       Alert.alert(t("error"), t("mechanicDetail.mechanicNotFound"));
