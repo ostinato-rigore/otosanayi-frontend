@@ -247,8 +247,8 @@ export default function CustomerHome() {
             />
           ) : (
             <Ionicons
-              name="person-circle-outline"
-              size={40}
+              name="business-outline"
+              size={30}
               color={COLORS.accentCustomer}
             />
           )}

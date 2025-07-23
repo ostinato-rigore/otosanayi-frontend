@@ -246,8 +246,8 @@ export default function MechanicHome() {
             />
           ) : (
             <Ionicons
-              name="person-circle-outline"
-              size={40}
+              name="business-outline"
+              size={30}
               color={COLORS.accentMechanic}
             />
           )}
