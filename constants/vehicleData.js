@@ -61,6 +61,7 @@ export const VEHICLE_BRANDS = [
   "Toyota",
   "Volkswagen",
   "Volvo",
+  "Other",
 ];
 
 export const VEHICLE_MODELS = {
@@ -374,4 +375,5 @@ export const FUEL_TYPES = [
   "CNG",
   "Hydrogen",
   "Biofuel",
+  "Other",
 ];

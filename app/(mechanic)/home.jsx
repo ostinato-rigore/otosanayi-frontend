@@ -266,7 +266,10 @@ export default function MechanicHome() {
         {mechanic.expertiseAreas.map((area) => t(area)).join(", ")}
       </Text>
       <Text style={styles.cardText}>
-        {t("customerHome.vehicleBrands")}: {mechanic.vehicleBrands.join(", ")}
+        {t("customerHome.vehicleBrands")}:{" "}
+        {mechanic.vehicleBrands
+          .map((brand) => t(`editProfile.vehicleBrandsData.${brand}`) || brand)
+          .join(", ")}
       </Text>
       <TouchableOpacity
         style={styles.detailsButton}
@@ -289,107 +292,121 @@ export default function MechanicHome() {
     isMultiSelect,
     selectedValues,
     onToggle,
-  }) => (
-    <View style={styles.filterSection}>
-      <Text style={styles.filterLabel}>{label}</Text>
-      <TouchableOpacity
-        style={styles.dropdownButton}
-        onPress={() => toggleDropdown(type)}
-        accessibilityLabel={`${label} ${t("customerHome.selection")}`}
-        disabled={
-          isLoadingCities &&
-          (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT)
-        }
-      >
-        <Text style={styles.dropdownText}>
+    translationKey,
+  }) => {
+    const getTranslatedOption = (option) => {
+      if (translationKey) {
+        return t(`${translationKey}.${option}`) || option;
+      }
+      return option;
+    };
+
+    return (
+      <View style={styles.filterSection}>
+        <Text style={styles.filterLabel}>{label}</Text>
+        <TouchableOpacity
+          style={styles.dropdownButton}
+          onPress={() => toggleDropdown(type)}
+          accessibilityLabel={`${label} ${t("customerHome.selection")}`}
+          disabled={
+            isLoadingCities &&
+            (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT)
+          }
+        >
+          <Text style={styles.dropdownText}>
+            {isLoadingCities &&
+            (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT)
+              ? t("customerHome.loading")
+              : isMultiSelect
+              ? selectedValues.length > 0
+                ? `${selectedValues.length} ${t(
+                    "customerHome.optionsSelected"
+                  )}`
+                : t("customerHome.select")
+              : value || t("customerHome.select")}
+          </Text>
           {isLoadingCities &&
-          (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT)
-            ? t("customerHome.loading")
-            : isMultiSelect
-            ? selectedValues.length > 0
-              ? `${selectedValues.length} ${t("customerHome.optionsSelected")}`
-              : t("customerHome.select")
-            : value || t("customerHome.select")}
-        </Text>
-        {isLoadingCities &&
-        (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT) ? (
-          <ActivityIndicator
-            size="small"
-            color={COLORS.accentMechanic}
-            style={styles.loadingIndicator}
-          />
-        ) : (
-          <Ionicons
-            name={dropdownVisible === type ? "chevron-up" : "chevron-down"}
-            size={20}
-            color={COLORS.textPrimary}
-          />
-        )}
-      </TouchableOpacity>
-      {dropdownVisible === type && !isLoadingCities && (
-        <View style={styles.dropdownContainer}>
-          <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
-            {!isMultiSelect && (
+          (type === FILTER_TYPES.CITY || type === FILTER_TYPES.DISTRICT) ? (
+            <ActivityIndicator
+              size="small"
+              color={COLORS.accentMechanic}
+              style={styles.loadingIndicator}
+            />
+          ) : (
+            <Ionicons
+              name={dropdownVisible === type ? "chevron-up" : "chevron-down"}
+              size={20}
+              color={COLORS.textPrimary}
+            />
+          )}
+        </TouchableOpacity>
+        {dropdownVisible === type && !isLoadingCities && (
+          <View style={styles.dropdownContainer}>
+            <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+              {!isMultiSelect && (
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    onSelect("");
+                    toggleDropdown(null);
+                  }}
+                >
+                  <Text style={styles.dropdownItemText}>
+                    {t("customerHome.select")}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {options.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    if (isMultiSelect) {
+                      onToggle(option);
+                    } else {
+                      onSelect(option);
+                      toggleDropdown(null);
+                    }
+                  }}
+                >
+                  {isMultiSelect && (
+                    <View
+                      style={[
+                        styles.checkbox,
+                        selectedValues.includes(option) &&
+                          styles.checkboxSelected,
+                      ]}
+                    >
+                      {selectedValues.includes(option) && (
+                        <Ionicons
+                          name="checkmark"
+                          size={16}
+                          color={COLORS.white}
+                        />
+                      )}
+                    </View>
+                  )}
+                  <Text style={styles.dropdownItemText}>
+                    {getTranslatedOption(option)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            {isMultiSelect && (
               <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => {
-                  onSelect("");
-                  toggleDropdown(null);
-                }}
+                style={styles.dropdownCloseButton}
+                onPress={() => toggleDropdown(null)}
               >
-                <Text style={styles.dropdownItemText}>
-                  {t("customerHome.select")}
+                <Text style={styles.dropdownCloseText}>
+                  {t("customerHome.close")}
                 </Text>
               </TouchableOpacity>
             )}
-            {options.map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={styles.dropdownItem}
-                onPress={() => {
-                  if (isMultiSelect) {
-                    onToggle(option);
-                  } else {
-                    onSelect(option);
-                    toggleDropdown(null);
-                  }
-                }}
-              >
-                {isMultiSelect && (
-                  <View
-                    style={[
-                      styles.checkbox,
-                      selectedValues.includes(option) &&
-                        styles.checkboxSelected,
-                    ]}
-                  >
-                    {selectedValues.includes(option) && (
-                      <Ionicons
-                        name="checkmark"
-                        size={16}
-                        color={COLORS.white}
-                      />
-                    )}
-                  </View>
-                )}
-                <Text style={styles.dropdownItemText}>{t(option)}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-          {isMultiSelect && (
-            <TouchableOpacity
-              style={styles.dropdownCloseButton}
-              onPress={() => toggleDropdown(null)}
-            >
-              <Text style={styles.dropdownCloseText}>
-                {t("customerHome.close")}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-    </View>
-  );
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const MultiSelectChips = ({ label, options, selected, onToggle }) => (
     <View style={styles.filterSection}>
@@ -501,6 +518,7 @@ export default function MechanicHome() {
             onToggle={(value) => toggleSelection("vehicleBrands", value)}
             type={FILTER_TYPES.VEHICLE_BRANDS}
             isMultiSelect={true}
+            translationKey="editProfile.vehicleBrandsData"
           />
         );
       case FILTER_TYPES.MIN_RATING:

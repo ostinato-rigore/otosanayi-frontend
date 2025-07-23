@@ -178,6 +178,7 @@ const DropdownSelect = ({
   options,
   isEditable,
   isMultiSelect,
+  translationKey,
 }) => {
   const { t } = useTranslation();
   const [selectedOptions, setSelectedOptions] = useState(value || []);
@@ -209,16 +210,20 @@ const DropdownSelect = ({
     return selectedOptions[0] || t("mechanicProfile.select");
   };
 
-  const displayOptions =
-    type === "expertiseAreas"
-      ? options.map((opt) => ({
-          key: opt,
-          label: t(opt),
-        }))
-      : options.map((opt) => ({
-          key: opt,
-          label: opt,
-        }));
+  const getTranslatedOption = (option) => {
+    if (translationKey) {
+      return t(`${translationKey}.${option}`) || option;
+    }
+    if (type === "expertiseAreas") {
+      return t(option);
+    }
+    return option;
+  };
+
+  const displayOptions = options.map((opt) => ({
+    key: opt,
+    label: getTranslatedOption(opt),
+  }));
 
   return (
     <View style={{ flex: 1 }}>
@@ -996,11 +1001,23 @@ export default function MechanicEditProfile() {
                       options={field.options}
                       isEditable={isEditable}
                       isMultiSelect={true}
+                      translationKey={
+                        field.name === "vehicleBrands"
+                          ? "editProfile.vehicleBrandsData"
+                          : undefined
+                      }
                     />
                   ) : (
                     <Text style={styles.inputValue}>
                       {value?.length
-                        ? value.map((opt) => t(opt)).join(", ")
+                        ? value
+                            .map((opt) =>
+                              field.name === "vehicleBrands"
+                                ? t(`editProfile.vehicleBrandsData.${opt}`) ||
+                                  opt
+                                : t(opt)
+                            )
+                            .join(", ")
                         : t("mechanicProfile.noValueSet")}
                     </Text>
                   )

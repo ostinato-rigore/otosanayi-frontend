@@ -48,8 +48,25 @@ const DropdownSelect = ({
   type,
   dropdownVisible,
   toggleDropdown,
+  translationKey,
 }) => {
   const { t } = useTranslation();
+
+  const getTranslatedValue = (val) => {
+    if (!val) return t("editProfile.select");
+    if (translationKey) {
+      return t(`${translationKey}.${val}`) || val;
+    }
+    return val;
+  };
+
+  const getTranslatedOption = (option) => {
+    if (translationKey) {
+      return t(`${translationKey}.${option}`) || option;
+    }
+    return option;
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <TouchableOpacity
@@ -57,9 +74,7 @@ const DropdownSelect = ({
         onPress={() => toggleDropdown(type)}
         accessibilityLabel={`${label} ${t("editProfile.selection")}`}
       >
-        <Text style={styles.dropdownText}>
-          {value ? t(value) : t("editProfile.select")}
-        </Text>
+        <Text style={styles.dropdownText}>{getTranslatedValue(value)}</Text>
         <Ionicons
           name={dropdownVisible === type ? "chevron-up" : "chevron-down"}
           size={20}
@@ -89,7 +104,9 @@ const DropdownSelect = ({
                   toggleDropdown(null);
                 }}
               >
-                <Text style={styles.dropdownItemText}>{t(option)}</Text>
+                <Text style={styles.dropdownItemText}>
+                  {getTranslatedOption(option)}
+                </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -387,13 +404,22 @@ export default function CustomerEditProfile() {
                         type={field.name}
                         dropdownVisible={dropdownVisible}
                         toggleDropdown={toggleDropdown}
+                        translationKey={
+                          field.name === "vehicle.brand"
+                            ? "editProfile.vehicleBrandsData"
+                            : field.name === "vehicle.fuelType"
+                            ? "editProfile.fuelTypes"
+                            : undefined
+                        }
                       />
                     ) : (
                       <Text style={styles.inputValue}>
                         {value
                           ? field.name === "vehicle.fuelType"
                             ? t(`editProfile.fuelTypes.${value}`)
-                            : t(value)
+                            : field.name === "vehicle.brand"
+                            ? t(`editProfile.vehicleBrandsData.${value}`)
+                            : value
                           : t("editProfile.noValueSet")}
                       </Text>
                     )
