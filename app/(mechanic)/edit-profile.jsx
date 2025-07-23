@@ -605,7 +605,7 @@ export default function MechanicEditProfile() {
           ) : (
             <View style={styles.profilePlaceholder}>
               <Ionicons
-                name="business"
+                name="business-outline"
                 size={50}
                 color={COLORS.accentMechanic}
               />
