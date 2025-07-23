@@ -92,8 +92,8 @@
     "serverError": "Sunucudan logo URL'si alınamadı",
     "select": "Seçiniz",
     "enterName": "Ad soyad girin",
-    "enterPhone": "Telefon numaranızı nirin",
-    "enterModel": "Modeli nirin",
+    "enterPhone": "Telefon numaranızı girin",
+    "enterModel": "Modeli girin",
     "enterYear": "Yılı girin",
     "noValueSet": "Belirtilmemiş",
     "fuelTypes": {
@@ -222,7 +222,7 @@
     "reviewDateAccessibility": "Yorum tarihi: {{date}}",
     "viewMechanicDetails": "Usta Detaylarını Görüntüle",
     "viewMechanicDetailsAccessibility": "Usta detaylarını görüntüle",
-    "reiewsLoadFailed": "Yorumlar yüklenemedi",
+    "reviewsLoadFailed": "Yorumlar yüklenemedi",
     "error": "Hata"
   },
   "customerReviews": {

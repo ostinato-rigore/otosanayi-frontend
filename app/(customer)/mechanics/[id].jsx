@@ -307,7 +307,11 @@ export default function MechanicDetail() {
             />
           ) : (
             <View style={styles.logoPlaceholder}>
-              <Ionicons name="car" size={40} color={COLORS.white} />
+              <Ionicons
+                name="business-outline"
+                size={50}
+                color={COLORS.accentCustomer}
+              />
             </View>
           )}
           <Text style={styles.title} accessibilityRole="header">
