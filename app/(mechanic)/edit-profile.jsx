@@ -83,14 +83,14 @@ const createMechanicSchema = (t) =>
             open: z
               .string()
               .regex(
-                /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+                /^(?:[01]\d|2[0-3]):[0-5]\d$|^closed$/,
                 t("mechanicProfile.errors.invalidTimeFormat")
               )
               .optional(),
             close: z
               .string()
               .regex(
-                /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+                /^(?:[01]\d|2[0-3]):[0-5]\d$|^closed$/,
                 t("mechanicProfile.errors.invalidTimeFormat")
               )
               .optional(),
@@ -98,6 +98,8 @@ const createMechanicSchema = (t) =>
           .refine(
             (data) => {
               if (!data.open || !data.close) return true;
+              if (data.open === "closed" || data.close === "closed")
+                return true;
               const [openHour, openMinute] = data.open.split(":").map(Number);
               const [closeHour, closeMinute] = data.close
                 .split(":")
@@ -113,14 +115,14 @@ const createMechanicSchema = (t) =>
             open: z
               .string()
               .regex(
-                /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+                /^(?:[01]\d|2[0-3]):[0-5]\d$|^closed$/,
                 t("mechanicProfile.errors.invalidTimeFormat")
               )
               .optional(),
             close: z
               .string()
               .regex(
-                /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+                /^(?:[01]\d|2[0-3]):[0-5]\d$|^closed$/,
                 t("mechanicProfile.errors.invalidTimeFormat")
               )
               .optional(),
@@ -128,6 +130,8 @@ const createMechanicSchema = (t) =>
           .refine(
             (data) => {
               if (!data.open || !data.close) return true;
+              if (data.open === "closed" || data.close === "closed")
+                return true;
               const [openHour, openMinute] = data.open.split(":").map(Number); // EE hatası düzeltildi
               const [closeHour, closeMinute] = data.close
                 .split(":")
@@ -207,7 +211,11 @@ const DropdownSelect = ({
         ? `${selectedOptions.length} ${t("customerHome.optionsSelected")}`
         : t("mechanicProfile.select");
     }
-    return selectedOptions[0] || t("mechanicProfile.select");
+    const selectedValue = selectedOptions[0];
+    if (selectedValue) {
+      return getTranslatedOption(selectedValue);
+    }
+    return t("mechanicProfile.select");
   };
 
   const getTranslatedOption = (option) => {
@@ -216,6 +224,10 @@ const DropdownSelect = ({
     }
     if (type === "expertiseAreas") {
       return t(option);
+    }
+    // Çalışma saatleri için "closed" çevirisi
+    if (type && type.includes("workingHours") && option === "closed") {
+      return t("mechanicProfile.closed");
     }
     return option;
   };
@@ -313,7 +325,7 @@ export default function MechanicEditProfile() {
   const [isLoadingCities, setIsLoadingCities] = useState(false);
 
   const generateTimeOptions = () => {
-    const times = [];
+    const times = ["closed"];
     for (let hour = 0; hour < 24; hour++) {
       for (let minute = 0; minute < 60; minute += 15) {
         const hourStr = hour.toString().padStart(2, "0");
@@ -851,7 +863,9 @@ export default function MechanicEditProfile() {
                   ) : (
                     <TextInput
                       style={styles.inputValue}
-                      value={value}
+                      value={
+                        value === "closed" ? t("mechanicProfile.closed") : value
+                      }
                       onChangeText={onChange}
                       editable={isEditable}
                       placeholder={field.placeholder}

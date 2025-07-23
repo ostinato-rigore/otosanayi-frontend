@@ -70,6 +70,21 @@ const formatReviewDate = (dateString, objectId, t) => {
   return t("mechanicDetail.noDate");
 };
 
+// Çalışma saatleri formatlama için yardımcı fonksiyon
+const formatWorkingHours = (open, close, t) => {
+  if (open === "closed" && close === "closed") {
+    return t("mechanicProfile.closed");
+  } else if (open === "closed" || close === "closed") {
+    const openTime =
+      open === "closed" ? t("mechanicProfile.closed") : open || "09:00";
+    const closeTime =
+      close === "closed" ? t("mechanicProfile.closed") : close || "18:00";
+    return `${openTime} - ${closeTime}`;
+  } else {
+    return `${open || "09:00"} - ${close || "18:00"}`;
+  }
+};
+
 const InfoRow = ({
   labelText,
   text,
@@ -406,24 +421,32 @@ export default function MechanicDetail() {
             {[
               {
                 labelText: t("mechanicDetail.weekdays"),
-                text: `${mechanic.workingHours?.weekdays?.open || "09:00"} - ${
-                  mechanic.workingHours?.weekdays?.close || "18:00"
-                }`,
+                text: formatWorkingHours(
+                  mechanic.workingHours?.weekdays?.open,
+                  mechanic.workingHours?.weekdays?.close,
+                  t
+                ),
                 accessibilityLabel: t("mechanicDetail.weekdaysAccessibility", {
-                  hours: `${
-                    mechanic.workingHours?.weekdays?.open || "09:00"
-                  } - ${mechanic.workingHours?.weekdays?.close || "18:00"}`,
+                  hours: formatWorkingHours(
+                    mechanic.workingHours?.weekdays?.open,
+                    mechanic.workingHours?.weekdays?.close,
+                    t
+                  ),
                 }),
               },
               {
                 labelText: t("mechanicDetail.weekend"),
-                text: `${mechanic.workingHours?.weekend?.open || "10:00"} - ${
-                  mechanic.workingHours?.weekend?.close || "16:00"
-                }`,
+                text: formatWorkingHours(
+                  mechanic.workingHours?.weekend?.open,
+                  mechanic.workingHours?.weekend?.close,
+                  t
+                ),
                 accessibilityLabel: t("mechanicDetail.weekendAccessibility", {
-                  hours: `${
-                    mechanic.workingHours?.weekend?.open || "10:00"
-                  } - ${mechanic.workingHours?.weekend?.close || "16:00"}`,
+                  hours: formatWorkingHours(
+                    mechanic.workingHours?.weekend?.open,
+                    mechanic.workingHours?.weekend?.close,
+                    t
+                  ),
                 }),
               },
             ].map((row, index, array) => (
