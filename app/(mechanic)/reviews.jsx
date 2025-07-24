@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -10,9 +11,11 @@ import {
   View,
 } from "react-native";
 import { fetchMechanicReviews } from "../../api/apiClient";
+import ErrorBoundary from "../../components/ErrorBoundary";
 import StarRating from "../../components/StarRating";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/mechanic/mechanic-reviews-screen-styles";
+import useAuthStore from "../../store/useAuthStore";
 
 // ObjectId'den tarih tahmini için yardımcı fonksiyon
 const getDateFromObjectId = (objectId) => {
@@ -115,11 +118,23 @@ const ReviewItem = ({ review }) => {
 
 export default function MechanicReviews() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const { isAuthenticated, userType } = useAuthStore();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadReviews = async () => {
+      // Auth kontrolü
+      if (!isAuthenticated || userType !== "Mechanic") {
+        console.log("User not authenticated as Mechanic:", {
+          isAuthenticated,
+          userType,
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
         const data = await fetchMechanicReviews();
         const sortedReviews = (data || []).sort((a, b) => {
@@ -133,14 +148,36 @@ export default function MechanicReviews() {
         });
         setReviews(sortedReviews);
       } catch (error) {
-        Alert.alert(t("error"), t("mechanicDetail.reviewsLoadFailed"));
         console.error("Load Reviews Error:", error);
+
+        // 401 hatası için özel handling
+        if (error.message.includes("Unauthorized")) {
+          Alert.alert(
+            t("error"),
+            "Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.",
+            [{ text: "Tamam", onPress: () => router.replace("/(auth)") }]
+          );
+        } else {
+          Alert.alert(t("error"), t("mechanicDetail.reviewsLoadFailed"));
+        }
       } finally {
         setLoading(false);
       }
     };
+
     loadReviews();
-  }, [t]);
+  }, [t, isAuthenticated, userType, router]);
+
+  // Auth kontrolü - kullanıcı doğrulanmamışsa
+  if (!isAuthenticated || userType !== "Mechanic") {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>
+          Lütfen tamirci hesabınızla giriş yapın
+        </Text>
+      </View>
+    );
+  }
 
   if (loading) {
     return (
@@ -152,22 +189,28 @@ export default function MechanicReviews() {
   }
 
   return (
-    <FlatList
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      ListHeaderComponent={
-        <Text style={styles.sectionTitle}>
-          {t("mechanicProfile.customerReviews")}
-        </Text>
-      }
-      ListEmptyComponent={
-        <Text style={styles.noReviewsText}>
-          {t("customerReviews.noReviews")}
-        </Text>
-      }
-      data={reviews}
-      renderItem={({ item }) => <ReviewItem review={item} />}
-      keyExtractor={(item) => item._id}
-    />
+    <ErrorBoundary
+      title="Yorumlar Yüklenemedi"
+      message="Müşteri yorumlarınızı gösterirken bir sorun oluştu."
+    >
+      <FlatList
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        ListHeaderComponent={
+          <Text style={styles.sectionTitle}>
+            {t("mechanicProfile.customerReviews")}
+          </Text>
+        }
+        ListEmptyComponent={
+          <Text style={styles.noReviewsText}>
+            {t("mechanicProfile.noReviews")}
+          </Text>
+        }
+        data={reviews}
+        renderItem={({ item }) => <ReviewItem review={item} />}
+        keyExtractor={(item) => item._id}
+        showsVerticalScrollIndicator={false}
+      />
+    </ErrorBoundary>
   );
 }

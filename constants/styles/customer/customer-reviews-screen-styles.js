@@ -7,9 +7,33 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  pageTitle: {
+    fontSize: THEME.fontSizes.h1,
+    fontWeight: THEME.fontWeights.extraBold,
+    color: COLORS.primary,
+    marginBottom: THEME.spacing.lg,
+    marginTop: THEME.spacing.md,
+    marginLeft: THEME.spacing.lg,
+    textAlign: "left",
+  },
   content: {
     padding: THEME.spacing.lg,
     paddingBottom: 100,
+  },
+  listContent: {
+    paddingHorizontal: THEME.spacing.lg,
+    paddingBottom: 100,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: THEME.spacing.xl,
+  },
+  emptyText: {
+    fontSize: THEME.fontSizes.tag,
+    color: COLORS.placeholderText,
+    textAlign: "center",
   },
   sectionTitle: {
     fontSize: THEME.fontSizes.h1,

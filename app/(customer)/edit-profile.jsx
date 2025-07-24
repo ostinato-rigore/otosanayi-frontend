@@ -8,7 +8,6 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -19,6 +18,7 @@ import {
 } from "react-native";
 import { z } from "zod";
 import { updateCustomerProfile, uploadProfilePhoto } from "../../api/apiClient";
+import OptimizedImage from "../../components/OptimizedImage";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/customer/customer-edit-profile-styles";
 import { FUEL_TYPES, VEHICLE_BRANDS } from "../../constants/vehicleData";
@@ -262,10 +262,11 @@ export default function CustomerEditProfile() {
             isEditable ? t("editProfile.tapToSelectPhoto") : ""
           }
         >
-          {watch("profilePhoto") ? (
-            <Image
+          {watch("profilePhoto") && watch("profilePhoto").trim() ? (
+            <OptimizedImage
               source={{ uri: watch("profilePhoto") }}
               style={styles.profileImage}
+              fallbackIcon="person"
             />
           ) : (
             <View style={styles.profilePlaceholder}>

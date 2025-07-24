@@ -13,7 +13,7 @@ const useAuthStore = create((set, get) => ({
     set({ user, userType, isAuthenticated: !!user });
   },
 
-  fetchUser: async () => {
+  fetchUser: async (retryCount = 0) => {
     set({ isLoading: true });
 
     try {
@@ -45,6 +45,21 @@ const useAuthStore = create((set, get) => ({
       }
     } catch (error) {
       console.error("fetchUser error:", error);
+
+      // 401 hatası veya network hatası için retry
+      if (
+        retryCount < 1 &&
+        (error.response?.status === 401 ||
+          !error.response ||
+          error.response.status >= 500)
+      ) {
+        console.log("Retrying fetchUser...", retryCount + 1);
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2 saniye bekle
+        return get().fetchUser(retryCount + 1);
+      }
+
+      // Retry başarısızsa auth'u temizle
+      await AsyncStorage.removeItem("userType");
       set({ user: null, userType: null, isAuthenticated: false });
     } finally {
       set({ isLoading: false });

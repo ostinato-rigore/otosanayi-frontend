@@ -12,9 +12,11 @@ import {
   View,
 } from "react-native";
 import { fetchCustomerReviews } from "../../api/apiClient";
+import ErrorBoundary from "../../components/ErrorBoundary";
 import StarRating from "../../components/StarRating";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/customer/customer-reviews-screen-styles";
+import useAuthStore from "../../store/useAuthStore";
 
 // ObjectId'den tarih tahmini için yardımcı fonksiyon
 const getDateFromObjectId = (objectId) => {
@@ -124,11 +126,23 @@ const ReviewItem = ({ review }) => {
 
 export default function CustomerReviews() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const { isAuthenticated, userType } = useAuthStore();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadReviews = async () => {
+      // Auth kontrolü
+      if (!isAuthenticated || userType !== "Customer") {
+        console.log("User not authenticated as Customer:", {
+          isAuthenticated,
+          userType,
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
         const data = await fetchCustomerReviews();
         // Yorumları createdAt veya _id'den türetilen tarihe göre azalan sırayla sırala
@@ -143,14 +157,36 @@ export default function CustomerReviews() {
         });
         setReviews(sortedReviews);
       } catch (error) {
-        Alert.alert(t("error"), t("mechanicDetail.reviewsLoadFailed"));
         console.error("Load Reviews Error:", error);
+
+        // 401 hatası için özel handling
+        if (error.message.includes("Unauthorized")) {
+          Alert.alert(
+            t("error"),
+            "Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.",
+            [{ text: "Tamam", onPress: () => router.replace("/(auth)") }]
+          );
+        } else {
+          Alert.alert(t("error"), t("mechanicDetail.reviewsLoadFailed"));
+        }
       } finally {
         setLoading(false);
       }
     };
+
     loadReviews();
-  }, [t]);
+  }, [t, isAuthenticated, userType, router]);
+
+  // Auth kontrolü - kullanıcı doğrulanmamışsa
+  if (!isAuthenticated || userType !== "Customer") {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>
+          Lütfen müşteri hesabınızla giriş yapın
+        </Text>
+      </View>
+    );
+  }
 
   if (loading) {
     return (
@@ -162,20 +198,29 @@ export default function CustomerReviews() {
   }
 
   return (
-    <FlatList
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      ListHeaderComponent={
-        <Text style={styles.sectionTitle}>{t("customerReviews.title")}</Text>
-      }
-      ListEmptyComponent={
-        <Text style={styles.noReviewsText}>
-          {t("customerReviews.noReviews")}
-        </Text>
-      }
-      data={reviews}
-      renderItem={({ item }) => <ReviewItem review={item} />}
-      keyExtractor={(item) => item._id}
-    />
+    <ErrorBoundary
+      title="Yorumlar Yüklenemedi"
+      message="Yorumlarınızı gösterirken bir sorun oluştu."
+    >
+      <View style={styles.container}>
+        <Text style={styles.pageTitle}>{t("customerReviews.title")}</Text>
+        <FlatList
+          data={reviews}
+          renderItem={({ item }) => <ReviewItem review={item} />}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={
+            reviews.length === 0 ? styles.emptyContainer : styles.listContent
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                {t("customerReviews.noReviews")}
+              </Text>
+            </View>
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </ErrorBoundary>
   );
 }

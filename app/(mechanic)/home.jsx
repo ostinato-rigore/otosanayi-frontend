@@ -266,10 +266,7 @@ export default function MechanicHome() {
         {mechanic.expertiseAreas.map((area) => t(area)).join(", ")}
       </Text>
       <Text style={styles.cardText}>
-        {t("customerHome.vehicleBrands")}:{" "}
-        {mechanic.vehicleBrands
-          .map((brand) => t(`editProfile.vehicleBrandsData.${brand}`) || brand)
-          .join(", ")}
+        {t("customerHome.vehicleBrands")}: {mechanic.vehicleBrands.join(", ")}
       </Text>
       <TouchableOpacity
         style={styles.detailsButton}
@@ -292,15 +289,7 @@ export default function MechanicHome() {
     isMultiSelect,
     selectedValues,
     onToggle,
-    translationKey,
   }) => {
-    const getTranslatedOption = (option) => {
-      if (translationKey) {
-        return t(`${translationKey}.${option}`) || option;
-      }
-      return option;
-    };
-
     return (
       <View style={styles.filterSection}>
         <Text style={styles.filterLabel}>{label}</Text>
@@ -386,9 +375,7 @@ export default function MechanicHome() {
                       )}
                     </View>
                   )}
-                  <Text style={styles.dropdownItemText}>
-                    {getTranslatedOption(option)}
-                  </Text>
+                  <Text style={styles.dropdownItemText}>{option}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -417,11 +404,11 @@ export default function MechanicHome() {
             key={option}
             style={[
               styles.chip,
-              selected.includes(t(option)) && styles.chipSelected,
+              selected.includes(option) && styles.chipSelected,
             ]}
-            onPress={() => onToggle(t(option))}
+            onPress={() => onToggle(option)}
             accessibilityLabel={`${t(option)} ${
-              selected.includes(t(option))
+              selected.includes(option)
                 ? t("customerHome.selected")
                 : t("customerHome.notSelected")
             }`}
@@ -429,7 +416,7 @@ export default function MechanicHome() {
             <Text
               style={[
                 styles.chipText,
-                selected.includes(t(option)) && styles.chipTextSelected,
+                selected.includes(option) && styles.chipTextSelected,
               ]}
             >
               {t(option)}
@@ -504,7 +491,7 @@ export default function MechanicHome() {
         return (
           <MultiSelectChips
             label={t("customerHome.expertiseAreas")}
-            options={expertiseAreasOptions.map((opt) => t(opt))}
+            options={expertiseAreasOptions}
             selected={filters.expertiseAreas}
             onToggle={(value) => toggleSelection("expertiseAreas", value)}
           />
@@ -518,7 +505,6 @@ export default function MechanicHome() {
             onToggle={(value) => toggleSelection("vehicleBrands", value)}
             type={FILTER_TYPES.VEHICLE_BRANDS}
             isMultiSelect={true}
-            translationKey="editProfile.vehicleBrandsData"
           />
         );
       case FILTER_TYPES.MIN_RATING:
@@ -591,8 +577,8 @@ export default function MechanicHome() {
               setRefreshing(true);
               fetchMechanicsData(1, true);
             }}
-            colors={[COLORS.accentCustomer]}
-            tintColor={COLORS.accentCustomer}
+            colors={[COLORS.accentMechanic]}
+            tintColor={COLORS.accentMechanic}
           />
         }
         onEndReached={() => {
@@ -605,7 +591,7 @@ export default function MechanicHome() {
           loading && mechanics.length > 0 ? (
             <ActivityIndicator
               size="small"
-              color={COLORS.accentCustomer}
+              color={COLORS.accentMechanic}
               style={styles.loader}
             />
           ) : null

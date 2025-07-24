@@ -142,7 +142,7 @@ export default function CustomerHome() {
           expertiseAreas: mechanic.expertiseAreas || [],
           vehicleBrands: mechanic.vehicleBrands || [],
           rating: mechanic.averageRating || 0,
-          avatarUrl: mechanic.mechanicLogo || null,
+          mechanicLogo: mechanic.mechanicLogo || null,
         }));
 
         setMechanics((prev) => {
@@ -237,12 +237,12 @@ export default function CustomerHome() {
     >
       <View style={styles.cardHeader}>
         <View style={styles.avatarContainer}>
-          {mechanic.avatarUrl ? (
+          {mechanic.mechanicLogo ? (
             <Image
-              source={{ uri: mechanic.avatarUrl }}
+              source={{ uri: mechanic.mechanicLogo }}
               style={styles.avatarImage}
               onError={() =>
-                console.log("Avatar yüklenemedi:", mechanic.avatarUrl)
+                console.log("Avatar yüklenemedi:", mechanic.mechanicLogo)
               }
             />
           ) : (
@@ -267,10 +267,7 @@ export default function CustomerHome() {
         {mechanic.expertiseAreas.map((area) => t(area)).join(", ")}
       </Text>
       <Text style={styles.cardText}>
-        {t("customerHome.vehicleBrands")}:{" "}
-        {mechanic.vehicleBrands
-          .map((brand) => t(`editProfile.vehicleBrandsData.${brand}`) || brand)
-          .join(", ")}
+        {t("customerHome.vehicleBrands")}: {mechanic.vehicleBrands.join(", ")}
       </Text>
       <TouchableOpacity
         style={styles.detailsButton}
@@ -293,15 +290,7 @@ export default function CustomerHome() {
     isMultiSelect,
     selectedValues,
     onToggle,
-    translationKey,
   }) => {
-    const getTranslatedOption = (option) => {
-      if (translationKey) {
-        return t(`${translationKey}.${option}`) || option;
-      }
-      return option;
-    };
-
     return (
       <View style={styles.filterSection}>
         <Text style={styles.filterLabel}>{label}</Text>
@@ -387,9 +376,7 @@ export default function CustomerHome() {
                       )}
                     </View>
                   )}
-                  <Text style={styles.dropdownItemText}>
-                    {getTranslatedOption(option)}
-                  </Text>
+                  <Text style={styles.dropdownItemText}>{option}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -409,44 +396,22 @@ export default function CustomerHome() {
     );
   };
 
-  const MultiSelectChips = ({
-    label,
-    options,
-    selected,
-    onToggle,
-    translationKey,
-  }) => {
-    const getTranslatedOption = (option) => {
-      if (translationKey) {
-        return t(`${translationKey}.${option}`) || option;
-      }
-      return t(option);
-    };
-
-    const getOriginalKey = (option) => {
-      if (translationKey) {
-        return option; // Already the original key
-      }
-      return t(option); // This was the old behavior for non-translated options
-    };
-
+  const MultiSelectChips = ({ label, options, selected, onToggle }) => {
     return (
       <View style={styles.filterSection}>
         <Text style={styles.filterLabel}>{label}</Text>
         <View style={styles.chipsContainer}>
           {options.map((option) => {
-            const translatedOption = getTranslatedOption(option);
-            const originalKey = getOriginalKey(option);
             return (
               <TouchableOpacity
                 key={option}
                 style={[
                   styles.chip,
-                  selected.includes(originalKey) && styles.chipSelected,
+                  selected.includes(option) && styles.chipSelected,
                 ]}
-                onPress={() => onToggle(originalKey)}
-                accessibilityLabel={`${translatedOption} ${
-                  selected.includes(originalKey)
+                onPress={() => onToggle(option)}
+                accessibilityLabel={`${t(option)} ${
+                  selected.includes(option)
                     ? t("customerHome.selected")
                     : t("customerHome.notSelected")
                 }`}
@@ -454,10 +419,10 @@ export default function CustomerHome() {
                 <Text
                   style={[
                     styles.chipText,
-                    selected.includes(originalKey) && styles.chipTextSelected,
+                    selected.includes(option) && styles.chipTextSelected,
                   ]}
                 >
-                  {translatedOption}
+                  {t(option)}
                 </Text>
               </TouchableOpacity>
             );
@@ -545,7 +510,6 @@ export default function CustomerHome() {
             onToggle={(value) => toggleSelection("vehicleBrands", value)}
             type={FILTER_TYPES.VEHICLE_BRANDS}
             isMultiSelect={true}
-            translationKey="editProfile.vehicleBrandsData"
           />
         );
       case FILTER_TYPES.MIN_RATING:

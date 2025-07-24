@@ -9,7 +9,6 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -20,6 +19,7 @@ import {
 } from "react-native";
 import { z } from "zod";
 import { updateMechanicProfile, uploadMechanicLogo } from "../../api/apiClient";
+import OptimizedImage from "../../components/OptimizedImage";
 import COLORS from "../../constants/colors";
 import styles from "../../constants/styles/mechanic/mechanic-edit-profile-styles";
 import { VEHICLE_BRANDS } from "../../constants/vehicleData";
@@ -609,10 +609,11 @@ export default function MechanicEditProfile() {
             isEditable ? t("mechanicProfile.tapToSelectLogo") : ""
           }
         >
-          {watch("mechanicLogo") ? (
-            <Image
+          {watch("mechanicLogo") && watch("mechanicLogo").trim() ? (
+            <OptimizedImage
               source={{ uri: watch("mechanicLogo") }}
               style={styles.profileImage}
+              fallbackIcon="business-outline"
             />
           ) : (
             <View style={styles.profilePlaceholder}>

@@ -147,20 +147,46 @@ export const postReview = async (mechanicId, reviewData) => {
   }
 };
 
-export const fetchCustomerReviews = async () => {
+export const fetchCustomerReviews = async (retryCount = 0) => {
   try {
     const response = await api.get("/customers/reviews");
     return response.data.data; // Yorumlar dizisini döndür
   } catch (error) {
+    // 401 hatası için özel handling
+    if (error.response?.status === 401) {
+      console.error("Unauthorized access to customer reviews");
+      throw new Error("Unauthorized - Please login again");
+    }
+
+    // Network hatası için 1 kez daha deneme
+    if (retryCount < 1 && (!error.response || error.response.status >= 500)) {
+      console.log("Retrying fetchCustomerReviews...", retryCount + 1);
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 saniye bekle
+      return fetchCustomerReviews(retryCount + 1);
+    }
+
     throw new Error(error.response?.data?.message || "Failed to fetch reviews");
   }
 };
 
-export const fetchMechanicReviews = async () => {
+export const fetchMechanicReviews = async (retryCount = 0) => {
   try {
     const response = await api.get("/mechanics/reviews");
     return response.data.data; // Yorumlar dizisini döndür
   } catch (error) {
+    // 401 hatası için özel handling
+    if (error.response?.status === 401) {
+      console.error("Unauthorized access to mechanic reviews");
+      throw new Error("Unauthorized - Please login again");
+    }
+
+    // Network hatası için 1 kez daha deneme
+    if (retryCount < 1 && (!error.response || error.response.status >= 500)) {
+      console.log("Retrying fetchMechanicReviews...", retryCount + 1);
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 saniye bekle
+      return fetchMechanicReviews(retryCount + 1);
+    }
+
     throw new Error(error.response?.data?.message || "Failed to fetch reviews");
   }
 };

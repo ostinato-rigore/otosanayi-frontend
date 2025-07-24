@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   KeyboardAvoidingView,
   Linking,
   Modal,
@@ -17,6 +16,8 @@ import {
   View,
 } from "react-native";
 import { fetchMechanicById } from "../../../api/apiClient";
+import ErrorBoundary from "../../../components/ErrorBoundary";
+import OptimizedImage from "../../../components/OptimizedImage";
 import StarRating from "../../../components/StarRating";
 import COLORS from "../../../constants/colors";
 import styles from "../../../constants/styles/mechanic/mechanic-detail-styles";
@@ -115,10 +116,12 @@ const ReviewCard = ({ review }) => {
     <View style={styles.reviewCard}>
       <View style={styles.reviewHeader}>
         <View style={styles.avatarContainer}>
-          {review.customer?.profilePhoto ? (
-            <Image
+          {review.customer?.profilePhoto &&
+          review.customer.profilePhoto.trim() ? (
+            <OptimizedImage
               source={{ uri: review.customer.profilePhoto }}
               style={styles.avatar}
+              fallbackIcon="person-outline"
             />
           ) : (
             <View style={styles.avatarPlaceholder}>
@@ -251,10 +254,11 @@ export default function MechanicDetail() {
       >
         {/* Header Section */}
         <View style={styles.header}>
-          {mechanic.mechanicLogo ? (
-            <Image
+          {mechanic.mechanicLogo && mechanic.mechanicLogo.trim() ? (
+            <OptimizedImage
               source={{ uri: mechanic.mechanicLogo }}
               style={styles.logo}
+              fallbackIcon="business-outline"
               accessibilityLabel={t("mechanicDetail.mechanicLogo", {
                 name: mechanic.mechanicName || mechanic.name,
               })}
@@ -548,32 +552,34 @@ export default function MechanicDetail() {
               {t("mechanicDetail.reviews")}
             </Text>
           </View>
-          {reviews.length > 0 ? (
-            <>
-              <ReviewCard review={reviews[0]} />
-              {reviews.length > 1 && (
-                <TouchableOpacity
-                  style={styles.viewCommentsButton}
-                  onPress={() => setCommentsModalVisible(true)}
-                  accessibilityLabel={t(
-                    "mechanicDetail.viewAllCommentsAccessibility",
-                    { count: reviews.length }
-                  )}
-                >
-                  <Text style={styles.viewCommentsText}>
-                    {t("mechanicDetail.viewAllComments")} ({reviews.length})
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </>
-          ) : (
-            <Text
-              style={styles.noReviewsText}
-              accessibilityLabel={t("mechanicDetail.noReviewsAccessibility")}
-            >
-              {t("mechanicDetail.noReviews")}
-            </Text>
-          )}
+          <ErrorBoundary>
+            {reviews.length > 0 ? (
+              <>
+                <ReviewCard review={reviews[0]} />
+                {reviews.length > 1 && (
+                  <TouchableOpacity
+                    style={styles.viewCommentsButton}
+                    onPress={() => setCommentsModalVisible(true)}
+                    accessibilityLabel={t(
+                      "mechanicDetail.viewAllCommentsAccessibility",
+                      { count: reviews.length }
+                    )}
+                  >
+                    <Text style={styles.viewCommentsText}>
+                      {t("mechanicDetail.viewAllComments")} ({reviews.length})
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <Text
+                style={styles.noReviewsText}
+                accessibilityLabel={t("mechanicDetail.noReviewsAccessibility")}
+              >
+                {t("mechanicDetail.noReviews")}
+              </Text>
+            )}
+          </ErrorBoundary>
         </View>
 
         {/* Comments Modal */}

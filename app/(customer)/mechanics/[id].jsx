@@ -1,12 +1,10 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   KeyboardAvoidingView,
   Linking,
   Modal,
@@ -22,9 +20,13 @@ import {
   likeReview,
   postReview,
 } from "../../../api/apiClient";
+import ErrorBoundary from "../../../components/ErrorBoundary";
+import OptimizedImage from "../../../components/OptimizedImage";
+import { MechanicDetailSkeleton } from "../../../components/SkeletonLoader";
 import StarRating from "../../../components/StarRating";
 import COLORS from "../../../constants/colors";
 import styles from "../../../constants/styles/customer/mechanic-detail-styles";
+import useAnalytics from "../../../hooks/useAnalytics";
 import useAuthStore from "../../../store/useAuthStore";
 
 // ObjectId'den tarih tahmini için yardımcı fonksiyon
@@ -114,133 +116,153 @@ const InfoRow = ({
   );
 };
 
-const ReviewCard = ({ review, currentUser, onLikeUpdate }) => {
-  const { t } = useTranslation();
-  const [isLiked, setIsLiked] = useState(review.isLiked || false); // Backend'den gelen isLiked veya false
-  const [likeCount, setLikeCount] = useState(review.likeCount || 0); // Backend'den gelen likeCount veya 0
-  const [isLoading, setIsLoading] = useState(false); // Beğeni işlemi sırasında yükleme durumu
+const ReviewCard = React.memo(
+  ({ review, currentUser, onLikeUpdate }) => {
+    const { t } = useTranslation();
+    const [isLiked, setIsLiked] = useState(review.isLiked || false); // Backend'den gelen isLiked veya false
+    const [likeCount, setLikeCount] = useState(review.likeCount || 0); // Backend'den gelen likeCount veya 0
+    const [isLoading, setIsLoading] = useState(false); // Beğeni işlemi sırasında yükleme durumu
 
-  // Review prop'u değiştiğinde state'i güncelle
-  useEffect(() => {
-    setIsLiked(review.isLiked || false);
-    setLikeCount(review.likeCount || 0);
-  }, [review.isLiked, review.likeCount]);
+    // Review prop'u değiştiğinde state'i güncelle
+    useEffect(() => {
+      setIsLiked(review.isLiked || false);
+      setLikeCount(review.likeCount || 0);
+    }, [review.isLiked, review.likeCount]);
 
-  // Kullanıcının kendi yorumu olup olmadığını kontrol et
-  const isOwnReview = review.customer?._id === currentUser?._id;
+    // Kullanıcının kendi yorumu olup olmadığını kontrol et
+    const isOwnReview = review.customer?._id === currentUser?._id;
 
-  const handleLikeToggle = async () => {
-    // Kendi yorumunu beğenemez
-    if (isOwnReview) {
-      Alert.alert(
-        t("mechanicDetail.ownReviewLike"),
-        t("mechanicDetail.cannotLikeOwnReview")
-      );
-      return;
-    }
-
-    setIsLoading(true); // İşlem başlarken yükleme durumunu başlat
-    try {
-      const response = await likeReview(review._id); // API çağrısı
-      if (response.success) {
-        setIsLiked(response.hasLiked); // Backend'den gelen hasLiked ile durumu güncelle
-        setLikeCount(response.likeCount); // Backend'den gelen likeCount ile sayıyı güncelle
-
-        // Ana component'a beğeni güncellemesini bildir
-        if (onLikeUpdate) {
-          onLikeUpdate(review._id, response.hasLiked, response.likeCount);
-        }
+    const handleLikeToggle = async () => {
+      // Kendi yorumunu beğenemez
+      if (isOwnReview) {
+        Alert.alert(
+          t("mechanicDetail.ownReviewLike"),
+          t("mechanicDetail.cannotLikeOwnReview")
+        );
+        return;
       }
-    } catch (error) {
-      // Hata mesajını kullanıcıya göster
-      Alert.alert(t("common.error"), error.message || t("common.unknownError"));
-    } finally {
-      setIsLoading(false); // İşlem bittiğinde yükleme durumunu kapat
-    }
-  };
 
-  return (
-    <View style={styles.reviewCard}>
-      <View style={styles.reviewHeader}>
-        <View style={styles.avatarContainer}>
-          {review.customer?.profilePhoto ? (
-            <Image
-              source={{ uri: review.customer.profilePhoto }}
-              style={styles.avatar}
-            />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons
-                name="person-outline"
-                size={16}
-                color={COLORS.placeholderText}
+      setIsLoading(true); // İşlem başlarken yükleme durumunu başlat
+      try {
+        const response = await likeReview(review._id); // API çağrısı
+        if (response.success) {
+          setIsLiked(response.hasLiked); // Backend'den gelen hasLiked ile durumu güncelle
+          setLikeCount(response.likeCount); // Backend'den gelen likeCount ile sayıyı güncelle
+
+          // Ana component'a beğeni güncellemesini bildir
+          if (onLikeUpdate) {
+            onLikeUpdate(review._id, response.hasLiked, response.likeCount);
+          }
+        }
+      } catch (error) {
+        // Hata mesajını kullanıcıya göster
+        Alert.alert(
+          t("common.error"),
+          error.message || t("common.unknownError")
+        );
+      } finally {
+        setIsLoading(false); // İşlem bittiğinde yükleme durumunu kapat
+      }
+    };
+
+    return (
+      <View style={styles.reviewCard}>
+        <View style={styles.reviewHeader}>
+          <View style={styles.avatarContainer}>
+            {review.customer?.profilePhoto &&
+            review.customer.profilePhoto.trim() ? (
+              <OptimizedImage
+                source={{ uri: review.customer.profilePhoto }}
+                style={styles.avatar}
+                fallbackIcon="person-outline"
               />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons
+                  name="person-outline"
+                  size={16}
+                  color={COLORS.placeholderText}
+                />
+              </View>
+            )}
+          </View>
+          <View style={styles.reviewAuthorContainer}>
+            <Text style={styles.reviewAuthor}>
+              {review.customer?.name || t("mechanicDetail.anonymous")}
+            </Text>
+            <View style={styles.reviewRatingContainer}>
+              <StarRating rating={review.rating || 0} size={14} />
+              <Text style={styles.reviewRatingText}>
+                {review.rating || 0}/5
+              </Text>
             </View>
-          )}
-        </View>
-        <View style={styles.reviewAuthorContainer}>
-          <Text style={styles.reviewAuthor}>
-            {review.customer?.name || t("mechanicDetail.anonymous")}
-          </Text>
-          <View style={styles.reviewRatingContainer}>
-            <StarRating rating={review.rating || 0} size={14} />
-            <Text style={styles.reviewRatingText}>{review.rating || 0}/5</Text>
           </View>
         </View>
-      </View>
-      <Text style={styles.reviewText}>
-        {review.comment || t("mechanicDetail.noInfo")}
-      </Text>
-      <View style={styles.reviewFooter}>
-        <Text
-          style={styles.reviewDate}
-          accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
-            date: formatReviewDate(review.createdAt, review._id, t),
-          })}
-        >
-          {formatReviewDate(review.createdAt, review._id, t)}
+        <Text style={styles.reviewText}>
+          {review.comment || t("mechanicDetail.noInfo")}
         </Text>
-        <TouchableOpacity
-          style={[
-            styles.likeContainer,
-            isLiked && styles.likeColorLight,
-            isOwnReview && styles.disabledLikeContainer, // Kendi yorumu için disable stil
-          ]}
-          onPress={handleLikeToggle}
-          accessibilityLabel={
-            isOwnReview
-              ? t("mechanicDetail.ownReviewNotLikeable")
-              : isLiked
-              ? t("mechanicDetail.unlikeReview")
-              : t("mechanicDetail.likeReview")
-          }
-          disabled={isLoading || isOwnReview} // Yükleme sırasında veya kendi yorumu ise devre dışı bırak
-        >
-          <Ionicons
-            name={isLiked ? "heart" : "heart-outline"}
-            size={20}
-            color={
-              isOwnReview
-                ? COLORS.placeholderText
-                : isLiked
-                ? COLORS.likeColor
-                : COLORS.textSecondary
-            }
-          />
+        <View style={styles.reviewFooter}>
           <Text
-            style={[
-              styles.likeCount,
-              isLiked && !isOwnReview && { color: COLORS.likeColor },
-              isOwnReview && { color: COLORS.placeholderText },
-            ]}
+            style={styles.reviewDate}
+            accessibilityLabel={t("mechanicDetail.reviewDateAccessibility", {
+              date: formatReviewDate(review.createdAt, review._id, t),
+            })}
           >
-            {likeCount}
+            {formatReviewDate(review.createdAt, review._id, t)}
           </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.likeContainer,
+              isLiked && styles.likeColorLight,
+              isOwnReview && styles.disabledLikeContainer, // Kendi yorumu için disable stil
+            ]}
+            onPress={handleLikeToggle}
+            accessibilityLabel={
+              isOwnReview
+                ? t("mechanicDetail.ownReviewNotLikeable")
+                : isLiked
+                ? t("mechanicDetail.unlikeReview")
+                : t("mechanicDetail.likeReview")
+            }
+            disabled={isLoading || isOwnReview} // Yükleme sırasında veya kendi yorumu ise devre dışı bırak
+          >
+            <Ionicons
+              name={isLiked ? "heart" : "heart-outline"}
+              size={20}
+              color={
+                isOwnReview
+                  ? COLORS.placeholderText
+                  : isLiked
+                  ? COLORS.likeColor
+                  : COLORS.textSecondary
+              }
+            />
+            <Text
+              style={[
+                styles.likeCount,
+                isLiked && !isOwnReview && { color: COLORS.likeColor },
+                isOwnReview && { color: COLORS.placeholderText },
+              ]}
+            >
+              {likeCount}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison function for better memoization
+    return (
+      prevProps.review._id === nextProps.review._id &&
+      prevProps.review.isLiked === nextProps.review.isLiked &&
+      prevProps.review.likeCount === nextProps.review.likeCount &&
+      prevProps.currentUser?._id === nextProps.currentUser?._id
+    );
+  }
+);
+
+ReviewCard.displayName = "ReviewCard";
 
 export default function MechanicDetail() {
   const { t } = useTranslation();
@@ -254,6 +276,7 @@ export default function MechanicDetail() {
   const [rating, setRating] = useState(5);
 
   const { user } = useAuthStore();
+  const { trackScreenView, trackEvent } = useAnalytics();
 
   const getMechanic = useCallback(async () => {
     setLoading(true);
@@ -286,6 +309,18 @@ export default function MechanicDetail() {
     if (id) getMechanic();
   }, [id, getMechanic]);
 
+  // Analytics tracking
+  useEffect(() => {
+    if (mechanic) {
+      trackScreenView("mechanic_detail", {
+        mechanic_id: id,
+        mechanic_name: mechanic.mechanicName,
+        average_rating: mechanic.averageRating,
+        reviews_count: reviews.length,
+      });
+    }
+  }, [mechanic, id, reviews.length, trackScreenView]);
+
   // Beğeni güncellemesini handle et
   const handleLikeUpdate = (reviewId, hasLiked, likeCount) => {
     setReviews((prevReviews) =>
@@ -295,6 +330,14 @@ export default function MechanicDetail() {
           : review
       )
     );
+
+    // Analytics tracking for like action
+    trackEvent("review_like_toggle", {
+      review_id: reviewId,
+      mechanic_id: id,
+      is_liked: hasLiked,
+      like_count: likeCount,
+    });
   };
 
   const handleSubmitReview = async () => {
@@ -328,6 +371,16 @@ export default function MechanicDetail() {
       setReviewModalVisible(false);
       setReviewText("");
       setRating(5);
+
+      // Analytics tracking for review submission
+      trackEvent("review_submitted", {
+        mechanic_id: id,
+        rating: rating,
+        comment_length: reviewText.length,
+        new_average_rating: averageRating,
+        total_reviews: sortedReviews.length,
+      });
+
       Alert.alert(t("success"), t("mechanicDetail.reviewSuccess"));
     } catch (error) {
       console.log(error);
@@ -343,17 +396,7 @@ export default function MechanicDetail() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.accentCustomer} />
-        <Text
-          style={styles.loadingText}
-          accessibilityLabel={t("mechanicDetail.loadingAccessibility")}
-        >
-          {t("mechanicDetail.loading")}
-        </Text>
-      </View>
-    );
+    return <MechanicDetailSkeleton />;
   }
 
   if (!mechanic) {
@@ -390,10 +433,11 @@ export default function MechanicDetail() {
       >
         {/* Header Section */}
         <View style={styles.header}>
-          {mechanic.mechanicLogo ? (
-            <Image
+          {mechanic.mechanicLogo && mechanic.mechanicLogo.trim() ? (
+            <OptimizedImage
               source={{ uri: mechanic.mechanicLogo }}
               style={styles.logo}
+              fallbackIcon="business-outline"
               accessibilityLabel={t("mechanicDetail.mechanicLogo", {
                 name: mechanic.mechanicName || mechanic.name,
               })}
@@ -708,36 +752,38 @@ export default function MechanicDetail() {
               </Text>
             </TouchableOpacity>
           </View>
-          {reviews.length > 0 ? (
-            <>
-              <ReviewCard
-                review={reviews[0]}
-                currentUser={user}
-                onLikeUpdate={handleLikeUpdate}
-              />
-              {reviews.length > 1 && (
-                <TouchableOpacity
-                  style={styles.viewCommentsButton}
-                  onPress={() => setCommentsModalVisible(true)}
-                  accessibilityLabel={t(
-                    "mechanicDetail.viewAllCommentsAccessibility",
-                    { count: reviews.length }
-                  )}
-                >
-                  <Text style={styles.viewCommentsText}>
-                    {t("mechanicDetail.viewAllComments")} ({reviews.length})
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </>
-          ) : (
-            <Text
-              style={styles.noReviewsText}
-              accessibilityLabel={t("mechanicDetail.noReviewsAccessibility")}
-            >
-              {t("mechanicDetail.noReviews")}
-            </Text>
-          )}
+          <ErrorBoundary>
+            {reviews.length > 0 ? (
+              <>
+                <ReviewCard
+                  review={reviews[0]}
+                  currentUser={user}
+                  onLikeUpdate={handleLikeUpdate}
+                />
+                {reviews.length > 1 && (
+                  <TouchableOpacity
+                    style={styles.viewCommentsButton}
+                    onPress={() => setCommentsModalVisible(true)}
+                    accessibilityLabel={t(
+                      "mechanicDetail.viewAllCommentsAccessibility",
+                      { count: reviews.length }
+                    )}
+                  >
+                    <Text style={styles.viewCommentsText}>
+                      {t("mechanicDetail.viewAllComments")} ({reviews.length})
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <Text
+                style={styles.noReviewsText}
+                accessibilityLabel={t("mechanicDetail.noReviewsAccessibility")}
+              >
+                {t("mechanicDetail.noReviews")}
+              </Text>
+            )}
+          </ErrorBoundary>
         </View>
 
         {/* Review Modal */}
@@ -853,6 +899,15 @@ export default function MechanicDetail() {
                 keyExtractor={(item) => item._id || Math.random().toString()}
                 contentContainerStyle={styles.commentsListContent}
                 showsVerticalScrollIndicator={false}
+                maxToRenderPerBatch={5}
+                windowSize={10}
+                initialNumToRender={5}
+                removeClippedSubviews={true}
+                getItemLayout={(data, index) => ({
+                  length: 150, // Estimated item height
+                  offset: 150 * index,
+                  index,
+                })}
               />
             </View>
           </View>
