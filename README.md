@@ -109,9 +109,3 @@ otosanayi-frontend/
 ## 📄 Lisans
 
 Bu proje MIT lisansı altında lisanslanmıştır.
-
----
-
-**Geliştirici**: [Your Name]  
-**E-posta**: [your-email]  
-**Versiyon**: 1.0.0
